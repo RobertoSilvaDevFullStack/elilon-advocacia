@@ -3,42 +3,8 @@ import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { AREAS, BLOG_POSTS } from "../constants";
-import { MapPin, ArrowUpRight } from "lucide-react";
-
-const MapSection: React.FC = () => {
-  return (
-    <div className="relative w-full h-96 bg-neutral-100 rounded-lg overflow-hidden flex items-center justify-center border border-neutral-200">
-      {/* Abstract Map Representation */}
-      <div className="absolute inset-0 grid grid-cols-12 gap-4 p-8 opacity-20">
-        {Array.from({ length: 96 }).map((_, i) => (
-          <div
-            key={i}
-            className={`rounded-full bg-neutral-400 ${
-              Math.random() > 0.7 ? "w-2 h-2" : "w-1 h-1"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* Pins */}
-      <div className="relative z-10 text-center">
-        <div className="flex flex-col items-center">
-          <MapPin className="text-gold-600 mb-2 w-8 h-8 animate-bounce" />
-          <h4 className="font-serif font-bold text-xl">Montes Claros - MG</h4>
-          <p className="text-sm text-neutral-500">Sede Principal</p>
-        </div>
-        <div className="absolute -top-12 -right-32 flex flex-col items-center opacity-70">
-          <div className="w-3 h-3 bg-neutral-800 rounded-full mb-1"></div>
-          <p className="text-xs font-bold uppercase">Belo Horizonte</p>
-        </div>
-        <div className="absolute bottom-12 -left-32 flex flex-col items-center opacity-70">
-          <div className="w-3 h-3 bg-neutral-800 rounded-full mb-1"></div>
-          <p className="text-xs font-bold uppercase">São Paulo</p>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
+import { BrazilMap } from "../components/BrazilMap";
 
 export const Home: React.FC = () => {
   React.useEffect(() => {
@@ -121,7 +87,7 @@ export const Home: React.FC = () => {
             <div className="relative">
               <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-gold-500"></div>
               <img
-                src="https://picsum.photos/600/400?grayscale"
+                src="/images/quem-somos-nos.jpg"
                 alt="Equipe ELADV"
                 className="w-full h-auto shadow-2xl"
               />
@@ -144,7 +110,7 @@ export const Home: React.FC = () => {
               Com sede em Montes Claros, atuamos estrategicamente em todo o
               território nacional, com parceiros nas principais capitais.
             </p>
-            <MapSection />
+            <BrazilMap />
           </div>
         </div>
       </section>
@@ -254,6 +220,3 @@ export const Home: React.FC = () => {
     </Layout>
   );
 };
-
-// Lucide icon import fix for usage
-import { ArrowRight } from "lucide-react";
