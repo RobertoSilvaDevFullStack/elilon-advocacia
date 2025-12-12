@@ -3,10 +3,15 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
 import { Cpu, Scale, Brain, Lightbulb } from "lucide-react";
+import { SEO } from "../components/SEO";
 
 export const Innovation: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Pensamento Inovador"
+        description="Advocacia 4.0 integrada com Jurimetria, Legal Design e Gestão Digital."
+      />
       <Hero
         title="Pensamento Inovador"
         subtitle="Advocacia 4.0"

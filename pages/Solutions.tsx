@@ -3,10 +3,15 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
 import { CheckCircle, Clock, Shield, Target } from "lucide-react";
+import { SEO } from "../components/SEO";
 
 export const Solutions: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Entrega e Soluções"
+        description="Nossa metodologia de advocacia de resultado: Diagnóstico, Estratégia, Execução e Resultado."
+      />
       <Hero
         title="Entrega e Soluções"
         subtitle="Nossa Metodologia"

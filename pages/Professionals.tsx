@@ -4,6 +4,7 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle } from "../components/Components";
 import { PROFESSIONALS, LOCATIONS, ROLES, AREAS } from "../constants";
 import { Linkedin, Mail, Phone } from "lucide-react";
+import { SEO } from "../components/SEO";
 
 export const Professionals: React.FC = () => {
   const navigate = useNavigate();
@@ -51,6 +52,10 @@ export const Professionals: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title="Nossos Profissionais"
+        description="Conheça nossa equipe de advogados especialistas prontos para defender seus interesses."
+      />
       <Hero
         title="Nossos Profissionais"
         subtitle="Equipe"
@@ -148,7 +153,7 @@ export const Professionals: React.FC = () => {
                     <img
                       src={prof.image}
                       alt={prof.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                      className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
                     />
                   </div>
                   <div className="p-6 flex flex-col justify-center w-full md:w-7/12">

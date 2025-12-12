@@ -2,10 +2,15 @@ import React from "react";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle } from "../components/Components";
 import { Award, Star, ThumbsUp, Medal } from "lucide-react";
+import { SEO } from "../components/SEO";
 
 export const Awards: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Prêmios e Reconhecimentos"
+        description="Conheça os prêmios e certificações que comprovam a excelência do ELADV."
+      />
       <Hero
         title="Prêmios e Reconhecimentos"
         subtitle="Nossa Excelência Comprovada"

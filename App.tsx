@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { Home } from "./pages/Home";
 import { About } from "./pages/About";
 import { Professionals } from "./pages/Professionals";
@@ -34,30 +35,32 @@ const ScrollToTop = () => {
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
-        <Route path="/" element={<Home />} />
+    <HelmetProvider>
+      <Router>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/" element={<Home />} />
 
-        {/* About Routes */}
-        <Route path="/sobre" element={<About />} />
-        <Route path="/sobre/somos" element={<Somos />} />
-        <Route path="/sobre/entrega" element={<Solutions />} />
-        <Route path="/sobre/inovacao" element={<Innovation />} />
-        <Route path="/sobre/premios" element={<Awards />} />
+          {/* About Routes */}
+          <Route path="/sobre" element={<About />} />
+          <Route path="/sobre/somos" element={<Somos />} />
+          <Route path="/sobre/entrega" element={<Solutions />} />
+          <Route path="/sobre/inovacao" element={<Innovation />} />
+          <Route path="/sobre/premios" element={<Awards />} />
 
-        <Route path="/profissionais" element={<Professionals />} />
-        <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
-        <Route path="/areas" element={<Areas />} />
-        <Route path="/blog" element={<Blog />} />
-        <Route path="/blog/:slug" element={<BlogPostDetail />} />
-        <Route path="/contato" element={<Contact />} />
-        <Route path="/admin" element={<Admin />} />
+          <Route path="/profissionais" element={<Professionals />} />
+          <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
+          <Route path="/areas" element={<Areas />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPostDetail />} />
+          <Route path="/contato" element={<Contact />} />
+          <Route path="/admin" element={<Admin />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </HelmetProvider>
   );
 };
 

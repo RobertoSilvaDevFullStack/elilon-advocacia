@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
+import { SEO } from "../components/SEO";
 import { PROFESSIONALS } from "../constants";
 import {
   Linkedin,
@@ -27,6 +28,11 @@ export const ProfessionalDetail: React.FC = () => {
 
   return (
     <Layout>
+      <SEO
+        title={professional.name}
+        description={`Advogado especializado em ${professional.area}. ${professional.location}.`}
+        image={professional.image}
+      />
       <div className="bg-neutral-900 text-white py-12 md:py-20 relative overflow-hidden">
         {/* Background decoration */}
         <div className="absolute top-0 right-0 w-1/2 h-full bg-neutral-800 transform skew-x-12 translate-x-1/4 opacity-50 z-0"></div>

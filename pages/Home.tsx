@@ -2,17 +2,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
+import { SEO } from "../components/SEO";
 import { AREAS, BLOG_POSTS } from "../constants";
 import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
 import { BrazilMap } from "../components/BrazilMap";
 
 export const Home: React.FC = () => {
-  React.useEffect(() => {
-    document.title = "ELADV | Excelência Jurídica";
-  }, []);
-
   return (
     <Layout>
+      <SEO
+        title="Home"
+        description="ELADV - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
+      />
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 z-0">

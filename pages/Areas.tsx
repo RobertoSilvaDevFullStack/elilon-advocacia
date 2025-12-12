@@ -3,10 +3,15 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { AREAS } from "../constants";
 import { Link } from "react-router-dom";
+import { SEO } from "../components/SEO";
 
 export const Areas: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Áreas de Atuação"
+        description="Atuação multidisciplinar em Direito Empresarial, Civil, Trabalhista e Tributário."
+      />
       <Hero
         title="Áreas de Atuação"
         subtitle="Especialidades"

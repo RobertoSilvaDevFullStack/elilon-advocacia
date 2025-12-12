@@ -2,10 +2,15 @@ import React from "react";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
+import { SEO } from "../components/SEO";
 
 export const Somos: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Somos ELADV"
+        description="Nossa essência, missão e visão. Comprometidos com a excelência e a vitória."
+      />
       <Hero
         title="Somos ELADV"
         subtitle="Nossa Essência"

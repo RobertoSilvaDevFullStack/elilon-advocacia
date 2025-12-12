@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { BLOG_POSTS } from "../constants";
+import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
 
 export const BlogPostDetail: React.FC = () => {
@@ -19,6 +20,7 @@ export const BlogPostDetail: React.FC = () => {
 
   return (
     <Layout>
+      <SEO title={post.title} description={post.summary} image={post.image} />
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px]">
         <img

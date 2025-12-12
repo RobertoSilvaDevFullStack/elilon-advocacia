@@ -3,10 +3,15 @@ import { Layout } from "../components/Layout";
 import { Hero } from "../components/Components";
 import { BLOG_POSTS } from "../constants";
 import { Link } from "react-router-dom";
+import { SEO } from "../components/SEO";
 
 export const Blog: React.FC = () => {
   return (
     <Layout>
+      <SEO
+        title="Notícias e Artigos"
+        description="Fique por dentro das novidades jurídicas e institucionais do ELADV."
+      />
       <Hero
         title="Notícias e Insights"
         subtitle="Blog"
