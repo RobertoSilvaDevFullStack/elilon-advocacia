@@ -1,13 +1,22 @@
 export interface Professional {
   id: number;
   name: string;
-  role: 'Sócio' | 'Associado' | 'Advogado Sênior' | 'Advogado Pleno' | 'Advogado Júnior';
+  role:
+    | "Sócio"
+    | "Associado"
+    | "Advogado Sênior"
+    | "Advogado Pleno"
+    | "Advogado Júnior";
   area: string;
   location: string;
   email: string;
   phone: string;
   linkedin: string;
   image: string;
+  bio?: string;
+  oab?: string;
+  education?: string[];
+  specializations?: string[];
 }
 
 export interface AreaOfPractice {
@@ -26,6 +35,8 @@ export interface BlogPost {
   category: string;
   image: string;
   slug: string;
+  content?: string;
+  author?: string;
 }
 
 export interface Lead {
@@ -37,7 +48,7 @@ export interface Lead {
   interest: string;
   message: string;
   timestamp: string;
-  status: 'Novo' | 'Em contato' | 'Arquivado';
+  status: "Novo" | "Em contato" | "Arquivado";
 }
 
 export interface NavItem {

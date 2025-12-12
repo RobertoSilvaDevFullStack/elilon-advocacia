@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle } from "../components/Components";
 import { PROFESSIONALS, LOCATIONS, ROLES, AREAS } from "../constants";
@@ -22,7 +23,11 @@ export const Professionals: React.FC = () => {
       const matchesArea = selectedArea ? p.area === selectedArea : true;
       const matchesRole = selectedRole ? p.role === selectedRole : true;
       const matchesLetter = selectedLetter
-        ? p.name.split(" ").pop()?.startsWith(selectedLetter)
+        ? p.name
+            .replace(/^(Dr\.|Dra\.)\s+/, "")
+            .trim()
+            .toUpperCase()
+            .startsWith(selectedLetter)
         : true;
 
       return (
@@ -133,9 +138,10 @@ export const Professionals: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProfessionals.length > 0 ? (
               filteredProfessionals.map((prof) => (
-                <div
+                <Link
+                  to={`/profissionais/${prof.id}`}
                   key={prof.id}
-                  className="bg-white group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-full md:h-64 overflow-hidden"
+                  className="bg-white group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-full md:h-64 overflow-hidden cursor-pointer"
                 >
                   <div className="md:w-5/12 h-64 md:h-full relative overflow-hidden">
                     <img
@@ -177,7 +183,7 @@ export const Professionals: React.FC = () => {
                       </a>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="col-span-full text-center py-20 text-neutral-500">

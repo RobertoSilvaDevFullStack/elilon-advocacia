@@ -166,33 +166,63 @@ export const Home: React.FC = () => {
             centered
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            {BLOG_POSTS.map((post) => (
-              <Link
-                to="/blog"
-                key={post.id}
-                className="group bg-white hover:shadow-xl transition-shadow duration-300"
-              >
-                <div className="h-48 overflow-hidden">
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-6">
-                  <span className="text-xs font-bold text-gold-600 uppercase tracking-wider">
-                    {post.category}
-                  </span>
-                  <h3 className="text-xl font-serif font-bold mt-2 mb-3 group-hover:text-gold-600 transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-neutral-500 text-sm mb-4">
-                    {post.summary}
-                  </p>
-                  <span className="text-xs text-neutral-400">{post.date}</span>
-                </div>
-              </Link>
-            ))}
+            {BLOG_POSTS.sort((a, b) => {
+              const months: { [key: string]: number } = {
+                Jan: 0,
+                Fev: 1,
+                Mar: 2,
+                Abr: 3,
+                Mai: 4,
+                Jun: 5,
+                Jul: 6,
+                Ago: 7,
+                Set: 8,
+                Out: 9,
+                Nov: 10,
+                Dez: 11,
+              };
+
+              const parseDate = (dateStr: string) => {
+                const parts = dateStr.split(" ");
+                if (parts.length !== 3) return 0;
+                const day = parseInt(parts[0], 10);
+                const month = months[parts[1]];
+                const year = parseInt(parts[2], 10);
+                return new Date(year, month, day).getTime();
+              };
+
+              return parseDate(b.date) - parseDate(a.date);
+            })
+              .slice(0, 3)
+              .map((post) => (
+                <Link
+                  to={`/blog/${post.slug}`}
+                  key={post.id}
+                  className="group bg-white hover:shadow-xl transition-shadow duration-300"
+                >
+                  <div className="h-48 overflow-hidden">
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <span className="text-xs font-bold text-gold-600 uppercase tracking-wider">
+                      {post.category}
+                    </span>
+                    <h3 className="text-xl font-serif font-bold mt-2 mb-3 group-hover:text-gold-600 transition-colors">
+                      {post.title}
+                    </h3>
+                    <p className="text-neutral-500 text-sm mb-4">
+                      {post.summary}
+                    </p>
+                    <span className="text-xs text-neutral-400">
+                      {post.date}
+                    </span>
+                  </div>
+                </Link>
+              ))}
           </div>
         </div>
       </section>
