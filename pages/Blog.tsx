@@ -10,7 +10,7 @@ export const Blog: React.FC = () => {
     <Layout>
       <SEO
         title="Notícias e Artigos"
-        description="Fique por dentro das novidades jurídicas e institucionais do ELADV."
+        description="Fique por dentro das novidades jurídicas e institucionais do Elilon Lopes Advogados."
       />
       <Hero
         title="Notícias e Insights"

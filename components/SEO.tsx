@@ -14,8 +14,9 @@ export const SEO: React.FC<SEOProps> = ({
   image = "/og-image.jpg", // Default image if one exists, or we can use a logo
   url,
 }) => {
-  const siteTitle = "ELADV | Sociedade de Advogados";
-  const fullTitle = title === siteTitle ? title : `${title} | ELADV`;
+  const siteTitle = "Elilon Lopes Advogados | Sociedade de Advogados";
+  const fullTitle =
+    title === siteTitle ? title : `${title} | Elilon Lopes Advogados`;
   const currentUrl = url || window.location.href;
 
   return (

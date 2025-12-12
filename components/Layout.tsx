@@ -141,7 +141,7 @@ const Footer: React.FC = () => {
         {/* Brand */}
         <div>
           <h2 className="text-3xl font-serif font-bold text-gold-400 mb-6">
-            ELADV
+            Elilon Lopes Advogados
           </h2>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Excelência jurídica com foco em resultados. Atuamos com integridade
@@ -238,7 +238,7 @@ const Footer: React.FC = () => {
             </li>
             <li className="flex items-center gap-3">
               <MessageCircle className="text-gold-500 min-w-[16px]" size={16} />
-              <span>contato@eladv.com.br</span>
+              <span>contato@Elilon Lopes Advogados.com.br</span>
             </li>
           </ul>
         </div>
@@ -265,8 +265,8 @@ const Footer: React.FC = () => {
       </div>
       <div className="container mx-auto px-4 mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-500">
         <p>
-          &copy; 2024 ELADV Sociedade de Advogados. Todos os direitos
-          reservados.
+          &copy; {new Date().getFullYear()} Elilon Lopes Advogados Sociedade de
+          Advogados. Todos os direitos reservados.
         </p>
         <div className="flex space-x-4 mt-4 md:mt-0">
           <Link to="/privacidade" className="hover:text-gold-400">
@@ -275,6 +275,14 @@ const Footer: React.FC = () => {
           <Link to="/termos" className="hover:text-gold-400">
             Termos de Uso
           </Link>
+          <a
+            href="http://robertosilvadevfullstack.cloud/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-gold-400"
+          >
+            Developed by: Roberto Silva
+          </a>
         </div>
       </div>
     </footer>

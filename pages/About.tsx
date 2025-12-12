@@ -9,7 +9,7 @@ export const About: React.FC = () => {
     <Layout>
       <SEO
         title="Sobre Nós"
-        description="Conheça a história e os valores do ELADV. Advocacia artesanal para grandes causas desde 2010."
+        description="Conheça a história e os valores do Elilon Lopes Advogados. Advocacia artesanal para grandes causas desde 2010."
       />
       <Hero
         title="Sobre Nós"
@@ -26,10 +26,11 @@ export const About: React.FC = () => {
               Excelência desde a fundação
             </h3>
             <p className="text-neutral-600 mb-4">
-              O ELADV (Escritório de Advocacia) foi fundado com o propósito de
-              oferecer uma advocacia artesanal para grandes causas. Acreditamos
-              que cada cliente merece um atendimento personalizado, onde a
-              técnica jurídica se encontra com a estratégia de negócios.
+              O Elilon Lopes Advogados (Escritório de Advocacia) foi fundado com
+              o propósito de oferecer uma advocacia artesanal para grandes
+              causas. Acreditamos que cada cliente merece um atendimento
+              personalizado, onde a técnica jurídica se encontra com a
+              estratégia de negócios.
             </p>
             <p className="text-neutral-600">
               Sediado em Montes Claros, expandimos nossa atuação mantendo os

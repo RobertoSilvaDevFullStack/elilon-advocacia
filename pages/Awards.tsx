@@ -9,7 +9,7 @@ export const Awards: React.FC = () => {
     <Layout>
       <SEO
         title="Prêmios e Reconhecimentos"
-        description="Conheça os prêmios e certificações que comprovam a excelência do ELADV."
+        description="Conheça os prêmios e certificações que comprovam a excelência do Elilon Lopes Advogados."
       />
       <Hero
         title="Prêmios e Reconhecimentos"
@@ -27,10 +27,10 @@ export const Awards: React.FC = () => {
             centered
           />
           <p className="text-neutral-600 text-lg leading-relaxed mt-6">
-            O compromisso do ELADV com a excelência jurídica e a satisfação dos
-            clientes tem sido consistentemente reconhecido por importantes
-            instituições e rankings do setor. Cada prêmio reflete a dedicação
-            diária de nossa equipe.
+            O compromisso do Elilon Lopes Advogados com a excelência jurídica e
+            a satisfação dos clientes tem sido consistentemente reconhecido por
+            importantes instituições e rankings do setor. Cada prêmio reflete a
+            dedicação diária de nossa equipe.
           </p>
         </div>
       </section>

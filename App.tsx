@@ -19,6 +19,8 @@ import { Blog } from "./pages/Blog";
 import { BlogPostDetail } from "./pages/BlogPostDetail";
 import { Contact } from "./pages/Contact";
 import { Admin } from "./pages/Admin";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { TermsOfUse } from "./pages/TermsOfUse";
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -55,6 +57,8 @@ const App: React.FC = () => {
           <Route path="/blog/:slug" element={<BlogPostDetail />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/privacidade" element={<PrivacyPolicy />} />
+          <Route path="/termos" element={<TermsOfUse />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

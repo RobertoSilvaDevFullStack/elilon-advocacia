@@ -8,11 +8,11 @@ export const Somos: React.FC = () => {
   return (
     <Layout>
       <SEO
-        title="Somos ELADV"
+        title="Somos Elilon Lopes Advogados"
         description="Nossa essência, missão e visão. Comprometidos com a excelência e a vitória."
       />
       <Hero
-        title="Somos ELADV"
+        title="Somos Elilon Lopes Advogados"
         subtitle="Nossa Essência"
         image="https://picsum.photos/1920/1080?grayscale&random=99"
         height="small"
@@ -26,10 +26,11 @@ export const Somos: React.FC = () => {
               Excelência desde a fundação
             </h3>
             <p className="text-neutral-600 mb-4">
-              O ELADV (Escritório de Advocacia) foi fundado com o propósito de
-              oferecer uma advocacia artesanal para grandes causas. Acreditamos
-              que cada cliente merece um atendimento personalizado, onde a
-              técnica jurídica se encontra com a estratégia de negócios.
+              O Elilon Lopes Advogados (Escritório de Advocacia) foi fundado com
+              o propósito de oferecer uma advocacia artesanal para grandes
+              causas. Acreditamos que cada cliente merece um atendimento
+              personalizado, onde a técnica jurídica se encontra com a
+              estratégia de negócios.
             </p>
             <p className="text-neutral-600">
               Sediado em Montes Claros, expandimos nossa atuação mantendo os

@@ -12,7 +12,7 @@ export const Home: React.FC = () => {
     <Layout>
       <SEO
         title="Home"
-        description="ELADV - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
+        description="Elilon Lopes Advogados - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
       />
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
@@ -66,10 +66,10 @@ export const Home: React.FC = () => {
                 subtitle="Sobre Nós"
               />
               <p className="text-neutral-600 mb-6 leading-relaxed">
-                O escritório ELADV nasceu da união de advogados experientes com
-                uma visão moderna do Direito. Nossa missão é oferecer segurança
-                jurídica através de um atendimento próximo, ético e tecnicamente
-                impecável.
+                O escritório Elilon Lopes Advogados nasceu da união de advogados
+                experientes com uma visão moderna do Direito. Nossa missão é
+                oferecer segurança jurídica através de um atendimento próximo,
+                ético e tecnicamente impecável.
               </p>
               <p className="text-neutral-600 mb-8 leading-relaxed">
                 Entendemos que cada caso é único e exige uma estratégia sob
@@ -89,7 +89,7 @@ export const Home: React.FC = () => {
               <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-gold-500"></div>
               <img
                 src="/images/quem-somos-nos.jpg"
-                alt="Equipe ELADV"
+                alt="Equipe Elilon Lopes Advogados"
                 className="w-full h-auto shadow-2xl"
               />
               <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-gold-500"></div>

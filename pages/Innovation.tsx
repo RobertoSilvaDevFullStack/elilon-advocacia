@@ -29,9 +29,9 @@ export const Innovation: React.FC = () => {
             />
             <p className="text-neutral-600 text-lg leading-relaxed mb-6">
               O direito não é mais estático. Em um mundo cada vez mais digital e
-              complexo, a advocacia precisa evoluir. No ELADV, integramos
-              inteligência de dados, automação e design para oferecer serviços
-              jurídicos mais ágeis, transparentes e assertivos.
+              complexo, a advocacia precisa evoluir. No Elilon Lopes Advogados,
+              integramos inteligência de dados, automação e design para oferecer
+              serviços jurídicos mais ágeis, transparentes e assertivos.
             </p>
             <p className="text-neutral-600 mb-6">
               Rompemos com o tradicionalismo ineficiente para focar no que

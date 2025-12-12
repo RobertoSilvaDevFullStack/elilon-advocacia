@@ -28,10 +28,11 @@ export const Solutions: React.FC = () => {
             centered
           />
           <p className="text-neutral-600 text-lg leading-relaxed mt-6">
-            No ELADV, não vendemos apenas horas de trabalho; entregamos
-            soluções. Nossa metodologia é focada em compreender profundamente o
-            negócio do cliente para oferecer estratégias jurídicas que gerem
-            valor real, seja na mitigação de riscos ou na recuperação de ativos.
+            No Elilon Lopes Advogados, não vendemos apenas horas de trabalho;
+            entregamos soluções. Nossa metodologia é focada em compreender
+            profundamente o negócio do cliente para oferecer estratégias
+            jurídicas que gerem valor real, seja na mitigação de riscos ou na
+            recuperação de ativos.
           </p>
         </div>
       </section>

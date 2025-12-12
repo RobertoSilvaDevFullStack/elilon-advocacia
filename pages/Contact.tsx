@@ -9,7 +9,7 @@ export const Contact: React.FC = () => {
     <Layout>
       <SEO
         title="Fale Conosco"
-        description="Entre em contato com o ELADV. Estamos prontos para atender sua demanda jurídica."
+        description="Entre em contato com o Elilon Lopes Advogados. Estamos prontos para atender sua demanda jurídica."
       />
       <Hero
         title="Fale Conosco"
@@ -73,8 +73,12 @@ export const Contact: React.FC = () => {
                     <h4 className="font-serif text-lg font-bold mb-1">
                       E-mail
                     </h4>
-                    <p className="text-neutral-600">contato@eladv.com.br</p>
-                    <p className="text-neutral-600">juridico@eladv.com.br</p>
+                    <p className="text-neutral-600">
+                      contato@Elilon Lopes Advogados.com.br
+                    </p>
+                    <p className="text-neutral-600">
+                      juridico@Elilon Lopes Advogados.com.br
+                    </p>
                   </div>
                 </div>
               </div>
