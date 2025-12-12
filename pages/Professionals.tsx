@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle } from "../components/Components";
 import { PROFESSIONALS, LOCATIONS, ROLES, AREAS } from "../constants";
 import { Linkedin, Mail, Phone } from "lucide-react";
 
 export const Professionals: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
@@ -138,8 +139,8 @@ export const Professionals: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProfessionals.length > 0 ? (
               filteredProfessionals.map((prof) => (
-                <Link
-                  to={`/profissionais/${prof.id}`}
+                <div
+                  onClick={() => navigate(`/profissionais/${prof.id}`)}
                   key={prof.id}
                   className="bg-white group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-full md:h-64 overflow-hidden cursor-pointer"
                 >
@@ -165,25 +166,28 @@ export const Professionals: React.FC = () => {
                     <div className="flex space-x-3 mt-auto">
                       <a
                         href={`mailto:${prof.email}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-neutral-400 hover:text-gold-600"
                       >
                         <Mail size={16} />
                       </a>
                       <a
                         href={`tel:${prof.phone}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-neutral-400 hover:text-gold-600"
                       >
                         <Phone size={16} />
                       </a>
                       <a
                         href={prof.linkedin}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-neutral-400 hover:text-gold-600"
                       >
                         <Linkedin size={16} />
                       </a>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))
             ) : (
               <div className="col-span-full text-center py-20 text-neutral-500">
