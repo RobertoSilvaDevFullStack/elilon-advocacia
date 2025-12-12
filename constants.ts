@@ -46,6 +46,13 @@ export const AREAS: AreaOfPractice[] = [
     description: "Suporte jurídico para o setor rural.",
     image: "/images/direito-imobiliario.jpg",
   },
+  {
+    id: 5,
+    title: "Direito Tributário",
+    slug: "tributario",
+    description: "Suporte jurídico para o setor rural.",
+    image: "/images/direito-tributario.jpg",
+  },
 ];
 
 export const PROFESSIONALS: Professional[] = [
