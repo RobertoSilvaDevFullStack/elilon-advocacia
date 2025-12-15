@@ -179,7 +179,7 @@ export const Hero: React.FC<{
       <div className="absolute inset-0 z-0 opacity-50">
         <img src={image} alt={title} className="w-full h-full object-cover" />
       </div>
-      <div className="container relative z-10 px-4 text-center text-white">
+      <div className="container relative z-10 px-4 text-center text-white pt-20 md:pt-0">
         <span className="block text-accent-400 font-bold uppercase tracking-[0.3em] mb-4 text-sm md:text-base animate-fade-in-up">
           {subtitle}
         </span>

@@ -11,7 +11,7 @@ import { About } from "./pages/About";
 import { Professionals } from "./pages/Professionals";
 import { Solutions } from "./pages/Solutions";
 import { Innovation } from "./pages/Innovation";
-import { Awards } from "./pages/Awards";
+import { Testimonials } from "./pages/Testimonials";
 import { ProfessionalDetail } from "./pages/ProfessionalDetail";
 import { Areas } from "./pages/Areas";
 import { Blog } from "./pages/Blog";
@@ -46,7 +46,7 @@ const App: React.FC = () => {
           <Route path="/sobre" element={<About />} />
           <Route path="/sobre/entrega" element={<Solutions />} />
           <Route path="/sobre/inovacao" element={<Innovation />} />
-          <Route path="/sobre/premios" element={<Awards />} />
+          <Route path="/sobre/depoimentos" element={<Testimonials />} />
 
           <Route path="/profissionais" element={<Professionals />} />
           <Route path="/profissionais/:id" element={<ProfessionalDetail />} />

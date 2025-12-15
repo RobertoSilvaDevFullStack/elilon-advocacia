@@ -42,11 +42,9 @@ export const Contact: React.FC = () => {
                       Escritório Central
                     </h4>
                     <p className="text-neutral-600">
-                      Av. Mestra Fininha, 1234, Jardim São Luiz
+                      Rua Engenheiro João Antônio Pimenta, 155, Centro
                     </p>
-                    <p className="text-neutral-600">
-                      Montes Claros - MG, 39400-000
-                    </p>
+                    <p className="text-neutral-600">Montes Claros - MG</p>
                   </div>
                 </div>
 
@@ -58,7 +56,7 @@ export const Contact: React.FC = () => {
                     <h4 className="font-headline text-lg font-bold mb-1">
                       Telefone
                     </h4>
-                    <p className="text-neutral-600">(38) 3222-0000</p>
+                    <p className="text-neutral-600">(38) 2200-1615</p>
                     <p className="text-neutral-500 text-sm">
                       Seg a Sex, das 8h às 18h
                     </p>

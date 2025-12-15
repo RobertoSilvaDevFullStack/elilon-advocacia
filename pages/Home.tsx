@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
@@ -8,6 +8,43 @@ import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
 import { BrazilMap } from "../components/BrazilMap";
 
 export const Home: React.FC = () => {
+  const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
+  const [currentBlogIndex, setCurrentBlogIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 756);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Auto-rotate areas carousel
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const interval = setInterval(() => {
+      setCurrentAreaIndex((prev) => (prev + 1) % 3);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isMobile]);
+
+  // Auto-rotate blog carousel
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const interval = setInterval(() => {
+      setCurrentBlogIndex((prev) => (prev + 1) % 3);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isMobile]);
   return (
     <Layout>
       <SEO
@@ -129,7 +166,61 @@ export const Home: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Mobile: Carousel */}
+          <div className="md:hidden relative h-80 overflow-hidden">
+            {AREAS.slice(0, 3).map((area, index) => (
+              <div
+                key={area.id}
+                className={`absolute inset-0 transition-all duration-500 ${
+                  index === currentAreaIndex
+                    ? "opacity-100 translate-x-0 z-10"
+                    : index < currentAreaIndex
+                    ? "opacity-0 -translate-x-full z-0"
+                    : "opacity-0 translate-x-full z-0"
+                }`}
+              >
+                <Link
+                  to={`/areas`}
+                  className="block relative h-80 overflow-hidden cursor-pointer group"
+                >
+                  <div className="absolute inset-0 bg-neutral-900 group-hover:bg-accent-900 transition-colors duration-500">
+                    <img
+                      src={area.image}
+                      alt={area.title}
+                      className="w-full h-full object-cover opacity-40 group-hover:opacity-20 transition-opacity duration-500"
+                    />
+                  </div>
+                  <div className="absolute inset-0 p-8 flex flex-col justify-end border-2 border-neutral-800 group-hover:border-accent-500 transition-colors duration-300 m-2 group-hover:shadow-lg group-hover:shadow-accent-500/30">
+                    <h3 className="text-2xl font-headline text-white mb-2">
+                      {area.title}
+                    </h3>
+                    <div className="w-8 h-0.5 bg-accent-500 mb-4 group-hover:w-16 transition-all duration-300" />
+                    <p className="text-neutral-300 text-sm">
+                      {area.description}
+                    </p>
+                  </div>
+                </Link>
+              </div>
+            ))}
+            {/* Carousel Indicators */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentAreaIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentAreaIndex
+                      ? "bg-accent-500 w-8"
+                      : "bg-white/50"
+                  }`}
+                  aria-label={`Slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
             {AREAS.slice(0, 3).map((area) => (
               <Link
                 to={`/areas`}
@@ -166,7 +257,94 @@ export const Home: React.FC = () => {
             subtitle="Atualizações"
             centered
           />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          {/* Mobile: Blog Carousel */}
+          <div className="md:hidden relative mt-12">
+            <div className="relative h-96 overflow-hidden">
+              {BLOG_POSTS.sort((a, b) => {
+                const months: { [key: string]: number } = {
+                  Jan: 0,
+                  Fev: 1,
+                  Mar: 2,
+                  Abr: 3,
+                  Mai: 4,
+                  Jun: 5,
+                  Jul: 6,
+                  Ago: 7,
+                  Set: 8,
+                  Out: 9,
+                  Nov: 10,
+                  Dez: 11,
+                };
+                const parseDate = (dateStr: string) => {
+                  const parts = dateStr.split(" ");
+                  if (parts.length !== 3) return 0;
+                  const day = parseInt(parts[0], 10);
+                  const month = months[parts[1]];
+                  const year = parseInt(parts[2], 10);
+                  return new Date(year, month, day).getTime();
+                };
+                return parseDate(b.date) - parseDate(a.date);
+              })
+                .slice(0, 3)
+                .map((post, index) => (
+                  <div
+                    key={post.id}
+                    className={`absolute inset-0 transition-all duration-500 ${
+                      index === currentBlogIndex
+                        ? "opacity-100 translate-x-0 z-10"
+                        : index < currentBlogIndex
+                        ? "opacity-0 -translate-x-full z-0"
+                        : "opacity-0 translate-x-full z-0"
+                    }`}
+                  >
+                    <Link
+                      to={`/blog/${post.slug}`}
+                      className="block h-full group bg-white hover:shadow-xl transition-shadow duration-300"
+                    >
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={post.image}
+                          alt={post.title}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="p-6">
+                        <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
+                          {post.category}
+                        </span>
+                        <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
+                          {post.title}
+                        </h3>
+                        <p className="text-neutral-500 text-sm mb-4">
+                          {post.summary}
+                        </p>
+                        <span className="text-xs text-neutral-400">
+                          {post.date}
+                        </span>
+                      </div>
+                    </Link>
+                  </div>
+                ))}
+            </div>
+            {/* Blog Carousel Indicators */}
+            <div className="flex justify-center gap-2 mt-4">
+              {[0, 1, 2].map((index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentBlogIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentBlogIndex
+                      ? "bg-accent-500 w-8"
+                      : "bg-neutral-400"
+                  }`}
+                  aria-label={`Blog slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Blog Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             {BLOG_POSTS.sort((a, b) => {
               const months: { [key: string]: number } = {
                 Jan: 0,

@@ -241,14 +241,14 @@ const Footer: React.FC = () => {
             <li className="flex items-start gap-3">
               <MapPin className="text-accent-500 mt-1 min-w-[16px]" size={16} />
               <span>
-                Av. Mestra Fininha, 1234
+                Rua Engenheiro João Antônio Pimenta, 155, Centro
                 <br />
                 Montes Claros - MG
               </span>
             </li>
             <li className="flex items-center gap-3">
               <Phone className="text-accent-500 min-w-[16px]" size={16} />
-              <span>(38) 3222-0000</span>
+              <span>(38) 2200-1615</span>
             </li>
             <li className="flex items-center gap-3">
               <MessageCircle
