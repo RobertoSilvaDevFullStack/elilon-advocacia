@@ -72,11 +72,45 @@ export const ContactForm: React.FC<{ source?: string }> = ({
   source = "General",
 }) => {
   const [submitted, setSubmitted] = React.useState(false);
+  const [error, setError] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real app, this would post to an API
-    setTimeout(() => setSubmitted(true), 1000);
+    setLoading(true);
+    setError("");
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      city: formData.get("city"),
+      area: formData.get("area"),
+      message: formData.get("message"),
+      source,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/api/leads", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao enviar mensagem");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError("Erro ao enviar mensagem. Por favor, tente novamente.");
+      console.error("Error submitting form:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -100,16 +134,23 @@ export const ContactForm: React.FC<{ source?: string }> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="bg-red-50 border border-red-200 p-4 text-red-700 text-sm rounded">
+          {error}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
           required
           type="text"
+          name="name"
           placeholder="Nome Completo"
           className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
         <input
           required
           type="email"
+          name="email"
           placeholder="E-mail"
           className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
@@ -118,16 +159,21 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         <input
           required
           type="tel"
+          name="phone"
           placeholder="Telefone / WhatsApp"
           className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
         <input
           type="text"
+          name="city"
           placeholder="Cidade / Estado"
           className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
       </div>
-      <select className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors text-neutral-500">
+      <select
+        name="area"
+        className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors text-neutral-500"
+      >
         <option value="">Área de Interesse</option>
         {AREAS.map((area) => (
           <option key={area.id} value={area.slug}>
@@ -138,6 +184,7 @@ export const ContactForm: React.FC<{ source?: string }> = ({
       </select>
       <textarea
         required
+        name="message"
         rows={4}
         placeholder="Mensagem"
         className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
@@ -151,8 +198,8 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         </label>
       </div>
 
-      <Button type="submit" className="w-full md:w-auto">
-        Enviar Mensagem
+      <Button type="submit" className="w-full md:w-auto" disabled={loading}>
+        {loading ? "Enviando..." : "Enviar Mensagem"}
       </Button>
     </form>
   );
@@ -164,7 +211,15 @@ export const Hero: React.FC<{
   image: string;
   children?: React.ReactNode;
   height?: "full" | "large" | "small";
-}> = ({ title, subtitle, image, children, height = "large" }) => {
+  imagePosition?: string;
+}> = ({
+  title,
+  subtitle,
+  image,
+  children,
+  height = "large",
+  imagePosition = "center",
+}) => {
   const heightClass =
     height === "full"
       ? "h-screen"
@@ -177,7 +232,12 @@ export const Hero: React.FC<{
       className={`relative ${heightClass} flex items-center justify-center overflow-hidden bg-neutral-900`}
     >
       <div className="absolute inset-0 z-0 opacity-50">
-        <img src={image} alt={title} className="w-full h-full object-cover" />
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover"
+          style={{ objectPosition: imagePosition }}
+        />
       </div>
       <div className="container relative z-10 px-4 text-center text-white pt-20 md:pt-0">
         <span className="block text-accent-400 font-bold uppercase tracking-[0.3em] mb-4 text-sm md:text-base animate-fade-in-up">

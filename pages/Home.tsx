@@ -6,6 +6,7 @@ import { SEO } from "../components/SEO";
 import { AREAS, BLOG_POSTS } from "../constants";
 import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
 import { BrazilMap } from "../components/BrazilMap";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Home: React.FC = () => {
   const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
@@ -97,40 +98,44 @@ export const Home: React.FC = () => {
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <div>
-              <SectionTitle
-                title="Tradição e Modernidade"
-                subtitle="Sobre Nós"
-              />
-              <p className="text-neutral-600 mb-6 leading-relaxed">
-                O escritório Elilon Lopes Advogados nasceu da união de advogados
-                experientes com uma visão moderna do Direito. Nossa missão é
-                oferecer segurança jurídica através de um atendimento próximo,
-                ético e tecnicamente impecável.
-              </p>
-              <p className="text-neutral-600 mb-8 leading-relaxed">
-                Entendemos que cada caso é único e exige uma estratégia sob
-                medida. Combinamos o rigor da advocacia tradicional com a
-                agilidade necessária para o mundo corporativo atual.
-              </p>
-              <Link to="/sobre">
-                <Button
-                  variant="text"
-                  className="text-accent-600 border-b border-accent-600 pb-1 rounded-none px-0"
-                >
-                  Saiba Mais
-                </Button>
-              </Link>
-            </div>
-            <div className="relative">
-              <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-accent-500 opacity-80"></div>
-              <img
-                src="/images/quem-somos-nos.jpg"
-                alt="Equipe Elilon Lopes Advogados"
-                className="w-full h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
-              />
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-accent-500 opacity-80"></div>
-            </div>
+            <ScrollReveal animation="fade-in-up">
+              <div>
+                <SectionTitle
+                  title="Tradição e Modernidade"
+                  subtitle="Sobre Nós"
+                />
+                <p className="text-neutral-600 mb-6 leading-relaxed">
+                  O escritório Elilon Lopes Advogados nasceu da união de
+                  advogados experientes com uma visão moderna do Direito. Nossa
+                  missão é oferecer segurança jurídica através de um atendimento
+                  próximo, ético e tecnicamente impecável.
+                </p>
+                <p className="text-neutral-600 mb-8 leading-relaxed">
+                  Entendemos que cada caso é único e exige uma estratégia sob
+                  medida. Combinamos o rigor da advocacia tradicional com a
+                  agilidade necessária para o mundo corporativo atual.
+                </p>
+                <Link to="/sobre">
+                  <Button
+                    variant="text"
+                    className="text-accent-600 border-b border-accent-600 pb-1 rounded-none px-0"
+                  >
+                    Saiba Mais
+                  </Button>
+                </Link>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal animation="slide-in-right" delay="delay-200">
+              <div className="relative">
+                <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-accent-500 opacity-80"></div>
+                <img
+                  src="/images/elilon-sorrindo.JPG"
+                  alt="Equipe Elilon Lopes Advogados"
+                  className="w-full max-w-2xl h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
+                />
+                <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-accent-500 opacity-80"></div>
+              </div>
+            </ScrollReveal>
           </div>
         </div>
       </section>

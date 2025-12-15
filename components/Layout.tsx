@@ -163,19 +163,25 @@ const Footer: React.FC = () => {
           </p>
           <div className="flex space-x-4">
             <a
-              href="#"
+              href="https://www.linkedin.com/in/elilon-lopes"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-neutral-200 hover:text-accent-400 transition-colors"
             >
               <Linkedin size={20} />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/elilonlopesadvogados"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-neutral-400 hover:text-gold-400 transition-colors"
             >
               <Instagram size={20} />
             </a>
             <a
-              href="#"
+              href="https://www.facebook.com/elilon.lopesdeabreu"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-neutral-400 hover:text-gold-400 transition-colors"
             >
               <Facebook size={20} />
@@ -255,7 +261,7 @@ const Footer: React.FC = () => {
                 className="text-accent-500 min-w-[16px]"
                 size={16}
               />
-              <span>contato@Elilon Lopes Advogados.com.br</span>
+              <span>juridico@elilonlopesadvogados.com.br</span>
             </li>
           </ul>
         </div>

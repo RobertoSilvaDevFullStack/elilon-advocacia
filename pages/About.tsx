@@ -3,6 +3,7 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const About: React.FC = () => {
   return (
@@ -14,59 +15,64 @@ export const About: React.FC = () => {
       <Hero
         title="Sobre Nós"
         subtitle="Quem Somos"
-        image="https://picsum.photos/1920/1080?grayscale&random=99"
+        image="/images/elilon-lopes.JPG"
         height="small"
+        imagePosition="center 30%"
       />
 
       {/* Introduction */}
       <section className="py-20">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12">
-          <div>
-            <h3 className="text-2xl font-headline mb-4">
-              Excelência desde a fundação
-            </h3>
-            <p className="text-neutral-600 mb-4">
-              O escritório Elilon Lopes Advogados foi construído sobre pilares
-              sólidos de transparência, Lealdade, simplicidade e humildade.
-              Esses valores, aliados a um profundo respeito pela experiência do
-              cliente, fazem com que cada caso seja tratado com dedicação
-              máxima. Nosso diferencial está no compromisso de oferecer uma
-              jornada única e personalizada, com foco no que realmente importa:
-              as necessidades e os resultados para nossos clientes.
-            </p>
-            <p className="text-neutral-600 mb-4">
-              Nosso propósito não é apenas solucionamos problemas jurídicos —
-              construímos relacionamentos baseados na confiança, no respeito e
-              na busca por justiça.
-            </p>
-            <p className="text-neutral-600">
-              Seja qual for o desafio legal que você enfrente, conte com a
-              experiência, o profissionalismo e os valores humanos que guiam o
-              trabalho de Elilon Lopes Advogados.
-            </p>
-          </div>
-          <div className="bg-neutral-100 p-8 border-l-4 border-accent-500">
-            <h4 className="font-bold uppercase tracking-wider mb-4 text-sm">
-              Nossa Visão
-            </h4>
-            <p className="mb-6 text-neutral-600 italic">
-              "Ser reconhecido como um escritório de advocacia de excelência,
-              que transforma desafios legais em soluções inovadoras,
-              proporcionando segurança e confiança a nossos clientes em todas as
-              etapas do processo jurídico."
-            </p>
+          <ScrollReveal animation="fade-in-up">
+            <div>
+              <h3 className="text-2xl font-headline mb-4">
+                Excelência desde a fundação
+              </h3>
+              <p className="text-neutral-600 mb-4">
+                O escritório Elilon Lopes Advogados foi construído sobre pilares
+                sólidos de transparência, Lealdade, simplicidade e humildade.
+                Esses valores, aliados a um profundo respeito pela experiência
+                do cliente, fazem com que cada caso seja tratado com dedicação
+                máxima. Nosso diferencial está no compromisso de oferecer uma
+                jornada única e personalizada, com foco no que realmente
+                importa: as necessidades e os resultados para nossos clientes.
+              </p>
+              <p className="text-neutral-600 mb-4">
+                Nosso propósito não é apenas solucionamos problemas jurídicos —
+                construímos relacionamentos baseados na confiança, no respeito e
+                na busca por justiça.
+              </p>
+              <p className="text-neutral-600">
+                Seja qual for o desafio legal que você enfrente, conte com a
+                experiência, o profissionalismo e os valores humanos que guiam o
+                trabalho de Elilon Lopes Advogados.
+              </p>
+            </div>
+          </ScrollReveal>
+          <ScrollReveal animation="slide-in-right" delay="delay-200">
+            <div className="bg-neutral-100 p-8 border-l-4 border-accent-500">
+              <h4 className="font-bold uppercase tracking-wider mb-4 text-sm">
+                Nossa Visão
+              </h4>
+              <p className="mb-6 text-neutral-600 italic">
+                "Ser reconhecido como um escritório de advocacia de excelência,
+                que transforma desafios legais em soluções inovadoras,
+                proporcionando segurança e confiança a nossos clientes em todas
+                as etapas do processo jurídico."
+              </p>
 
-            <h4 className="font-bold uppercase tracking-wider mb-4 text-sm">
-              Nossa Missão
-            </h4>
-            <p className="text-neutral-600 italic">
-              "Oferecer serviços jurídicos de alta qualidade, com ética e
-              transparência, visando sempre a defesa dos interesses de nossos
-              clientes. Comprometemo-nos a entender suas necessidades e a
-              oferecer soluções personalizadas, com dedicação e
-              profissionalismo."
-            </p>
-          </div>
+              <h4 className="font-bold uppercase tracking-wider mb-4 text-sm">
+                Nossa Missão
+              </h4>
+              <p className="text-neutral-600 italic">
+                "Oferecer serviços jurídicos de alta qualidade, com ética e
+                transparência, visando sempre a defesa dos interesses de nossos
+                clientes. Comprometemo-nos a entender suas necessidades e a
+                oferecer soluções personalizadas, com dedicação e
+                profissionalismo."
+              </p>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 

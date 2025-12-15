@@ -14,7 +14,7 @@ export const Contact: React.FC = () => {
       <Hero
         title="Fale Conosco"
         subtitle="Contato"
-        image="https://picsum.photos/1920/1080?grayscale&random=66"
+        image="/images/fale.jpg"
         height="small"
       />
 
@@ -72,10 +72,7 @@ export const Contact: React.FC = () => {
                       E-mail
                     </h4>
                     <p className="text-neutral-600">
-                      contato@Elilon Lopes Advogados.com.br
-                    </p>
-                    <p className="text-neutral-600">
-                      juridico@Elilon Lopes Advogados.com.br
+                      juridico@elilonlopesadvogados.com.br
                     </p>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { Hero, SectionTitle } from "../components/Components";
 import { PROFESSIONALS, LOCATIONS, ROLES, AREAS } from "../constants";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { SEO } from "../components/SEO";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Professionals: React.FC = () => {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export const Professionals: React.FC = () => {
       <Hero
         title="Nossos Profissionais"
         subtitle="Equipe"
-        image="/images/quem-somos-nos.jpg"
+        image="/images/elilon-imac.JPG"
         height="small"
       />
 
@@ -143,56 +144,66 @@ export const Professionals: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProfessionals.length > 0 ? (
-              filteredProfessionals.map((prof) => (
-                <div
-                  onClick={() => navigate(`/profissionais/${prof.id}`)}
+              filteredProfessionals.map((prof, index) => (
+                <ScrollReveal
+                  animation="fade-in-up"
+                  delay={
+                    `delay-${Math.min((index % 3) * 100 + 100, 500)}` as any
+                  }
                   key={prof.id}
-                  className="bg-white group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-full md:h-64 overflow-hidden cursor-pointer"
                 >
-                  <div className="md:w-5/12 h-64 md:h-full relative overflow-hidden">
-                    <img
-                      src={prof.image}
-                      alt={prof.name}
-                      className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
-                    />
-                  </div>
-                  <div className="p-6 flex flex-col justify-center w-full md:w-7/12">
-                    <span className="text-xs uppercase font-bold text-accent-600 mb-1">
-                      {prof.role}
-                    </span>
-                    <h3 className="text-xl font-headline font-bold text-neutral-900 mb-2">
-                      {prof.name}
-                    </h3>
-                    <p className="text-sm text-neutral-500 mb-4">{prof.area}</p>
-                    <p className="text-xs text-neutral-400 mb-6">
-                      {prof.location}
-                    </p>
+                  <div
+                    onClick={() => navigate(`/profissionais/${prof.id}`)}
+                    key={prof.id}
+                    className="bg-white group hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row h-full md:h-64 overflow-hidden cursor-pointer"
+                  >
+                    <div className="md:w-5/12 h-64 md:h-full relative overflow-hidden">
+                      <img
+                        src={prof.image}
+                        alt={prof.name}
+                        className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500"
+                      />
+                    </div>
+                    <div className="p-6 flex flex-col justify-center w-full md:w-7/12">
+                      <span className="text-xs uppercase font-bold text-accent-600 mb-1">
+                        {prof.role}
+                      </span>
+                      <h3 className="text-xl font-headline font-bold text-neutral-900 mb-2">
+                        {prof.name}
+                      </h3>
+                      <p className="text-sm text-neutral-500 mb-4">
+                        {prof.area}
+                      </p>
+                      <p className="text-xs text-neutral-400 mb-6">
+                        {prof.location}
+                      </p>
 
-                    <div className="flex space-x-3 mt-auto">
-                      <a
-                        href={`mailto:${prof.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-accent-600"
-                      >
-                        <Mail size={16} />
-                      </a>
-                      <a
-                        href={`tel:${prof.phone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-accent-600"
-                      >
-                        <Phone size={16} />
-                      </a>
-                      <a
-                        href={prof.linkedin}
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-accent-600"
-                      >
-                        <Linkedin size={16} />
-                      </a>
+                      <div className="flex space-x-3 mt-auto">
+                        <a
+                          href={`mailto:${prof.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-neutral-400 hover:text-accent-600"
+                        >
+                          <Mail size={16} />
+                        </a>
+                        <a
+                          href={`tel:${prof.phone}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-neutral-400 hover:text-accent-600"
+                        >
+                          <Phone size={16} />
+                        </a>
+                        <a
+                          href={prof.linkedin}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-neutral-400 hover:text-accent-600"
+                        >
+                          <Linkedin size={16} />
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </ScrollReveal>
               ))
             ) : (
               <div className="col-span-full text-center py-20 text-neutral-500">

@@ -4,6 +4,7 @@ import { Hero } from "../components/Components";
 import { BLOG_POSTS } from "../constants";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Blog: React.FC = () => {
   return (
@@ -15,49 +16,55 @@ export const Blog: React.FC = () => {
       <Hero
         title="Notícias e Insights"
         subtitle="Blog"
-        image="https://picsum.photos/1920/1080?grayscale&random=77"
+        image="/images/blog.jpg"
         height="small"
       />
 
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {BLOG_POSTS.map((post) => (
-              <article
+            {BLOG_POSTS.map((post, index) => (
+              <ScrollReveal
+                animation="fade-in-up"
+                delay={`delay-${Math.min((index % 3) * 100 + 100, 500)}` as any}
                 key={post.id}
-                className="flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300"
               >
-                <Link
-                  to={`/blog/${post.slug}`}
-                  className="h-60 overflow-hidden relative group"
+                <article
+                  key={post.id}
+                  className="flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300"
                 >
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute top-4 left-4 bg-accent-600 text-white text-xs font-bold uppercase px-3 py-1">
-                    {post.category}
-                  </div>
-                </Link>
-                <div className="p-8 flex flex-col flex-grow">
-                  <span className="text-sm text-neutral-400 mb-2">
-                    {post.date}
-                  </span>
-                  <h3 className="text-2xl font-headline font-bold mb-3 hover:text-accent-600 transition-colors">
-                    <Link to={`/blog/${post.slug}`}>{post.title}</Link>
-                  </h3>
-                  <p className="text-neutral-600 mb-6 flex-grow">
-                    {post.summary}
-                  </p>
                   <Link
                     to={`/blog/${post.slug}`}
-                    className="text-accent-600 font-bold uppercase text-xs tracking-wider hover:text-neutral-900 transition-colors"
+                    className="h-60 overflow-hidden relative group"
                   >
-                    Ler artigo completo
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute top-4 left-4 bg-accent-600 text-white text-xs font-bold uppercase px-3 py-1">
+                      {post.category}
+                    </div>
                   </Link>
-                </div>
-              </article>
+                  <div className="p-8 flex flex-col flex-grow">
+                    <span className="text-sm text-neutral-400 mb-2">
+                      {post.date}
+                    </span>
+                    <h3 className="text-2xl font-headline font-bold mb-3 hover:text-accent-600 transition-colors">
+                      <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+                    </h3>
+                    <p className="text-neutral-600 mb-6 flex-grow">
+                      {post.summary}
+                    </p>
+                    <Link
+                      to={`/blog/${post.slug}`}
+                      className="text-accent-600 font-bold uppercase text-xs tracking-wider hover:text-neutral-900 transition-colors"
+                    >
+                      Ler artigo completo
+                    </Link>
+                  </div>
+                </article>
+              </ScrollReveal>
             ))}
 
             {/* Pagination Placeholder */}
@@ -79,7 +86,9 @@ export const Blog: React.FC = () => {
       {/* Newsletter Block */}
       <section className="py-20 bg-neutral-100">
         <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h3 className="text-3xl font-headline mb-4">Assine nossa Newsletter</h3>
+          <h3 className="text-3xl font-headline mb-4">
+            Assine nossa Newsletter
+          </h3>
           <p className="text-neutral-600 mb-8">
             Receba análises jurídicas exclusivas diretamente em seu e-mail.
           </p>

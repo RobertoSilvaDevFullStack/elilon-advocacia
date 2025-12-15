@@ -3,6 +3,7 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle } from "../components/Components";
 import { SEO } from "../components/SEO";
 import { Star, Quote } from "lucide-react";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Testimonials: React.FC = () => {
   // Load Elfsight script
@@ -77,7 +78,7 @@ export const Testimonials: React.FC = () => {
       <Hero
         title="Depoimentos"
         subtitle="O Que Dizem Nossos Clientes"
-        image="https://picsum.photos/1920/1080?grayscale&random=77"
+        image="/images/aperto-mao.jpg"
         height="small"
       />
 
@@ -114,40 +115,48 @@ export const Testimonials: React.FC = () => {
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 max-w-6xl mx-auto">
-            {staticTestimonials.map((testimonial) => (
-              <div
+            {staticTestimonials.map((testimonial, index) => (
+              <ScrollReveal
+                animation="fade-in-up"
+                delay={`delay-${Math.min((index % 3) * 100 + 100, 500)}` as any}
                 key={testimonial.id}
-                className="bg-neutral-50 p-6 rounded-lg border-l-4 border-accent-500 hover:shadow-xl transition-shadow duration-300 relative"
               >
-                <Quote
-                  className="absolute top-4 right-4 text-accent-200"
-                  size={40}
-                />
+                <div
+                  key={testimonial.id}
+                  className="bg-neutral-50 p-6 rounded-lg border-l-4 border-accent-500 hover:shadow-xl transition-shadow duration-300 relative"
+                >
+                  <Quote
+                    className="absolute top-4 right-4 text-accent-200 rotate-180"
+                    size={40}
+                  />
 
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={18}
-                      className="fill-yellow-400 text-yellow-400"
-                    />
-                  ))}
-                </div>
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={18}
+                        className="fill-yellow-400 text-yellow-400"
+                      />
+                    ))}
+                  </div>
 
-                <p className="text-neutral-700 mb-6 italic leading-relaxed">
-                  "{testimonial.comment}"
-                </p>
-
-                <div className="border-t border-neutral-200 pt-4">
-                  <p className="font-headline font-bold text-neutral-900">
-                    {testimonial.name}
+                  <p className="text-neutral-700 mb-6 italic leading-relaxed">
+                    "{testimonial.comment}"
                   </p>
-                  <p className="text-sm text-neutral-500">{testimonial.role}</p>
-                  <p className="text-xs text-neutral-400 mt-1">
-                    {testimonial.date}
-                  </p>
+
+                  <div className="border-t border-neutral-200 pt-4">
+                    <p className="font-headline font-bold text-neutral-900">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      {testimonial.role}
+                    </p>
+                    <p className="text-xs text-neutral-400 mt-1">
+                      {testimonial.date}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>

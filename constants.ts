@@ -184,7 +184,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "20 Out 2023",
     category: "Trabalhista",
     slug: "compliance-trabalhista",
-    image: "https://picsum.photos/800/400?grayscale&random=20",
+    image: "/images/compliance-trabalhista.jpg",
     author: "Dr. Elilon Lopes",
     content: `
       <p>O <strong>Compliance Trabalhista</strong> tornou-se uma ferramenta indispensável para empresas que buscam sustentabilidade e segurança jurídica. Muito além de apenas cumprir a lei, um programa de compliance eficaz estabelece uma cultura ética e transparente no ambiente corporativo.</p>
@@ -220,7 +220,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "15 Out 2023",
     category: "Tributário",
     slug: "reforma-tributaria",
-    image: "https://picsum.photos/800/400?grayscale&random=21",
+    image: "/images/reforma-tributaria.jpg",
     author: "Equipe Elilon Advocacia",
     content: `
       <p>A <strong>Reforma Tributária</strong> aprovada recentemente traz mudanças estruturais significativas para o sistema brasileiro, com impactos diretos sobre todos os setores da economia, especialmente o de serviços.</p>
@@ -246,7 +246,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "10 Out 2023",
     category: "Agronegócio",
     slug: "lgpd-agro",
-    image: "https://picsum.photos/800/400?grayscale&random=22",
+    image: "/images/lgpd-agro.jpg",
     author: "Dra. Nadine",
     content: `
       <p>A <strong>Lei Geral de Proteção de Dados (LGPD)</strong> não se restringe às empresas de tecnologia ou grandes centros urbanos. O Agronegócio, cada vez mais tecnológico e conectado, lida com um volume imenso de dados que precisam de proteção.</p>

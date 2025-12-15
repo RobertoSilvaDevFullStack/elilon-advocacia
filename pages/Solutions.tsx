@@ -4,6 +4,7 @@ import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
 import { CheckCircle, Clock, Shield, Target } from "lucide-react";
 import { SEO } from "../components/SEO";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Solutions: React.FC = () => {
   return (
@@ -15,26 +16,28 @@ export const Solutions: React.FC = () => {
       <Hero
         title="Entrega e Soluções"
         subtitle="Nossa Metodologia"
-        image="https://picsum.photos/1920/1080?grayscale&random=100"
+        image="/images/elilon-trabalhando.JPG"
         height="small"
       />
 
       {/* Introduction */}
       <section className="py-20">
-        <div className="container mx-auto px-4 text-center max-w-4xl">
-          <SectionTitle
-            title="Advocacia de Resultado"
-            subtitle="Como Atuamos"
-            centered
-          />
-          <p className="text-neutral-600 text-lg leading-relaxed mt-6">
-            No Elilon Lopes Advogados, não vendemos apenas horas de trabalho;
-            entregamos soluções. Nossa metodologia é focada em compreender
-            profundamente o negócio do cliente para oferecer estratégias
-            jurídicas que gerem valor real, seja na mitigação de riscos ou na
-            recuperação de ativos.
-          </p>
-        </div>
+        <ScrollReveal animation="fade-in-up">
+          <div className="container mx-auto px-4 text-center max-w-4xl">
+            <SectionTitle
+              title="Advocacia de Resultado"
+              subtitle="Como Atuamos"
+              centered
+            />
+            <p className="text-neutral-600 text-lg leading-relaxed mt-6">
+              No Elilon Lopes Advogados, não vendemos apenas horas de trabalho;
+              entregamos soluções. Nossa metodologia é focada em compreender
+              profundamente o negócio do cliente para oferecer estratégias
+              jurídicas que gerem valor real, seja na mitigação de riscos ou na
+              recuperação de ativos.
+            </p>
+          </div>
+        </ScrollReveal>
       </section>
 
       {/* Methodology Steps */}
@@ -83,9 +86,9 @@ export const Solutions: React.FC = () => {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <img
-              src="https://picsum.photos/800/600?grayscale&random=101"
+              src="/images/elilon-firmina-focados.JPG"
               alt="Reunião estratégica"
-              className="rounded shadow-xl"
+              className="rounded shadow-xl w-full max-w-md h-auto object-contain mx-auto md:mx-0"
             />
           </div>
           <div>

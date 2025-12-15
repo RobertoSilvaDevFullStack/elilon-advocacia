@@ -96,6 +96,15 @@ export const Admin: React.FC = () => {
       });
       const dataUsers = await resUsers.json();
       setUsers(Array.isArray(dataUsers) ? dataUsers : []);
+
+      // Leads
+      const resLeads = await fetch("http://localhost:5000/api/leads", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const dataLeads = await resLeads.json();
+      if (dataLeads.success) {
+        setLeads(dataLeads.leads || []);
+      }
     } catch (e) {
       console.error("Error fetching admin data", e);
     }
@@ -405,15 +414,46 @@ export const Admin: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="text-sm text-neutral-700">
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="p-8 text-center text-neutral-500"
-                      >
-                        Os leads serão carregados do banco de dados na próxima
-                        etapa de integração.
-                      </td>
-                    </tr>
+                    {leads.length > 0 ? (
+                      leads.map((lead) => (
+                        <tr
+                          key={lead.id}
+                          className="border-b last:border-0 hover:bg-neutral-50"
+                        >
+                          <td className="p-4 font-bold">{lead.name}</td>
+                          <td className="p-4">
+                            <div className="text-xs">
+                              <div>{lead.email}</div>
+                              <div className="text-neutral-500">
+                                {lead.phone}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4 hidden md:table-cell">
+                            {lead.area || "Não especificado"}
+                          </td>
+                          <td className="p-4">
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded font-bold">
+                              {lead.status || "Novo"}
+                            </span>
+                          </td>
+                          <td className="p-4 hidden md:table-cell text-xs text-neutral-500">
+                            {new Date(lead.created_at).toLocaleDateString(
+                              "pt-BR"
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="p-8 text-center text-neutral-500"
+                        >
+                          Nenhum lead cadastrado ainda.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

@@ -4,6 +4,7 @@ import { Hero, SectionTitle, Button } from "../components/Components";
 import { Link } from "react-router-dom";
 import { Cpu, Scale, Brain, Lightbulb } from "lucide-react";
 import { SEO } from "../components/SEO";
+import { ScrollReveal } from "../components/ScrollReveal";
 
 export const Innovation: React.FC = () => {
   return (
@@ -15,41 +16,50 @@ export const Innovation: React.FC = () => {
       <Hero
         title="Pensamento Inovador"
         subtitle="Advocacia 4.0"
-        image="https://picsum.photos/1920/1080?grayscale&blur=2&random=105"
+        image="/images/escritorio-entrada.jpg"
         height="small"
       />
 
       {/* Introduction */}
       <section className="py-20">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <SectionTitle
-              title="O Futuro do Direito"
-              subtitle="Tecnologia & Estratégia"
-            />
-            <p className="text-neutral-600 text-lg leading-relaxed mb-6">
-              O direito não é mais estático. Em um mundo cada vez mais digital e
-              complexo, a advocacia precisa evoluir. No Elilon Lopes Advogados,
-              integramos inteligência de dados, automação e design para oferecer
-              serviços jurídicos mais ágeis, transparentes e assertivos.
-            </p>
-            <p className="text-neutral-600 mb-6">
-              Rompemos com o tradicionalismo ineficiente para focar no que
-              realmente importa: a solução inteligente dos problemas de nossos
-              clientes.
-            </p>
-          </div>
-          <div className="relative">
-            <img
-              src="https://picsum.photos/800/800?grayscale&random=106"
-              alt="Tecnologia Jurídica"
-              className="rounded shadow-2xl"
-            />
-            <div className="absolute -bottom-6 -left-6 bg-accent-600 text-white p-6 rounded shadow-lg hidden md:block">
-              <p className="font-headline font-bold text-xl">Mais Agilidade</p>
-              <p className="text-sm opacity-90">Decisões baseadas em dados.</p>
+          <ScrollReveal animation="fade-in-up">
+            <div>
+              <SectionTitle
+                title="O Futuro do Direito"
+                subtitle="Tecnologia & Estratégia"
+              />
+              <p className="text-neutral-600 text-lg leading-relaxed mb-6">
+                O direito não é mais estático. Em um mundo cada vez mais digital
+                e complexo, a advocacia precisa evoluir. No Elilon Lopes
+                Advogados, integramos inteligência de dados, automação e design
+                para oferecer serviços jurídicos mais ágeis, transparentes e
+                assertivos.
+              </p>
+              <p className="text-neutral-600 mb-6">
+                Rompemos com o tradicionalismo ineficiente para focar no que
+                realmente importa: a solução inteligente dos problemas de nossos
+                clientes.
+              </p>
             </div>
-          </div>
+          </ScrollReveal>
+          <ScrollReveal animation="slide-in-right" delay="delay-200">
+            <div className="relative">
+              <img
+                src="/images/atendimento.jpg"
+                alt="Tecnologia Jurídica"
+                className="rounded shadow-2xl"
+              />
+              <div className="absolute -bottom-6 -left-6 bg-accent-600 text-white p-6 rounded shadow-lg hidden md:block">
+                <p className="font-headline font-bold text-xl">
+                  Mais Agilidade
+                </p>
+                <p className="text-sm opacity-90">
+                  Decisões baseadas em dados.
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
 
