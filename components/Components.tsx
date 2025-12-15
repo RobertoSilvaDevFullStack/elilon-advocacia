@@ -17,10 +17,11 @@ export const Button: React.FC<ButtonProps> = ({
     "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group";
 
   const variants = {
-    primary: "bg-gold-600 text-white hover:bg-neutral-900",
+    primary:
+      "bg-gradient-to-r from-accent-600 to-accent-500 text-white hover:shadow-lg hover:shadow-accent-500/50 hover:scale-105 transform",
     outline:
-      "border border-gold-600 text-gold-600 hover:bg-gold-600 hover:text-white",
-    text: "text-neutral-900 hover:text-gold-600 p-0",
+      "border-2 border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white hover:shadow-lg",
+    text: "text-neutral-900 hover:text-accent-600 p-0",
   };
 
   return (
@@ -46,20 +47,24 @@ export const SectionTitle: React.FC<{
     {subtitle && (
       <span
         className={`block text-xs font-bold uppercase tracking-[0.2em] mb-3 ${
-          light ? "text-gold-400" : "text-gold-600"
+          light ? "text-accent-400" : "text-accent-600"
         }`}
       >
         {subtitle}
       </span>
     )}
     <h2
-      className={`text-3xl md:text-4xl font-serif font-medium ${
+      className={`text-3xl md:text-4xl font-headline font-medium ${
         light ? "text-white" : "text-neutral-900"
       }`}
     >
       {title}
     </h2>
-    <div className={`h-1 w-20 bg-gold-500 mt-4 ${centered ? "mx-auto" : ""}`} />
+    <div
+      className={`h-1 w-20 bg-gradient-to-r from-accent-500 to-navy-500 mt-4 ${
+        centered ? "mx-auto" : ""
+      }`}
+    />
   </div>
 );
 
@@ -77,7 +82,7 @@ export const ContactForm: React.FC<{ source?: string }> = ({
   if (submitted) {
     return (
       <div className="bg-green-50 border border-green-200 p-8 text-center rounded-sm">
-        <h3 className="text-xl font-serif text-green-800 mb-2">
+        <h3 className="text-xl font-headline text-green-800 mb-2">
           Mensagem Enviada!
         </h3>
         <p className="text-green-700">
@@ -100,13 +105,13 @@ export const ContactForm: React.FC<{ source?: string }> = ({
           required
           type="text"
           placeholder="Nome Completo"
-          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors"
+          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
         <input
           required
           type="email"
           placeholder="E-mail"
-          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors"
+          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -114,15 +119,15 @@ export const ContactForm: React.FC<{ source?: string }> = ({
           required
           type="tel"
           placeholder="Telefone / WhatsApp"
-          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors"
+          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
         <input
           type="text"
           placeholder="Cidade / Estado"
-          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors"
+          className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
         />
       </div>
-      <select className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors text-neutral-500">
+      <select className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors text-neutral-500">
         <option value="">Área de Interesse</option>
         {AREAS.map((area) => (
           <option key={area.id} value={area.slug}>
@@ -135,7 +140,7 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         required
         rows={4}
         placeholder="Mensagem"
-        className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-gold-500 transition-colors"
+        className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
       ></textarea>
 
       <div className="flex items-start gap-2">
@@ -175,10 +180,10 @@ export const Hero: React.FC<{
         <img src={image} alt={title} className="w-full h-full object-cover" />
       </div>
       <div className="container relative z-10 px-4 text-center text-white">
-        <span className="block text-gold-400 font-bold uppercase tracking-[0.3em] mb-4 text-sm md:text-base animate-fade-in-up">
+        <span className="block text-accent-400 font-bold uppercase tracking-[0.3em] mb-4 text-sm md:text-base animate-fade-in-up">
           {subtitle}
         </span>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-medium leading-tight mb-8 max-w-4xl mx-auto">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-headline font-medium leading-tight mb-8 max-w-4xl mx-auto">
           {title}
         </h1>
         {children}

@@ -13,7 +13,7 @@ export const PrivacyPolicy: React.FC = () => {
 
       <div className="bg-neutral-900 text-white py-20">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-center">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold text-center">
             Política de Privacidade
           </h1>
         </div>
@@ -27,14 +27,14 @@ export const PrivacyPolicy: React.FC = () => {
             em relação a qualquer informação sua que possamos coletar no site{" "}
             <a
               href="https://eladv.com.br"
-              className="text-gold-600 hover:underline"
+              className="text-accent-600 hover:underline"
             >
               Elilon Lopes Advogados
             </a>
             , e outros sites que possuímos e operamos.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             1. Informações que coletamos
           </h2>
           <p>
@@ -44,7 +44,7 @@ export const PrivacyPolicy: React.FC = () => {
             por que estamos coletando e como será usado.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             2. Uso de Dados
           </h2>
           <p>
@@ -55,7 +55,7 @@ export const PrivacyPolicy: React.FC = () => {
             autorizados.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             3. Compartilhamento de Dados
           </h2>
           <p>
@@ -63,7 +63,7 @@ export const PrivacyPolicy: React.FC = () => {
             ou com terceiros, exceto quando exigido por lei.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             4. Cookies
           </h2>
           <p>
@@ -73,7 +73,7 @@ export const PrivacyPolicy: React.FC = () => {
             alguns dos serviços desejados.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             5. Compromisso do Usuário
           </h2>
           <p>

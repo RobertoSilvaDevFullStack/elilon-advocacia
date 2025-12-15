@@ -29,20 +29,20 @@ export const BlogPostDetail: React.FC = () => {
           className="w-full h-full object-cover grayscale brightness-50"
         />
         <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center px-4">
-          <span className="bg-gold-600 text-white text-xs font-bold uppercase px-4 py-1 mb-6 tracking-widest rounded-sm">
+          <span className="bg-accent-600 text-white text-xs font-bold uppercase px-4 py-1 mb-6 tracking-widest rounded-sm">
             {post.category}
           </span>
-          <h1 className="text-4xl md:text-6xl font-serif font-bold text-white max-w-4xl leading-tight mb-8">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold text-white max-w-4xl leading-tight mb-8">
             {post.title}
           </h1>
           <div className="flex items-center space-x-6 text-neutral-300 text-sm font-medium">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-gold-500" />
+              <Calendar size={16} className="text-accent-500" />
               <span>{post.date}</span>
             </div>
             {post.author && (
               <div className="flex items-center gap-2">
-                <User size={16} className="text-gold-500" />
+                <User size={16} className="text-accent-500" />
                 <span>{post.author}</span>
               </div>
             )}
@@ -56,13 +56,13 @@ export const BlogPostDetail: React.FC = () => {
           <main className="lg:w-2/3">
             <Link
               to="/blog"
-              className="inline-flex items-center text-neutral-500 hover:text-gold-600 mb-8 transition-colors text-sm font-semibold uppercase tracking-wide"
+              className="inline-flex items-center text-neutral-500 hover:text-accent-600 mb-8 transition-colors text-sm font-semibold uppercase tracking-wide"
             >
               <ChevronLeft size={16} className="mr-1" />
               Voltar para o blog
             </Link>
 
-            <article className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:font-bold prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-a:text-gold-600 hover:prose-a:text-gold-500">
+            <article className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-a:text-accent-600 hover:prose-a:text-accent-500">
               <div dangerouslySetInnerHTML={{ __html: post.content || "" }} />
             </article>
 
@@ -86,7 +86,7 @@ export const BlogPostDetail: React.FC = () => {
                       alert("Link copiado para a área de transferência!");
                     }
                   }}
-                  className="p-2 bg-neutral-100 rounded-full hover:bg-gold-100 text-neutral-600 hover:text-gold-600 transition-colors"
+                  className="p-2 bg-neutral-100 rounded-full hover:bg-accent-100 text-neutral-600 hover:text-accent-600 transition-colors"
                   title="Compartilhar"
                 >
                   <Share2 size={20} />
@@ -99,7 +99,7 @@ export const BlogPostDetail: React.FC = () => {
           <aside className="lg:w-1/3 space-y-12">
             {/* Newsletter Widget */}
             <div className="bg-neutral-900 text-white p-8 rounded-sm text-center">
-              <h3 className="font-serif text-xl font-bold mb-4 text-gold-500">
+              <h3 className="font-headline text-xl font-bold mb-4 text-accent-500">
                 Newsletter
               </h3>
               <p className="text-sm text-neutral-400 mb-6">
@@ -108,16 +108,16 @@ export const BlogPostDetail: React.FC = () => {
               <input
                 type="email"
                 placeholder="Seu e-mail"
-                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 mb-4 focus:outline-none focus:border-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 mb-4 focus:outline-none focus:border-accent-500 text-sm"
               />
-              <button className="w-full bg-gold-600 hover:bg-gold-500 text-white font-bold uppercase text-xs tracking-widest py-3 transition-colors">
+              <button className="w-full bg-accent-600 hover:bg-accent-500 text-white font-bold uppercase text-xs tracking-widest py-3 transition-colors">
                 Inscrever-se
               </button>
             </div>
 
             {/* Read More */}
             <div>
-              <h3 className="font-serif text-xl font-bold mb-6 border-b-2 border-gold-200 pb-2 inline-block">
+              <h3 className="font-headline text-xl font-bold mb-6 border-b-2 border-accent-200 pb-2 inline-block">
                 Leia Também
               </h3>
               <div className="space-y-6">
@@ -134,10 +134,10 @@ export const BlogPostDetail: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <span className="text-xs text-gold-600 font-bold uppercase mb-1 block">
+                      <span className="text-xs text-accent-600 font-bold uppercase mb-1 block">
                         {related.category}
                       </span>
-                      <h4 className="font-serif font-bold text-neutral-900 leading-tight group-hover:text-gold-600 transition-colors">
+                      <h4 className="font-headline font-bold text-neutral-900 leading-tight group-hover:text-accent-600 transition-colors">
                         <Link to={`/blog/${related.slug}`}>
                           {related.title}
                         </Link>

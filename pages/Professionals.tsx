@@ -69,12 +69,12 @@ export const Professionals: React.FC = () => {
             <input
               type="text"
               placeholder="Buscar por nome..."
-              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-gold-500"
+              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-accent-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <select
-              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-gold-500"
+              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-accent-500"
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
             >
@@ -86,7 +86,7 @@ export const Professionals: React.FC = () => {
               ))}
             </select>
             <select
-              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-gold-500"
+              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-accent-500"
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
             >
@@ -98,7 +98,7 @@ export const Professionals: React.FC = () => {
               ))}
             </select>
             <select
-              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-gold-500"
+              className="bg-neutral-50 border border-neutral-300 px-4 py-2 rounded-none focus:outline-none focus:border-accent-500"
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
@@ -116,8 +116,8 @@ export const Professionals: React.FC = () => {
               onClick={() => setSelectedLetter("")}
               className={`px-2 py-1 ${
                 selectedLetter === ""
-                  ? "font-bold text-gold-600"
-                  : "text-neutral-500 hover:text-gold-600"
+                  ? "font-bold text-accent-600"
+                  : "text-neutral-500 hover:text-accent-600"
               }`}
             >
               TODOS
@@ -128,7 +128,7 @@ export const Professionals: React.FC = () => {
                 onClick={() => setSelectedLetter(letter)}
                 className={`px-2 py-1 ${
                   selectedLetter === letter
-                    ? "font-bold text-gold-600 border-b border-gold-600"
+                    ? "font-bold text-accent-600 border-b border-accent-600"
                     : "text-neutral-400 hover:text-neutral-900"
                 }`}
               >
@@ -157,10 +157,10 @@ export const Professionals: React.FC = () => {
                     />
                   </div>
                   <div className="p-6 flex flex-col justify-center w-full md:w-7/12">
-                    <span className="text-xs uppercase font-bold text-gold-600 mb-1">
+                    <span className="text-xs uppercase font-bold text-accent-600 mb-1">
                       {prof.role}
                     </span>
-                    <h3 className="text-xl font-serif font-bold text-neutral-900 mb-2">
+                    <h3 className="text-xl font-headline font-bold text-neutral-900 mb-2">
                       {prof.name}
                     </h3>
                     <p className="text-sm text-neutral-500 mb-4">{prof.area}</p>
@@ -172,21 +172,21 @@ export const Professionals: React.FC = () => {
                       <a
                         href={`mailto:${prof.email}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-gold-600"
+                        className="text-neutral-400 hover:text-accent-600"
                       >
                         <Mail size={16} />
                       </a>
                       <a
                         href={`tel:${prof.phone}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-gold-600"
+                        className="text-neutral-400 hover:text-accent-600"
                       >
                         <Phone size={16} />
                       </a>
                       <a
                         href={prof.linkedin}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-neutral-400 hover:text-gold-600"
+                        className="text-neutral-400 hover:text-accent-600"
                       >
                         <Linkedin size={16} />
                       </a>

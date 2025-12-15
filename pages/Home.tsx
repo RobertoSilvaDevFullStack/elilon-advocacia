@@ -30,10 +30,10 @@ export const Home: React.FC = () => {
         </div>
 
         <div className="container relative z-10 px-4 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-serif mb-6 leading-tight">
+          <h1 className="text-5xl md:text-7xl font-headline mb-6 leading-tight">
             Defesa Estratégica.
             <br />
-            <span className="text-gold-400 italic">Resultados Reais.</span>
+            <span className="text-accent-400 italic">Resultados Reais.</span>
           </h1>
           <p className="text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto mb-10 font-light">
             Soluções jurídicas personalizadas para empresas e indivíduos que
@@ -47,7 +47,7 @@ export const Home: React.FC = () => {
             <Link to="/areas">
               <Button
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-neutral-900"
+                className="border-white text-white hover:bg-accent-600 hover:border-accent-600"
               >
                 Conheça Nossas Áreas
               </Button>
@@ -79,20 +79,20 @@ export const Home: React.FC = () => {
               <Link to="/sobre">
                 <Button
                   variant="text"
-                  className="text-gold-600 border-b border-gold-600 pb-1 rounded-none px-0"
+                  className="text-accent-600 border-b border-accent-600 pb-1 rounded-none px-0"
                 >
                   Saiba Mais
                 </Button>
               </Link>
             </div>
             <div className="relative">
-              <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-gold-500"></div>
+              <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-accent-500 opacity-80"></div>
               <img
                 src="/images/quem-somos-nos.jpg"
                 alt="Equipe Elilon Lopes Advogados"
-                className="w-full h-auto shadow-2xl"
+                className="w-full h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
               />
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-gold-500"></div>
+              <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-accent-500 opacity-80"></div>
             </div>
           </div>
         </div>
@@ -123,7 +123,7 @@ export const Home: React.FC = () => {
             <SectionTitle title="Expertise Jurídica" subtitle="Atuação" />
             <Link
               to="/areas"
-              className="hidden md:flex items-center text-gold-600 hover:text-neutral-900 transition-colors font-medium"
+              className="hidden md:flex items-center text-accent-600 hover:text-neutral-900 transition-colors font-medium"
             >
               Ver todas as áreas <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
@@ -136,18 +136,18 @@ export const Home: React.FC = () => {
                 key={area.id}
                 className="group relative h-80 overflow-hidden cursor-pointer"
               >
-                <div className="absolute inset-0 bg-neutral-900 group-hover:bg-gold-900 transition-colors duration-500">
+                <div className="absolute inset-0 bg-neutral-900 group-hover:bg-accent-900 transition-colors duration-500">
                   <img
                     src={area.image}
                     alt={area.title}
                     className="w-full h-full object-cover opacity-40 group-hover:opacity-20 transition-opacity duration-500"
                   />
                 </div>
-                <div className="absolute inset-0 p-8 flex flex-col justify-end border border-neutral-800 group-hover:border-gold-500 transition-colors duration-300 m-2">
-                  <h3 className="text-2xl font-serif text-white mb-2">
+                <div className="absolute inset-0 p-8 flex flex-col justify-end border-2 border-neutral-800 group-hover:border-accent-500 transition-colors duration-300 m-2 group-hover:shadow-lg group-hover:shadow-accent-500/30">
+                  <h3 className="text-2xl font-headline text-white mb-2">
                     {area.title}
                   </h3>
-                  <div className="w-8 h-0.5 bg-gold-500 mb-4 group-hover:w-16 transition-all duration-300" />
+                  <div className="w-8 h-0.5 bg-accent-500 mb-4 group-hover:w-16 transition-all duration-300" />
                   <p className="text-neutral-300 text-sm opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                     {area.description}
                   </p>
@@ -209,10 +209,10 @@ export const Home: React.FC = () => {
                     />
                   </div>
                   <div className="p-6">
-                    <span className="text-xs font-bold text-gold-600 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
                       {post.category}
                     </span>
-                    <h3 className="text-xl font-serif font-bold mt-2 mb-3 group-hover:text-gold-600 transition-colors">
+                    <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
                       {post.title}
                     </h3>
                     <p className="text-neutral-500 text-sm mb-4">
@@ -229,9 +229,10 @@ export const Home: React.FC = () => {
       </section>
 
       {/* CTA Final */}
-      <section className="py-24 bg-neutral-900 text-white text-center">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-serif mb-6">
+      <section className="py-24 bg-gradient-to-br from-navy-700 via-navy-600 to-navy-500 text-white text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-accent-500/10 to-transparent"></div>
+        <div className="container mx-auto px-4 relative z-10">
+          <h2 className="text-4xl md:text-5xl font-headline mb-6">
             Precisa de orientação jurídica?
           </h2>
           <p className="text-lg text-neutral-400 mb-10 max-w-2xl mx-auto">
@@ -241,7 +242,7 @@ export const Home: React.FC = () => {
           <Link to="/contato">
             <Button
               variant="outline"
-              className="border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-white"
+              className="border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white"
             >
               Fale com um Especialista
             </Button>

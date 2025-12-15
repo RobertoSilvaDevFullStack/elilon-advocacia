@@ -34,11 +34,11 @@ export const Contact: React.FC = () => {
 
               <div className="space-y-8">
                 <div className="flex items-start gap-4">
-                  <div className="bg-gold-100 p-3 rounded-full text-gold-600">
+                  <div className="bg-accent-100 p-3 rounded-full text-accent-600">
                     <MapPin size={24} />
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg font-bold mb-1">
+                    <h4 className="font-headline text-lg font-bold mb-1">
                       Escritório Central
                     </h4>
                     <p className="text-neutral-600">
@@ -51,11 +51,11 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="bg-gold-100 p-3 rounded-full text-gold-600">
+                  <div className="bg-accent-100 p-3 rounded-full text-accent-600">
                     <Phone size={24} />
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg font-bold mb-1">
+                    <h4 className="font-headline text-lg font-bold mb-1">
                       Telefone
                     </h4>
                     <p className="text-neutral-600">(38) 3222-0000</p>
@@ -66,11 +66,11 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="bg-gold-100 p-3 rounded-full text-gold-600">
+                  <div className="bg-accent-100 p-3 rounded-full text-accent-600">
                     <Mail size={24} />
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg font-bold mb-1">
+                    <h4 className="font-headline text-lg font-bold mb-1">
                       E-mail
                     </h4>
                     <p className="text-neutral-600">
@@ -99,8 +99,8 @@ export const Contact: React.FC = () => {
             </div>
 
             {/* Form Side */}
-            <div className="bg-white p-8 md:p-12 shadow-2xl border-t-4 border-gold-500">
-              <h3 className="text-2xl font-serif font-bold mb-6">
+            <div className="bg-white p-8 md:p-12 shadow-2xl border-t-4 border-accent-500">
+              <h3 className="text-2xl font-headline font-bold mb-6">
                 Envie uma mensagem
               </h3>
               <ContactForm source="Page Contact" />

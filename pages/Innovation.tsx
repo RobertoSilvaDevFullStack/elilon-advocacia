@@ -45,8 +45,8 @@ export const Innovation: React.FC = () => {
               alt="Tecnologia Jurídica"
               className="rounded shadow-2xl"
             />
-            <div className="absolute -bottom-6 -left-6 bg-gold-600 text-white p-6 rounded shadow-lg hidden md:block">
-              <p className="font-serif font-bold text-xl">Mais Agilidade</p>
+            <div className="absolute -bottom-6 -left-6 bg-accent-600 text-white p-6 rounded shadow-lg hidden md:block">
+              <p className="font-headline font-bold text-xl">Mais Agilidade</p>
               <p className="text-sm opacity-90">Decisões baseadas em dados.</p>
             </div>
           </div>
@@ -66,27 +66,27 @@ export const Innovation: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-8 mt-12">
             {[
               {
-                icon: <Scale size={48} className="text-gold-500" />,
+                icon: <Scale size={48} className="text-accent-500" />,
                 title: "Legal Design",
                 desc: "Transformamos documentos jurídicos complexos em materiais visuais e compreensíveis, facilitando a comunicação com juízes e clientes.",
               },
               {
-                icon: <Cpu size={48} className="text-gold-500" />,
+                icon: <Cpu size={48} className="text-accent-500" />,
                 title: "Jurimetria",
                 desc: "Utilizamos análise estatística de dados para prever tendências de decisões judiciais e definir as melhores estratégias processuais.",
               },
               {
-                icon: <Brain size={48} className="text-gold-500" />,
+                icon: <Brain size={48} className="text-accent-500" />,
                 title: "Gestão Digital",
                 desc: "Acompanhamento de processos em tempo real, com fluxos de trabalho automatizados que garantem zero perda de prazos.",
               },
             ].map((item, index) => (
               <div
                 key={index}
-                className="bg-neutral-800 p-8 rounded border border-neutral-700 hover:border-gold-500 transition-colors"
+                className="bg-neutral-800 p-8 rounded border border-neutral-700 hover:border-accent-500 transition-colors"
               >
                 <div className="mb-6">{item.icon}</div>
-                <h3 className="text-xl font-serif font-bold mb-3 text-gold-400">
+                <h3 className="text-xl font-headline font-bold mb-3 text-accent-400">
                   {item.title}
                 </h3>
                 <p className="text-neutral-400 leading-relaxed">{item.desc}</p>
@@ -99,8 +99,8 @@ export const Innovation: React.FC = () => {
       {/* CTA */}
       <section className="py-20 bg-neutral-100 text-center">
         <div className="container mx-auto px-4 max-w-3xl">
-          <Lightbulb size={64} className="text-gold-600 mx-auto mb-6" />
-          <h3 className="text-3xl font-serif mb-6 text-neutral-900">
+          <Lightbulb size={64} className="text-accent-600 mx-auto mb-6" />
+          <h3 className="text-3xl font-headline mb-6 text-neutral-900">
             Sua empresa preparada para a era digital?
           </h3>
           <p className="text-neutral-600 mb-8">

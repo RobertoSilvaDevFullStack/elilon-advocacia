@@ -127,7 +127,7 @@ export const Admin: React.FC = () => {
       <div className="min-h-screen bg-neutral-900 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded shadow-2xl max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-serif font-bold text-neutral-900">
+            <h1 className="text-3xl font-headline font-bold text-neutral-900">
               Elilon Lopes Advogados
             </h1>
             <p className="text-neutral-500 uppercase tracking-widest text-xs mt-2">
@@ -140,21 +140,21 @@ export const Admin: React.FC = () => {
               placeholder="Usuário"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full border border-neutral-300 p-3 rounded focus:border-gold-500 outline-none"
+              className="w-full border border-neutral-300 p-3 rounded focus:border-accent-500 outline-none"
             />
             <input
               type="password"
               placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-neutral-300 p-3 rounded focus:border-gold-500 outline-none"
+              className="w-full border border-neutral-300 p-3 rounded focus:border-accent-500 outline-none"
             />
             <Button className="w-full justify-center">Entrar</Button>
           </form>
           <div className="mt-4 text-center">
             <Link
               to="/"
-              className="text-sm text-neutral-500 hover:text-gold-600"
+              className="text-sm text-neutral-500 hover:text-accent-600"
             >
               Voltar ao site
             </Link>
@@ -169,7 +169,7 @@ export const Admin: React.FC = () => {
       onClick={() => setCurrentView(view)}
       className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition-colors ${
         currentView === view
-          ? "bg-gold-600 text-white"
+          ? "bg-accent-600 text-white"
           : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
       }`}
     >
@@ -183,7 +183,7 @@ export const Admin: React.FC = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col">
         <div className="p-6 border-b border-neutral-800">
-          <span className="text-lg font-serif font-bold tracking-widest text-gold-500">
+          <span className="text-lg font-headline font-bold tracking-widest text-accent-500">
             ADMIN
           </span>
         </div>
@@ -213,7 +213,7 @@ export const Admin: React.FC = () => {
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header */}
         <header className="md:hidden bg-neutral-900 text-white p-4 flex justify-between items-center shadow-md">
-          <span className="font-serif font-bold text-gold-500">ADMIN</span>
+          <span className="font-headline font-bold text-accent-500">ADMIN</span>
           <button onClick={() => setIsLoggedIn(false)}>
             <LogOut size={20} />
           </button>
@@ -234,7 +234,7 @@ export const Admin: React.FC = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-gold-500">
+                  <div className="bg-white p-6 rounded shadow border-l-4 border-accent-500">
                     <h3 className="text-neutral-500 text-sm uppercase font-bold">
                       Leads Totais
                     </h3>
@@ -272,7 +272,7 @@ export const Admin: React.FC = () => {
 
               <div className="bg-white p-8 rounded shadow mb-8">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                  <Settings size={24} className="text-gold-600" />
+                  <Settings size={24} className="text-accent-600" />
                   Conexão de Dados (Leads)
                 </h3>
                 <p className="text-neutral-600 mb-6 text-sm">
@@ -291,7 +291,7 @@ export const Admin: React.FC = () => {
                     value={webhookUrl}
                     onChange={(e) => setWebhookUrl(e.target.value)}
                     placeholder="https://api.crm.com/webhook/..."
-                    className="w-full border border-neutral-300 p-3 rounded focus:border-gold-500 outline-none"
+                    className="w-full border border-neutral-300 p-3 rounded focus:border-accent-500 outline-none"
                   />
                 </div>
                 <Button onClick={saveWebhook}>Salvar Configuração</Button>
@@ -454,7 +454,7 @@ export const Admin: React.FC = () => {
                       </div>
                     </div>
                     <div className="p-4 flex-1 flex flex-col">
-                      <span className="text-xs font-bold text-gold-600 uppercase mb-2">
+                      <span className="text-xs font-bold text-accent-600 uppercase mb-2">
                         {post.category}
                       </span>
                       <h3 className="font-bold text-lg mb-2 leading-tight">
@@ -513,7 +513,7 @@ export const Admin: React.FC = () => {
                     </div>
                     <div className="p-4">
                       <h3 className="font-bold text-lg">{prof.name}</h3>
-                      <p className="text-gold-600 text-xs uppercase font-bold mb-1">
+                      <p className="text-accent-600 text-xs uppercase font-bold mb-1">
                         {prof.role}
                       </p>
                       <p className="text-neutral-500 text-xs mb-4">

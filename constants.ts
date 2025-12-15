@@ -6,7 +6,6 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Sobre Nós",
     path: "/sobre",
     subItems: [
-      { label: "Somos Elilon Lopes Advogados", path: "/sobre/somos" },
       { label: "Entrega e Soluções", path: "/sobre/entrega" },
       { label: "Pensamento Inovador", path: "/sobre/inovacao" },
       { label: "Prêmios", path: "/sobre/premios" },

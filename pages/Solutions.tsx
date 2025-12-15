@@ -43,22 +43,22 @@ export const Solutions: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-8">
             {[
               {
-                icon: <Target size={40} className="text-gold-500" />,
+                icon: <Target size={40} className="text-accent-500" />,
                 title: "Diagnóstico",
                 desc: "Análise profunda do cenário e identificação dos riscos e oportunidades.",
               },
               {
-                icon: <Shield size={40} className="text-gold-500" />,
+                icon: <Shield size={40} className="text-accent-500" />,
                 title: "Estratégia",
                 desc: "Desenvolvimento de teses jurídicas personalizadas para o caso.",
               },
               {
-                icon: <Clock size={40} className="text-gold-500" />,
+                icon: <Clock size={40} className="text-accent-500" />,
                 title: "Execução",
                 desc: "Atuação ágil e proativa nos tribunais e órgãos administrativos.",
               },
               {
-                icon: <CheckCircle size={40} className="text-gold-500" />,
+                icon: <CheckCircle size={40} className="text-accent-500" />,
                 title: "Resultado",
                 desc: "Foco total na entrega da melhor solução possível para o cliente.",
               },
@@ -68,7 +68,7 @@ export const Solutions: React.FC = () => {
                 className="bg-white p-8 rounded shadow-sm hover:shadow-md transition-shadow text-center"
               >
                 <div className="flex justify-center mb-6">{item.icon}</div>
-                <h3 className="text-xl font-serif font-bold mb-3">
+                <h3 className="text-xl font-headline font-bold mb-3">
                   {item.title}
                 </h3>
                 <p className="text-neutral-600 text-sm">{item.desc}</p>
@@ -89,7 +89,7 @@ export const Solutions: React.FC = () => {
             />
           </div>
           <div>
-            <h3 className="text-3xl font-serif mb-6">
+            <h3 className="text-3xl font-headline mb-6">
               Por que somos diferentes?
             </h3>
             <ul className="space-y-4">
@@ -100,7 +100,7 @@ export const Solutions: React.FC = () => {
                 "Visão de negócios aplicada ao direito.",
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-gold-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-accent-500 rounded-full"></div>
                   <span className="text-neutral-700">{item}</span>
                 </li>
               ))}

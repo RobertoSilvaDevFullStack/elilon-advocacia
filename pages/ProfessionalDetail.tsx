@@ -40,7 +40,7 @@ export const ProfessionalDetail: React.FC = () => {
         <div className="container mx-auto px-4 relative z-10">
           <Link
             to="/profissionais"
-            className="inline-flex items-center text-gold-500 hover:text-gold-400 mb-8 transition-colors"
+            className="inline-flex items-center text-accent-500 hover:text-accent-400 mb-8 transition-colors"
           >
             <ChevronLeft size={20} className="mr-1" />
             Voltar para lista
@@ -48,7 +48,7 @@ export const ProfessionalDetail: React.FC = () => {
 
           <div className="flex flex-col md:flex-row gap-12 items-start">
             <div className="w-full md:w-1/3 max-w-sm mx-auto md:mx-0">
-              <div className="relative rounded-lg overflow-hidden shadow-2xl border-4 border-gold-600/30">
+              <div className="relative rounded-lg overflow-hidden shadow-2xl border-4 border-accent-600/30">
                 <img
                   src={professional.image}
                   alt={professional.name}
@@ -58,10 +58,10 @@ export const ProfessionalDetail: React.FC = () => {
             </div>
 
             <div className="w-full md:w-2/3">
-              <span className="text-gold-500 font-bold tracking-widest uppercase text-sm mb-2 block">
+              <span className="text-accent-500 font-bold tracking-widest uppercase text-sm mb-2 block">
                 {professional.role}
               </span>
-              <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
+              <h1 className="text-4xl md:text-5xl font-headline font-bold mb-4">
                 {professional.name}
               </h1>
               <p className="text-neutral-400 text-lg mb-8">
@@ -73,21 +73,21 @@ export const ProfessionalDetail: React.FC = () => {
                   href={`mailto:${professional.email}`}
                   className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded transition-colors text-sm"
                 >
-                  <Mail size={16} className="text-gold-500" />
+                  <Mail size={16} className="text-accent-500" />
                   {professional.email}
                 </a>
                 <a
                   href={`tel:${professional.phone}`}
                   className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded transition-colors text-sm"
                 >
-                  <Phone size={16} className="text-gold-500" />
+                  <Phone size={16} className="text-accent-500" />
                   {professional.phone}
                 </a>
                 <a
                   href={professional.linkedin}
                   className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded transition-colors text-sm"
                 >
-                  <Linkedin size={16} className="text-gold-500" />
+                  <Linkedin size={16} className="text-accent-500" />
                   LinkedIn
                 </a>
               </div>
@@ -109,12 +109,12 @@ export const ProfessionalDetail: React.FC = () => {
             <div className="space-y-12">
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <Award className="text-gold-600" size={28} />
-                  <h3 className="text-2xl font-serif font-bold text-neutral-900">
+                  <Award className="text-accent-600" size={28} />
+                  <h3 className="text-2xl font-headline font-bold text-neutral-900">
                     Registro Profissional
                   </h3>
                 </div>
-                <div className="bg-neutral-50 p-6 rounded-lg border-l-4 border-gold-500 shadow-sm">
+                <div className="bg-neutral-50 p-6 rounded-lg border-l-4 border-accent-500 shadow-sm">
                   <p className="font-bold text-xl text-neutral-800">
                     {professional.oab || "Consultar"}
                   </p>
@@ -126,8 +126,8 @@ export const ProfessionalDetail: React.FC = () => {
 
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <GraduationCap className="text-gold-600" size={28} />
-                  <h3 className="text-2xl font-serif font-bold text-neutral-900">
+                  <GraduationCap className="text-accent-600" size={28} />
+                  <h3 className="text-2xl font-headline font-bold text-neutral-900">
                     Formação Acadêmica
                   </h3>
                 </div>
@@ -139,7 +139,7 @@ export const ProfessionalDetail: React.FC = () => {
                         key={index}
                         className="flex items-start gap-3 text-neutral-700"
                       >
-                        <div className="w-2 h-2 rounded-full bg-gold-400 mt-2"></div>
+                        <div className="w-2 h-2 rounded-full bg-accent-400 mt-2"></div>
                         <span>{edu}</span>
                       </li>
                     ))
@@ -155,8 +155,8 @@ export const ProfessionalDetail: React.FC = () => {
             {/* Right Column: Specializations */}
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <BookOpen className="text-gold-600" size={28} />
-                <h3 className="text-2xl font-serif font-bold text-neutral-900">
+                <BookOpen className="text-accent-600" size={28} />
+                <h3 className="text-2xl font-headline font-bold text-neutral-900">
                   Especializações
                 </h3>
               </div>
@@ -166,7 +166,7 @@ export const ProfessionalDetail: React.FC = () => {
                   professional.specializations.map((spec, index) => (
                     <div
                       key={index}
-                      className="bg-neutral-50 p-4 rounded hover:bg-neutral-100 transition-colors border border-transparent hover:border-gold-200"
+                      className="bg-neutral-50 p-4 rounded hover:bg-neutral-100 transition-colors border border-transparent hover:border-accent-200"
                     >
                       <p className="font-semibold text-neutral-800">{spec}</p>
                     </div>

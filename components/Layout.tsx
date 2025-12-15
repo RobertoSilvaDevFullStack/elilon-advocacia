@@ -30,19 +30,26 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 bg-gradient-to-r from-neutral-900 to-neutral-800 ${
-        scrolled ? "shadow-md py-2" : "py-4"
+      className={`fixed w-full z-50 transition-all duration-300 bg-gradient-to-r from-[#1A1A1A] via-[#101010] to-[#200A0C] border-b-2 border-[#A1333E]/40 shadow-lg backdrop-blur-sm ${
+        scrolled ? "shadow-xl py-2" : "py-4"
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="flex flex-col items-start leading-tight group">
-          <span className="text-xl font-serif font-bold tracking-widest text-white group-hover:text-gold-400 transition-colors">
-            ELILON LOPES
-          </span>
-          <span className="text-[10px] tracking-[0.3em] text-neutral-300 uppercase group-hover:text-white transition-colors">
-            Advogados
-          </span>
+        <Link to="/" className="flex items-center gap-3 group">
+          <img
+            src="/images/logo-branca.png"
+            alt="Elilon Lopes Advogados Logo"
+            className="h-12 w-auto object-contain"
+          />
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-xl font-headline font-bold tracking-widest text-white group-hover:text-vermelho-400 transition-colors">
+              ELILON LOPES
+            </span>
+            <span className="text-[10px] tracking-[0.3em] text-neutral-100 uppercase group-hover:text-white transition-colors">
+              Advogados
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Menu */}
@@ -52,8 +59,8 @@ const Navbar: React.FC = () => {
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `lg:text-xs xl:text-sm uppercase tracking-wide font-medium transition-colors hover:text-gold-400 whitespace-nowrap flex items-center ${
-                    isActive ? "text-gold-500" : "text-neutral-200"
+                  `lg:text-xs xl:text-sm uppercase tracking-wide font-medium transition-colors hover:text-[#F74747] whitespace-nowrap flex items-center ${
+                    isActive ? "text-[#F51919]" : "text-neutral-100"
                   }`
                 }
               >
@@ -66,12 +73,12 @@ const Navbar: React.FC = () => {
               {/* Submenu */}
               {item.subItems && (
                 <div className="absolute left-0 mt-2 w-48 bg-white shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top pt-2">
-                  <div className="flex flex-col border-t-2 border-gold-400">
+                  <div className="flex flex-col border-t-2 border-vinho-500">
                     {item.subItems.map((sub) => (
                       <Link
                         key={sub.path}
                         to={sub.path}
-                        className="px-4 py-3 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-gold-600 transition-colors"
+                        className="px-4 py-3 text-sm text-neutral-600 hover:bg-neutral-50 hover:text-vinho-600 transition-colors"
                       >
                         {sub.label}
                       </Link>
@@ -83,7 +90,7 @@ const Navbar: React.FC = () => {
           ))}
           <Link
             to="/contato"
-            className="bg-gold-600 text-white px-5 py-2 text-sm uppercase tracking-wider font-semibold hover:bg-gold-500 transition-colors"
+            className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-5 py-2 text-sm uppercase tracking-wider font-semibold hover:shadow-lg hover:shadow-red-500/50 transition-all transform hover:scale-105"
           >
             Fale Conosco
           </Link>
@@ -92,7 +99,7 @@ const Navbar: React.FC = () => {
         {/* Mobile Toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden text-gold-500 z-50 relative"
+          className="lg:hidden text-accent-500 z-50 relative"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} className="text-white" />}
         </button>
@@ -100,7 +107,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 bg-neutral-900 z-40 transform transition-transform duration-300 ${
+        className={`fixed inset-0 bg-preto-500 z-40 transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         } flex flex-col justify-center items-center lg:hidden`}
       >
@@ -108,7 +115,7 @@ const Navbar: React.FC = () => {
           <div key={item.path} className="flex flex-col items-center mb-6">
             <Link
               to={item.path}
-              className="text-white text-xl font-serif mb-2"
+              className="text-white text-xl font-headline mb-2"
               onClick={() => !item.subItems && setIsOpen(false)}
             >
               {item.label}
@@ -136,13 +143,20 @@ const Navbar: React.FC = () => {
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-neutral-900 text-white pt-20 pb-10">
+    <footer className="bg-gradient-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
         {/* Brand */}
         <div>
-          <h2 className="text-3xl font-serif font-bold text-gold-400 mb-6">
-            Elilon Lopes Advogados
-          </h2>
+          <div className="flex items-center gap-3 mb-6">
+            <img
+              src="/images/logo-branca.png"
+              alt="Elilon Lopes Advogados Logo"
+              className="h-12 w-auto object-contain"
+            />
+            <h2 className="text-3xl font-headline font-bold text-vermelho-400">
+              Elilon Lopes Advogados
+            </h2>
+          </div>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Excelência jurídica com foco em resultados. Atuamos com integridade
             e inovação para proteger os interesses de nossos clientes.
@@ -150,7 +164,7 @@ const Footer: React.FC = () => {
           <div className="flex space-x-4">
             <a
               href="#"
-              className="text-neutral-400 hover:text-gold-400 transition-colors"
+              className="text-neutral-200 hover:text-accent-400 transition-colors"
             >
               <Linkedin size={20} />
             </a>
@@ -225,7 +239,7 @@ const Footer: React.FC = () => {
           </h3>
           <ul className="space-y-4 text-sm text-neutral-400">
             <li className="flex items-start gap-3">
-              <MapPin className="text-gold-500 mt-1 min-w-[16px]" size={16} />
+              <MapPin className="text-accent-500 mt-1 min-w-[16px]" size={16} />
               <span>
                 Av. Mestra Fininha, 1234
                 <br />
@@ -233,11 +247,14 @@ const Footer: React.FC = () => {
               </span>
             </li>
             <li className="flex items-center gap-3">
-              <Phone className="text-gold-500 min-w-[16px]" size={16} />
+              <Phone className="text-accent-500 min-w-[16px]" size={16} />
               <span>(38) 3222-0000</span>
             </li>
             <li className="flex items-center gap-3">
-              <MessageCircle className="text-gold-500 min-w-[16px]" size={16} />
+              <MessageCircle
+                className="text-accent-500 min-w-[16px]"
+                size={16}
+              />
               <span>contato@Elilon Lopes Advogados.com.br</span>
             </li>
           </ul>
@@ -255,9 +272,9 @@ const Footer: React.FC = () => {
             <input
               type="email"
               placeholder="Seu e-mail"
-              className="bg-neutral-800 border-none text-white px-4 py-2 text-sm focus:ring-1 focus:ring-gold-500"
+              className="bg-neutral-800 border-none text-white px-4 py-2 text-sm focus:ring-1 focus:ring-accent-500"
             />
-            <button className="bg-gold-600 text-white text-sm uppercase font-semibold py-2 hover:bg-gold-500 transition-colors">
+            <button className="bg-accent-500 text-white text-sm uppercase font-semibold py-2 hover:bg-accent-600 transition-colors">
               Inscrever-se
             </button>
           </form>
@@ -269,17 +286,17 @@ const Footer: React.FC = () => {
           Advogados. Todos os direitos reservados.
         </p>
         <div className="flex space-x-4 mt-4 md:mt-0">
-          <Link to="/privacidade" className="hover:text-gold-400">
+          <Link to="/privacidade" className="hover:text-accent-400">
             Política de Privacidade
           </Link>
-          <Link to="/termos" className="hover:text-gold-400">
+          <Link to="/termos" className="hover:text-accent-400">
             Termos de Uso
           </Link>
           <a
             href="http://robertosilvadevfullstack.cloud/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gold-400"
+            className="hover:text-accent-400"
           >
             Developed by: Roberto Silva
           </a>

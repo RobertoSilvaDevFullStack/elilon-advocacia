@@ -12,7 +12,7 @@ export const TermsOfUse: React.FC = () => {
 
       <div className="bg-neutral-900 text-white py-20">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-center">
+          <h1 className="text-4xl md:text-5xl font-headline font-bold text-center">
             Termos de Uso
           </h1>
         </div>
@@ -20,14 +20,14 @@ export const TermsOfUse: React.FC = () => {
 
       <section className="py-20">
         <div className="container mx-auto px-4 max-w-4xl text-neutral-700 leading-relaxed space-y-6">
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             1. Termos
           </h2>
           <p>
             Ao acessar o site{" "}
             <a
               href="https://eladv.com.br"
-              className="text-gold-600 hover:underline"
+              className="text-accent-600 hover:underline"
             >
               Elilon Lopes Advogados
             </a>
@@ -38,7 +38,7 @@ export const TermsOfUse: React.FC = () => {
             este site.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             2. Uso de Licença
           </h2>
           <p>
@@ -68,7 +68,7 @@ export const TermsOfUse: React.FC = () => {
             </li>
           </ul>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             3. Isenção de responsabilidade
           </h2>
           <p>
@@ -80,7 +80,7 @@ export const TermsOfUse: React.FC = () => {
             violação de propriedade intelectual ou outra violação de direitos.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             4. Limitações
           </h2>
           <p>
@@ -93,7 +93,7 @@ export const TermsOfUse: React.FC = () => {
             notificado oralmente ou por escrito da possibilidade de tais danos.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             5. Precisão dos materiais
           </h2>
           <p>
@@ -105,7 +105,7 @@ export const TermsOfUse: React.FC = () => {
             sem aviso prévio.
           </p>
 
-          <h2 className="text-2xl font-serif font-bold text-neutral-900 mt-8 mb-4">
+          <h2 className="text-2xl font-headline font-bold text-neutral-900 mt-8 mb-4">
             6. Links
           </h2>
           <p>

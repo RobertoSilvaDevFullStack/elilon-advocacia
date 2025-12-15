@@ -12,7 +12,6 @@ import { Professionals } from "./pages/Professionals";
 import { Solutions } from "./pages/Solutions";
 import { Innovation } from "./pages/Innovation";
 import { Awards } from "./pages/Awards";
-import { Somos } from "./pages/Somos";
 import { ProfessionalDetail } from "./pages/ProfessionalDetail";
 import { Areas } from "./pages/Areas";
 import { Blog } from "./pages/Blog";
@@ -45,7 +44,6 @@ const App: React.FC = () => {
 
           {/* About Routes */}
           <Route path="/sobre" element={<About />} />
-          <Route path="/sobre/somos" element={<Somos />} />
           <Route path="/sobre/entrega" element={<Solutions />} />
           <Route path="/sobre/inovacao" element={<Innovation />} />
           <Route path="/sobre/premios" element={<Awards />} />
