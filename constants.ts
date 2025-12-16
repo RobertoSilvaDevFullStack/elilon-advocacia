@@ -153,7 +153,7 @@ export const PROFESSIONALS: Professional[] = [
   },
   {
     id: 5,
-    name: "Dra. Nadine",
+    name: "Controladora Jurídica Nadine",
     role: "Advogado Pleno",
     area: "Direito Imobiliário",
     location: "Montes Claros - MG",
