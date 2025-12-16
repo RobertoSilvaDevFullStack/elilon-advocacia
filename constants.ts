@@ -86,7 +86,7 @@ export const PROFESSIONALS: Professional[] = [
   {
     id: 2,
     name: "Dr. Einsteinberg Ribeiro Monção",
-    role: "Sócio",
+    role: "Associado",
     area: "Direito Civil",
     location: "Belo Horizonte - MG",
     email: "einstemberg@elilonlopesadvogados.com.br",
@@ -131,7 +131,7 @@ export const PROFESSIONALS: Professional[] = [
   {
     id: 4,
     name: "Dra. Clara Marinho de Caires Nunes",
-    role: "Advogado Sênior",
+    role: "Associado",
     area: "Direito Previdenciário",
     location: "São Paulo - SP",
     email: "claramarinho@elilonlopesadvogados.com.br",
@@ -154,7 +154,7 @@ export const PROFESSIONALS: Professional[] = [
   {
     id: 5,
     name: "Controladora Jurídica Nadine",
-    role: "Advogado Pleno",
+    role: "Associado",
     area: "Direito Imobiliário",
     location: "Montes Claros - MG",
     email: "nadinysilva@elilonlopesadvogados.com.br",
