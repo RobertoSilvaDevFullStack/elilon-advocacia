@@ -1,23 +1,57 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
+import path from "path";
+import { defineConfig, loadEnv } from "vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+  const env = loadEnv(mode, ".", "");
+  const isProd = mode === "production";
+
+  return {
+    server: {
+      port: 3000,
+      host: "0.0.0.0",
+    },
+    plugins: [react()],
+    define: {
+      "process.env.API_KEY": JSON.stringify(env.GEMINI_API_KEY),
+      "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
+    },
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "."),
       },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+    },
+    build: {
+      minify: "terser",
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            "react-vendor": ["react", "react-dom"],
+            "router-vendor": ["react-router-dom"],
+            "ui-vendor": ["lucide-react"],
+            "maps-vendor": ["react-simple-maps", "d3-scale"],
+          },
+          assetFileNames: (assetInfo) => {
+            let extType = assetInfo.name.split(".").pop();
+            if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+              return `assets/images/[name]-[hash][extname]`;
+            }
+            if (/woff|woff2|eot|ttf|otf/i.test(extType)) {
+              return `assets/fonts/[name]-[hash][extname]`;
+            }
+            return `assets/[name]-[hash][extname]`;
+          },
+          chunkFileNames: "assets/js/[name]-[hash].js",
+          entryFileNames: "assets/js/[name]-[hash].js",
+        },
       },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
+      chunkSizeWarningLimit: 1000,
+      sourcemap: false,
+      cssCodeSplit: true,
+      cssMinify: true,
+    },
+    optimizeDeps: {
+      include: ["react", "react-dom", "react-router-dom"],
+    },
+  };
 });

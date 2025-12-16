@@ -7,6 +7,7 @@ import { AREAS, BLOG_POSTS } from "../constants";
 import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
 import { BrazilMap } from "../components/BrazilMap";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { LazyYouTube } from "../components/LazyYouTube";
 
 export const Home: React.FC = () => {
   const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
@@ -55,16 +56,13 @@ export const Home: React.FC = () => {
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
         <div className="absolute inset-0 z-0">
-          {/* Simulated Video Background using an image and overlay */}
-          <video
-            src="/images/video-institucional.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover opacity-40"
+          {/* YouTube Lazy Load - Performance Optimized */}
+          <LazyYouTube
+            videoId="qyZJ364WPEs"
+            title="Vídeo Institucional Elilon Lopes Advogados"
+            className="absolute opacity-40 pointer-events-auto"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-neutral-900/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-neutral-900/50 pointer-events-none" />
         </div>
 
         <div className="container relative z-10 px-4 text-center text-white">

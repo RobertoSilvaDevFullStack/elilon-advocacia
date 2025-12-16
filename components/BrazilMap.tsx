@@ -6,6 +6,7 @@ import {
   Marker,
   ZoomableGroup,
 } from "react-simple-maps";
+import { ZoomIn, ZoomOut } from "lucide-react";
 
 const geoUrl = "/br-states.json";
 
@@ -68,10 +69,23 @@ const markers = [
 export const BrazilMap: React.FC = () => {
   const [hoveredMarker, setHoveredMarker] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
 
   const handleMarkerHover = (name: string, event: React.MouseEvent) => {
     setHoveredMarker(name);
     setTooltipPos({ x: event.clientX, y: event.clientY });
+  };
+
+  const handleZoomIn = () => {
+    if (zoom < 4) setZoom(zoom * 1.5);
+  };
+
+  const handleZoomOut = () => {
+    if (zoom > 1) setZoom(zoom / 1.5);
+  };
+
+  const handleReset = () => {
+    setZoom(1);
   };
 
   return (
@@ -90,7 +104,7 @@ export const BrazilMap: React.FC = () => {
         }}
         className="w-full h-full"
       >
-        <ZoomableGroup>
+        <ZoomableGroup zoom={zoom} center={[0, 0]}>
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo) => (
@@ -170,14 +184,39 @@ export const BrazilMap: React.FC = () => {
         </div>
       )}
 
+      {/* Zoom Controls */}
+      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+        <button
+          onClick={handleZoomIn}
+          disabled={zoom >= 4}
+          className="bg-white/95 hover:bg-accent-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-lg shadow-lg transition-all duration-300 group"
+          title="Aumentar zoom"
+        >
+          <ZoomIn className="w-5 h-5 text-accent-600 group-hover:text-white" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          disabled={zoom <= 1}
+          className="bg-white/95 hover:bg-accent-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed p-3 rounded-lg shadow-lg transition-all duration-300 group"
+          title="Diminuir zoom"
+        >
+          <ZoomOut className="w-5 h-5 text-accent-600 group-hover:text-white" />
+        </button>
+        <button
+          onClick={handleReset}
+          className="bg-white/95 hover:bg-accent-600 hover:text-white p-3 rounded-lg shadow-lg transition-all duration-300 text-xs font-bold text-accent-600 group-hover:text-white"
+          title="Resetar zoom"
+        >
+          1:1
+        </button>
+      </div>
+
       {/* Info badge */}
       <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border-l-4 border-accent-500">
         <p className="text-xs font-bold text-accent-600 mb-1">
           PRESENÇA NACIONAL
         </p>
-        <p className="text-xs text-neutral-600">
-          Arraste para mover • Scroll para zoom
-        </p>
+        <p className="text-xs text-neutral-600">Use os botões para zoom</p>
       </div>
 
       {/* Stats badge */}
