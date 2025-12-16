@@ -88,7 +88,7 @@ export const PROFESSIONALS: Professional[] = [
     name: "Dr. Einsteinberg Ribeiro Monção",
     role: "Associado",
     area: "Direito Civil",
-    location: "Belo Horizonte - MG",
+    location: "Montes Claros - MG",
     email: "einstemberg@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin:
@@ -133,7 +133,7 @@ export const PROFESSIONALS: Professional[] = [
     name: "Dra. Clara Marinho de Caires Nunes",
     role: "Associado",
     area: "Direito Previdenciário",
-    location: "São Paulo - SP",
+    location: "Montes Claros - MG",
     email: "claramarinho@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin: "https://www.linkedin.com/in/claramarinhocn/",
