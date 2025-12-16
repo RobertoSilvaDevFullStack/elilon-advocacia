@@ -162,7 +162,7 @@ export const PROFESSIONALS: Professional[] = [
     linkedin: "https://www.linkedin.com/in/nadiny-silva-14bb02235/",
     image: "/images/nadine.jpeg",
     bio: "Atua com excelência no setor imobiliário, assessorando construtoras, incorporadoras e investidores. Especialista em regularização fundiária e contratos de compra e venda.",
-    oab: "OAB/MG 44.444",
+    oab: "OAB/MG",
     education: [
       "Graduação em Direito pela Unimontes",
       "Pós-graduação em Direito Imobiliário pela Fadi",
