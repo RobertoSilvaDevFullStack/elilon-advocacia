@@ -1,0 +1,62 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'editor',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(500) NOT NULL,
+  slug VARCHAR(500) UNIQUE NOT NULL,
+  category VARCHAR(100),
+  image TEXT,
+  content TEXT,
+  excerpt TEXT,
+  author_id INTEGER REFERENCES users(id),
+  views INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS professionals (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  role VARCHAR(255),
+  oab VARCHAR(100),
+  area VARCHAR(255),
+  image TEXT,
+  bio TEXT,
+  email VARCHAR(255),
+  linkedin VARCHAR(500),
+  phone VARCHAR(50),
+  views INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS leads (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  phone VARCHAR(50),
+  city VARCHAR(255),
+  interest VARCHAR(255),
+  message TEXT,
+  status VARCHAR(50) DEFAULT 'Novo',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+  key VARCHAR(255) PRIMARY KEY,
+  value TEXT
+);
+
+CREATE TABLE IF NOT EXISTS daily_stats (
+  date DATE PRIMARY KEY,
+  visits INTEGER DEFAULT 0,
+  leads_count INTEGER DEFAULT 0
+);
+
+INSERT INTO users (username, password, role) 
+VALUES ('admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin')
+ON CONFLICT (username) DO NOTHING;
