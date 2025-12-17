@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { Button } from "../components/Components";
 
+// TEMPORARY: Hardcoded API URL for production
+const PRODUCTION_API_URL = "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = import.meta.env.VITE_API_URL || PRODUCTION_API_URL;
+
 type ViewState =
   | "dashboard"
   | "leads"
@@ -47,8 +51,6 @@ export const Admin: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const API_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,9 +80,6 @@ export const Admin: React.FC = () => {
     if (!token) return;
 
     try {
-      const API_URL =
-        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
       // Dashboard Stats
       const resStats = await fetch(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -117,7 +116,6 @@ export const Admin: React.FC = () => {
 
   const saveWebhook = async () => {
     const token = localStorage.getItem("token");
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     try {
       await fetch(`${API_URL}/settings`, {
         method: "POST",
