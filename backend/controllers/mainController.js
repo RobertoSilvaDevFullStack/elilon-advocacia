@@ -1,121 +1,137 @@
-const db = require("../database");
+const db = require("../database-postgres");
 const axios = require("axios");
 
 // ANALYTICS
-exports.getDashboardStats = (req, res) => {
-  // Basic stats: total leads, total posts, total professionals
-  const stats = {};
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const stats = {};
 
-  db.serialize(() => {
-    db.get(
-      "SELECT COUNT(*) as count FROM leads",
-      (err, row) => (stats.leads = row.count)
+    const leadsResult = await db.query("SELECT COUNT(*) as count FROM leads");
+    stats.leads = parseInt(leadsResult.rows[0].count);
+
+    const postsResult = await db.query("SELECT COUNT(*) as count FROM posts");
+    stats.posts = parseInt(postsResult.rows[0].count);
+
+    const profResult = await db.query(
+      "SELECT COUNT(*) as count FROM professionals"
     );
-    db.get(
-      "SELECT COUNT(*) as count FROM posts",
-      (err, row) => (stats.posts = row.count)
+    stats.professionals = parseInt(profResult.rows[0].count);
+
+    const chartResult = await db.query(
+      "SELECT * FROM daily_stats ORDER BY date DESC LIMIT 7"
     );
-    db.get(
-      "SELECT COUNT(*) as count FROM professionals",
-      (err, row) => (stats.professionals = row.count)
-    );
-    db.all(
-      "SELECT * FROM daily_stats ORDER BY date DESC LIMIT 7",
-      (err, rows) => {
-        stats.chartData = rows;
-        res.json({ success: true, stats });
-      }
-    );
-  });
+    stats.chartData = chartResult.rows;
+
+    res.json({ success: true, stats });
+  } catch (err) {
+    console.error("Dashboard stats error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.trackVisit = (req, res) => {
+exports.trackVisit = async (req, res) => {
   const today = new Date().toISOString().split("T")[0];
-  db.run(
-    `INSERT INTO daily_stats (date, visits) VALUES (?, 1) 
-            ON CONFLICT(date) DO UPDATE SET visits = visits + 1`,
-    [today],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
+  try {
+    await db.query(
+      `INSERT INTO daily_stats (date, visits) VALUES ($1, 1) 
+       ON CONFLICT(date) DO UPDATE SET visits = daily_stats.visits + 1`,
+      [today]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Track visit error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // LEADS & INTEGRATION
-exports.createLead = (req, res) => {
+exports.createLead = async (req, res) => {
   const { name, email, phone, city, interest, message } = req.body;
 
-  // 1. Save to Local DB
-  db.run(
-    `INSERT INTO leads (name, email, phone, city, interest, message) VALUES (?,?,?,?,?,?)`,
-    [name, email, phone, city, interest, message],
-    function (err) {
-      if (err)
-        return res.status(500).json({ success: false, message: "DB Error" });
+  try {
+    // 1. Save to Local DB
+    await db.query(
+      `INSERT INTO leads (name, email, phone, city, interest, message) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [name, email, phone, city, interest, message]
+    );
 
-      // 2. Update Daily Stats
-      const today = new Date().toISOString().split("T")[0];
-      db.run(
-        `INSERT INTO daily_stats (date, leads_count) VALUES (?, 1) 
-                    ON CONFLICT(date) DO UPDATE SET leads_count = leads_count + 1`,
-        [today]
-      );
+    // 2. Update Daily Stats
+    const today = new Date().toISOString().split("T")[0];
+    await db.query(
+      `INSERT INTO daily_stats (date, leads_count) VALUES ($1, 1) 
+       ON CONFLICT(date) DO UPDATE SET leads_count = daily_stats.leads_count + 1`,
+      [today]
+    );
 
-      // 3. Trigger Webhook (Integration)
-      db.get(
-        "SELECT value FROM settings WHERE key = 'webhook_url'",
-        (err, row) => {
-          if (row && row.value) {
-            axios
-              .post(row.value, req.body)
-              .then(() => console.log("Webhook triggered successfully"))
-              .catch((err) => console.error("Webhook failed", err.message));
-          }
-        }
-      );
+    // 3. Trigger Webhook (Integration)
+    const settingsResult = await db.query(
+      "SELECT value FROM settings WHERE key = 'webhook_url'"
+    );
 
-      res.json({ success: true, message: "Lead saved" });
+    if (settingsResult.rows.length > 0 && settingsResult.rows[0].value) {
+      axios
+        .post(settingsResult.rows[0].value, req.body)
+        .then(() => console.log("Webhook triggered successfully"))
+        .catch((err) => console.error("Webhook failed", err.message));
     }
-  );
+
+    res.json({ success: true, message: "Lead saved" });
+  } catch (err) {
+    console.error("Create lead error:", err);
+    res.status(500).json({ success: false, message: "DB Error" });
+  }
 };
 
-exports.getLeads = (req, res) => {
-  db.all("SELECT * FROM leads ORDER BY created_at DESC", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+exports.getLeads = async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT * FROM leads ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Get leads error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.updateLeadStatus = (req, res) => {
+exports.updateLeadStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-  db.run(
-    "UPDATE leads SET status = ? WHERE id = ?",
-    [status, id],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
+  try {
+    await db.query("UPDATE leads SET status = $1 WHERE id = $2", [status, id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update lead status error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // SETTINGS
-exports.saveSettings = (req, res) => {
+exports.saveSettings = async (req, res) => {
   const { webhook_url } = req.body;
-  db.run(
-    `INSERT INTO settings (key, value) VALUES ('webhook_url', ?) 
-            ON CONFLICT(key) DO UPDATE SET value = ?`,
-    [webhook_url, webhook_url],
-    (err) => {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
-    }
-  );
+  try {
+    await db.query(
+      `INSERT INTO settings (key, value) VALUES ('webhook_url', $1) 
+       ON CONFLICT(key) DO UPDATE SET value = $1`,
+      [webhook_url]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Save settings error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.getSettings = (req, res) => {
-  db.get("SELECT value FROM settings WHERE key = 'webhook_url'", (err, row) => {
-    res.json({ webhook_url: row ? row.value : "" });
-  });
+exports.getSettings = async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT value FROM settings WHERE key = 'webhook_url'"
+    );
+    res.json({
+      webhook_url: result.rows.length > 0 ? result.rows[0].value : "",
+    });
+  } catch (err) {
+    console.error("Get settings error:", err);
+    res.json({ webhook_url: "" });
+  }
 };

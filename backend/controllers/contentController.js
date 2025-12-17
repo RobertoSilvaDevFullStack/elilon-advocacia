@@ -1,72 +1,93 @@
-const db = require("../database");
+const db = require("../database-postgres");
 
 // POSTS
-exports.getPosts = (req, res) => {
-  db.all("SELECT * FROM posts ORDER BY created_at DESC", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+exports.getPosts = async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT * FROM posts ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Get posts error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.createPost = (req, res) => {
+exports.createPost = async (req, res) => {
   const { title, category, content, image } = req.body;
   const slug = title
     .toLowerCase()
     .replace(/ /g, "-")
     .replace(/[^\w-]+/g, "");
 
-  db.run(
-    `INSERT INTO posts (title, slug, category, content, image) VALUES (?,?,?,?,?)`,
-    [title, slug, category, content, image],
-    function (err) {
-      if (err)
-        return res.status(500).json({ success: false, message: err.message });
-      res.json({ success: true, id: this.lastID });
-    }
-  );
+  try {
+    const result = await db.query(
+      `INSERT INTO posts (title, slug, category, content, image) VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+      [title, slug, category, content, image]
+    );
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (err) {
+    console.error("Create post error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
-exports.deletePost = (req, res) => {
+exports.deletePost = async (req, res) => {
   const { id } = req.params;
-  db.run("DELETE FROM posts WHERE id = ?", [id], (err) => {
-    if (err) return res.status(500).json({ success: false });
+  try {
+    await db.query("DELETE FROM posts WHERE id = $1", [id]);
     res.json({ success: true });
-  });
+  } catch (err) {
+    console.error("Delete post error:", err);
+    res.status(500).json({ success: false });
+  }
 };
 
 // PROFESSIONALS
-exports.getProfessionals = (req, res) => {
-  db.all("SELECT * FROM professionals", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+exports.getProfessionals = async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM professionals");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Get professionals error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.createProfessional = (req, res) => {
+exports.createProfessional = async (req, res) => {
   const { name, role, oab, area, bio, image } = req.body;
-  db.run(
-    `INSERT INTO professionals (name, role, oab, area, bio, image) VALUES (?,?,?,?,?,?)`,
-    [name, role, oab, area, bio, image],
-    function (err) {
-      if (err)
-        return res.status(500).json({ success: false, message: err.message });
-      res.json({ success: true, id: this.lastID });
-    }
-  );
+  try {
+    const result = await db.query(
+      `INSERT INTO professionals (name, role, oab, area, bio, image) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+      [name, role, oab, area, bio, image]
+    );
+    res.json({ success: true, id: result.rows[0].id });
+  } catch (err) {
+    console.error("Create professional error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
 
-exports.deleteProfessional = (req, res) => {
+exports.deleteProfessional = async (req, res) => {
   const { id } = req.params;
-  db.run("DELETE FROM professionals WHERE id = ?", [id], (err) => {
-    if (err) return res.status(500).json({ success: false });
+  try {
+    await db.query("DELETE FROM professionals WHERE id = $1", [id]);
     res.json({ success: true });
-  });
+  } catch (err) {
+    console.error("Delete professional error:", err);
+    res.status(500).json({ success: false });
+  }
 };
 
 // USERS
-exports.getUsers = (req, res) => {
-  db.all("SELECT id, username, role, created_at FROM users", (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+exports.getUsers = async (req, res) => {
+  try {
+    const result = await db.query(
+      "SELECT id, username, role, created_at FROM users"
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Get users error:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
