@@ -38,9 +38,9 @@ const Navbar: React.FC = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
           <img
-            src="/images/logo-branca.png"
+            src="/images/logo-nova.png"
             alt="Elilon Lopes Advogados Logo"
-            className="h-12 w-auto object-contain"
+            className="h-12 w-auto object-contain mix-blend-screen"
           />
           <div className="flex flex-col items-start leading-tight">
             <span className="text-xl font-headline font-bold tracking-widest text-white group-hover:text-vermelho-400 transition-colors">
@@ -149,7 +149,7 @@ const Footer: React.FC = () => {
         <div>
           <div className="flex items-center gap-3 mb-6">
             <img
-              src="/images/logo-branca.png"
+              src="/images/logo-nova.png"
               alt="Elilon Lopes Advogados Logo"
               className="h-12 w-auto object-contain"
             />
@@ -314,7 +314,7 @@ const Footer: React.FC = () => {
 
 const FloatingWhatsApp: React.FC = () => (
   <a
-    href="https://wa.me/5538999999999"
+    href="https://wa.me/553822001615"
     target="_blank"
     rel="noopener noreferrer"
     className="fixed bottom-6 right-6 z-50 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center"
