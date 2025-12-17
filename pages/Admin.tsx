@@ -18,6 +18,7 @@ import {
 import { Button } from "../components/Components";
 
 // TEMPORARY: Hardcoded API URL for production
+// Cache buster: 2025-12-17-10:40 UTC-3
 const PRODUCTION_API_URL = "https://api.elilonlopesadvogados.com.br/api";
 const API_URL = import.meta.env.VITE_API_URL || PRODUCTION_API_URL;
 
@@ -30,6 +31,9 @@ type ViewState =
   | "settings";
 
 export const Admin: React.FC = () => {
+  // DEBUG: Log API URL to verify correct endpoint
+  console.log("🔧 API URL configured:", API_URL);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
