@@ -47,7 +47,9 @@ export const Admin: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -76,29 +78,32 @@ export const Admin: React.FC = () => {
     if (!token) return;
 
     try {
+      const API_URL =
+        import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
       // Dashboard Stats
-      const resStats = await fetch("http://localhost:5000/api/dashboard", {
+      const resStats = await fetch(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataStats = await resStats.json();
       if (dataStats.success) setStats(dataStats.stats);
 
       // Webhook Settings
-      const resSettings = await fetch("http://localhost:5000/api/settings", {
+      const resSettings = await fetch(`${API_URL}/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataSettings = await resSettings.json();
       setWebhookUrl(dataSettings.webhook_url || "");
 
       // Users
-      const resUsers = await fetch("http://localhost:5000/api/users", {
+      const resUsers = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataUsers = await resUsers.json();
       setUsers(Array.isArray(dataUsers) ? dataUsers : []);
 
       // Leads
-      const resLeads = await fetch("http://localhost:5000/api/leads", {
+      const resLeads = await fetch(`${API_URL}/leads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataLeads = await resLeads.json();
@@ -112,8 +117,9 @@ export const Admin: React.FC = () => {
 
   const saveWebhook = async () => {
     const token = localStorage.getItem("token");
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     try {
-      await fetch("http://localhost:5000/api/settings", {
+      await fetch(`${API_URL}/settings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
