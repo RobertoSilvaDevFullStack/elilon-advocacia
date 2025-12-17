@@ -51,6 +51,12 @@ export const Admin: React.FC = () => {
   // Loading States
   const [loading, setLoading] = useState(false);
 
+  // Modal States
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [showProfessionalModal, setShowProfessionalModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+
   // AUTH LOGIN
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,7 +334,13 @@ export const Admin: React.FC = () => {
                     Controle de acesso e hierarquia do painel.
                   </p>
                 </div>
-                <Button className="flex items-center gap-2">
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    setEditingItem(null);
+                    setShowUserModal(true);
+                  }}
+                >
                   <Plus size={16} /> Novo Usuário
                 </Button>
               </div>
@@ -480,7 +492,13 @@ export const Admin: React.FC = () => {
                     {posts.length} postagens publicadas.
                   </p>
                 </div>
-                <Button className="flex items-center gap-2">
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    setEditingItem(null);
+                    setShowPostModal(true);
+                  }}
+                >
                   <Plus size={16} /> Novo Artigo
                 </Button>
               </div>
@@ -512,6 +530,10 @@ export const Admin: React.FC = () => {
                         <button
                           className="p-2 text-neutral-500 hover:text-blue-600 transition-colors"
                           title="Editar"
+                          onClick={() => {
+                            setEditingItem(post);
+                            setShowPostModal(true);
+                          }}
                         >
                           <Edit size={18} />
                         </button>
@@ -541,7 +563,13 @@ export const Admin: React.FC = () => {
                     {professionals.length} profissionais cadastrados.
                   </p>
                 </div>
-                <Button className="flex items-center gap-2">
+                <Button
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    setEditingItem(null);
+                    setShowProfessionalModal(true);
+                  }}
+                >
                   <Plus size={16} /> Novo Profissional
                 </Button>
               </div>
@@ -580,6 +608,85 @@ export const Admin: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* MODAL PLACEHOLDERS */}
+        {showPostModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowPostModal(false)}
+          >
+            <div
+              className="bg-white p-8 rounded-lg max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4">
+                {editingItem ? "Editar Artigo" : "Novo Artigo"}
+              </h2>
+              <p className="text-neutral-600 mb-4">
+                Formulário de {editingItem ? "edição" : "criação"} será
+                implementado aqui.
+              </p>
+              <button
+                className="bg-accent-600 text-white px-4 py-2 rounded hover:bg-accent-700"
+                onClick={() => setShowPostModal(false)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showProfessionalModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowProfessionalModal(false)}
+          >
+            <div
+              className="bg-white p-8 rounded-lg max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4">
+                {editingItem ? "Editar Profissional" : "Novo Profissional"}
+              </h2>
+              <p className="text-neutral-600 mb-4">
+                Formulário de {editingItem ? "edição" : "criação"} será
+                implementado aqui.
+              </p>
+              <button
+                className="bg-accent-600 text-white px-4 py-2 rounded hover:bg-accent-700"
+                onClick={() => setShowProfessionalModal(false)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showUserModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowUserModal(false)}
+          >
+            <div
+              className="bg-white p-8 rounded-lg max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold mb-4">
+                {editingItem ? "Editar Usuário" : "Novo Usuário"}
+              </h2>
+              <p className="text-neutral-600 mb-4">
+                Formulário de {editingItem ? "edição" : "criação"} será
+                implementado aqui.
+              </p>
+              <button
+                className="bg-accent-600 text-white px-4 py-2 rounded hover:bg-accent-700"
+                onClick={() => setShowUserModal(false)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
