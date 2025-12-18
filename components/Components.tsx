@@ -3,6 +3,9 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AREAS } from "../constants";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "outline" | "text";
 }
@@ -86,13 +89,13 @@ export const ContactForm: React.FC<{ source?: string }> = ({
       email: formData.get("email"),
       phone: formData.get("phone"),
       city: formData.get("city"),
-      area: formData.get("area"),
+      interest: formData.get("area"),
       message: formData.get("message"),
       source,
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/leads", {
+      const response = await fetch(`${API_URL}/leads`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,26 +1,80 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { BLOG_POSTS } from "../constants";
 import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  created_at: string;
+  author_id?: number;
+}
+
 export const BlogPostDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   // Scroll to top when mounting
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  if (!post) {
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const res = await fetch(`${API_URL}/posts`);
+        const data = await res.json();
+        const posts = Array.isArray(data) ? data : [];
+
+        const foundPost = posts.find((p: BlogPost) => p.slug === slug);
+
+        if (foundPost) {
+          setPost(foundPost);
+          setRelatedPosts(
+            posts.filter((p: BlogPost) => p.id !== foundPost.id).slice(0, 3)
+          );
+        } else {
+          setNotFound(true);
+        }
+      } catch (error) {
+        console.error("Error loading post:", error);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-xl">Carregando artigo...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (notFound || !post) {
     return <Navigate to="/blog" replace />;
   }
 
   return (
     <Layout>
-      <SEO title={post.title} description={post.summary} image={post.image} />
+      <SEO title={post.title} description={post.excerpt} image={post.image} />
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px]">
         <img
@@ -38,12 +92,14 @@ export const BlogPostDetail: React.FC = () => {
           <div className="flex items-center space-x-6 text-neutral-300 text-sm font-medium">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-accent-500" />
-              <span>{post.date}</span>
+              <span>
+                {new Date(post.created_at).toLocaleDateString("pt-BR")}
+              </span>
             </div>
-            {post.author && (
+            {post.author_id && (
               <div className="flex items-center gap-2">
                 <User size={16} className="text-accent-500" />
-                <span>{post.author}</span>
+                <span>Elilon Lopes Advogados</span>
               </div>
             )}
           </div>
@@ -121,7 +177,7 @@ export const BlogPostDetail: React.FC = () => {
                 Leia Também
               </h3>
               <div className="space-y-6">
-                {BLOG_POSTS.filter((p) => p.id !== post.id).map((related) => (
+                {relatedPosts.map((related) => (
                   <div
                     key={related.id}
                     className="flex gap-4 group cursor-pointer"

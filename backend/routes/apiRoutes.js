@@ -28,6 +28,7 @@ router.get("/settings", mainController.getSettings);
 
 // Content: Posts (Admin)
 router.post("/posts", contentController.createPost);
+router.put("/posts/:id", contentController.updatePost);
 router.delete("/posts/:id", contentController.deletePost);
 
 // Content: Professionals (Admin)
@@ -36,6 +37,10 @@ router.put("/professionals/:id", contentController.updateProfessional);
 router.delete("/professionals/:id", contentController.deleteProfessional);
 
 // Users
+router.post("/users", contentController.createUser);
 router.get("/users", contentController.getUsers);
+router.put("/users/:id", contentController.updateUser);
+router.patch("/users/:id/approve", contentController.toggleUserApproval);
+router.delete("/users/:id", contentController.deleteUser);
 
 module.exports = router;

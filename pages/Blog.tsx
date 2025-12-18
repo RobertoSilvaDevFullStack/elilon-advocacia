@@ -1,12 +1,61 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Layout } from "../components/Layout";
 import { Hero } from "../components/Components";
-import { BLOG_POSTS } from "../constants";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+
+interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  created_at: string;
+}
+
 export const Blog: React.FC = () => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch(`${API_URL}/posts`);
+        const data = await res.json();
+        setPosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error loading posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const currentPosts = posts.slice(startIndex, endIndex);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-xl">Carregando artigos...</div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <SEO
@@ -23,7 +72,7 @@ export const Blog: React.FC = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {BLOG_POSTS.map((post, index) => (
+            {currentPosts.map((post, index) => (
               <ScrollReveal
                 animation="fade-in-up"
                 delay={`delay-${Math.min((index % 3) * 100 + 100, 500)}` as any}
@@ -48,13 +97,13 @@ export const Blog: React.FC = () => {
                   </Link>
                   <div className="p-8 flex flex-col flex-grow">
                     <span className="text-sm text-neutral-400 mb-2">
-                      {post.date}
+                      {new Date(post.created_at).toLocaleDateString("pt-BR")}
                     </span>
                     <h3 className="text-2xl font-headline font-bold mb-3 hover:text-accent-600 transition-colors">
                       <Link to={`/blog/${post.slug}`}>{post.title}</Link>
                     </h3>
                     <p className="text-neutral-600 mb-6 flex-grow">
-                      {post.summary}
+                      {post.excerpt}
                     </p>
                     <Link
                       to={`/blog/${post.slug}`}
@@ -67,18 +116,29 @@ export const Blog: React.FC = () => {
               </ScrollReveal>
             ))}
 
-            {/* Pagination Placeholder */}
-            <div className="col-span-full flex justify-center space-x-2 mt-12">
-              <button className="w-10 h-10 flex items-center justify-center bg-neutral-900 text-white font-bold">
-                1
-              </button>
-              <button className="w-10 h-10 flex items-center justify-center bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100">
-                2
-              </button>
-              <button className="w-10 h-10 flex items-center justify-center bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100">
-                3
-              </button>
-            </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="col-span-full flex justify-center space-x-2 mt-12">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => {
+                        setCurrentPage(page);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className={`w-10 h-10 flex items-center justify-center font-bold transition-colors ${
+                        currentPage === page
+                          ? "bg-neutral-900 text-white"
+                          : "bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>

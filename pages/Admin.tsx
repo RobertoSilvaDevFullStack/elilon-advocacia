@@ -16,6 +16,8 @@ import {
   Shield,
 } from "lucide-react";
 import { Button } from "../components/Components";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 // TEMPORARY: Hardcoded API URL for production
 // Cache buster: 2025-12-17-10:40 UTC-3
@@ -75,12 +77,18 @@ export const Admin: React.FC = () => {
     email: "",
     linkedin: "",
     phone: "",
+    location: "",
+    education: [] as string[],
+    specializations: [] as string[],
   });
   const [userForm, setUserForm] = useState({
     username: "",
+    email: "",
     password: "",
     role: "editor",
+    approved: false,
   });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // AUTH LOGIN
   const handleLogin = async (e: React.FormEvent) => {
@@ -96,8 +104,7 @@ export const Admin: React.FC = () => {
 
       if (data.success) {
         setIsLoggedIn(true);
-        localStorage.setItem("token", data.token); // Store token
-        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
       } else {
         alert(data.message || "Erro ao fazer login");
       }
@@ -272,7 +279,9 @@ export const Admin: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataLeads = await resLeads.json();
-      if (dataLeads.success) {
+      if (Array.isArray(dataLeads)) {
+        setLeads(dataLeads);
+      } else if (dataLeads.success) {
         setLeads(dataLeads.leads || []);
       }
 
@@ -321,7 +330,7 @@ export const Admin: React.FC = () => {
 
   useEffect(() => {
     if (isLoggedIn) fetchDashboardData();
-  }, [isLoggedIn, currentView]);
+  }, [isLoggedIn]);
 
   if (!isLoggedIn) {
     return (
@@ -351,6 +360,17 @@ export const Admin: React.FC = () => {
               className="w-full border border-neutral-300 p-3 rounded focus:border-accent-500 outline-none"
             />
             <Button className="w-full justify-center">Entrar</Button>
+            <button
+              type="button"
+              onClick={() =>
+                alert(
+                  "Para recuperar sua senha, entre em contato com o administrador informando seu nome de usuário ou email cadastrado."
+                )
+              }
+              className="w-full text-sm text-accent-600 hover:text-accent-700 mt-3 underline"
+            >
+              Esqueceu sua senha?
+            </button>
           </form>
           <div className="mt-4 text-center">
             <Link
@@ -368,25 +388,58 @@ export const Admin: React.FC = () => {
   const NavButton = ({ view, icon: Icon, label }: any) => (
     <button
       onClick={() => setCurrentView(view)}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded transition-colors ${
+      className={`w-full flex items-center ${
+        sidebarCollapsed ? "justify-center" : "space-x-3"
+      } px-4 py-3 rounded transition-colors ${
         currentView === view
           ? "bg-accent-600 text-white"
           : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
       }`}
+      title={sidebarCollapsed ? label : undefined}
     >
       <Icon size={20} />
-      <span>{label}</span>
+      {!sidebarCollapsed && <span>{label}</span>}
     </button>
   );
 
   return (
     <div className="min-h-screen bg-neutral-50 flex font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col">
-        <div className="p-6 border-b border-neutral-800">
-          <span className="text-lg font-headline font-bold tracking-widest text-accent-500">
+      <aside
+        className={`${
+          sidebarCollapsed ? "w-20" : "w-64"
+        } bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300`}
+      >
+        <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
+          <span
+            className={`text-lg font-headline font-bold tracking-widest text-accent-500 ${
+              sidebarCollapsed ? "hidden" : ""
+            }`}
+          >
             ADMIN
           </span>
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="p-2 hover:bg-neutral-800 rounded transition-colors"
+            title={sidebarCollapsed ? "Expandir" : "Minimizar"}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={`transition-transform ${
+                sidebarCollapsed ? "rotate-180" : ""
+              }`}
+            >
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <NavButton view="dashboard" icon={BarChart2} label="Dashboard" />
@@ -402,10 +455,12 @@ export const Admin: React.FC = () => {
         <div className="p-4 border-t border-neutral-800">
           <button
             onClick={() => setIsLoggedIn(false)}
-            className="w-full flex items-center space-x-3 px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors"
+            className={`w-full flex items-center ${
+              sidebarCollapsed ? "justify-center" : "space-x-3"
+            } px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors`}
           >
             <LogOut size={20} />
-            <span>Sair</span>
+            {!sidebarCollapsed && <span>Sair</span>}
           </button>
         </div>
       </aside>
@@ -516,6 +571,13 @@ export const Admin: React.FC = () => {
                   className="flex items-center gap-2"
                   onClick={() => {
                     setEditingItem(null);
+                    setUserForm({
+                      username: "",
+                      email: "",
+                      password: "",
+                      role: "editor",
+                      approved: false,
+                    });
                     setShowUserModal(true);
                   }}
                 >
@@ -528,7 +590,9 @@ export const Admin: React.FC = () => {
                   <thead className="bg-neutral-100 text-neutral-600 text-sm uppercase">
                     <tr>
                       <th className="p-4 border-b">Usuário</th>
-                      <th className="p-4 border-b">Cargo (Hierarquia)</th>
+                      <th className="p-4 border-b">Email</th>
+                      <th className="p-4 border-b">Cargo</th>
+                      <th className="p-4 border-b">Status</th>
                       <th className="p-4 border-b">Data Criação</th>
                       <th className="p-4 border-b">Ações</th>
                     </tr>
@@ -541,6 +605,7 @@ export const Admin: React.FC = () => {
                           className="border-b last:border-0 hover:bg-neutral-50"
                         >
                           <td className="p-4 font-bold">{user.username}</td>
+                          <td className="p-4 text-sm">{user.email || "-"}</td>
                           <td className="p-4">
                             <span
                               className={`px-2 py-1 rounded text-xs font-bold uppercase ${
@@ -553,12 +618,82 @@ export const Admin: React.FC = () => {
                               {user.role}
                             </span>
                           </td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded text-xs font-bold ${
+                                user.approved
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {user.approved ? "Aprovado" : "Pendente"}
+                            </span>
+                          </td>
                           <td className="p-4 text-xs text-neutral-500">
                             {new Date(user.created_at).toLocaleDateString()}
                           </td>
                           <td className="p-4 flex gap-2">
-                            <button className="text-blue-600 hover:underline text-xs">
+                            <button
+                              className="text-blue-600 hover:underline text-xs"
+                              onClick={() => {
+                                setEditingItem(user);
+                                setUserForm({
+                                  username: user.username || "",
+                                  email: user.email || "",
+                                  password: "",
+                                  role: user.role || "editor",
+                                  approved: user.approved || false,
+                                });
+                                setShowUserModal(true);
+                              }}
+                            >
                               Editar
+                            </button>
+                            <button
+                              className="text-red-600 hover:underline text-xs"
+                              onClick={async () => {
+                                if (
+                                  !confirm(
+                                    `Tem certeza que deseja excluir o usuário "${user.username}"?`
+                                  )
+                                )
+                                  return;
+
+                                try {
+                                  const token = localStorage.getItem("token");
+                                  const res = await fetch(
+                                    `${API_URL}/users/${user.id}`,
+                                    {
+                                      method: "DELETE",
+                                      headers: {
+                                        Authorization: `Bearer ${token}`,
+                                      },
+                                    }
+                                  );
+
+                                  if (!res.ok)
+                                    throw new Error(
+                                      `HTTP error! status: ${res.status}`
+                                    );
+
+                                  const data = await res.json();
+                                  if (data.success) {
+                                    alert("Usuário excluído com sucesso!");
+                                    fetchDashboardData();
+                                  } else {
+                                    throw new Error(
+                                      data.message || "Erro ao excluir"
+                                    );
+                                  }
+                                } catch (error: any) {
+                                  console.error("Delete error:", error);
+                                  alert(
+                                    `Erro ao excluir usuário: ${error.message}`
+                                  );
+                                }
+                              }}
+                            >
+                              Excluir
                             </button>
                           </td>
                         </tr>
@@ -591,7 +726,55 @@ export const Admin: React.FC = () => {
                     Gerencie os contatos recebidos pelo site.
                   </p>
                 </div>
-                <Button variant="outline" className="text-xs">
+                <Button
+                  variant="outline"
+                  className="text-xs"
+                  onClick={() => {
+                    // CSV Header
+                    const headers = [
+                      "Nome",
+                      "Email",
+                      "Telefone",
+                      "Cidade",
+                      "Área de Interesse",
+                      "Mensagem",
+                      "Status",
+                      "Data",
+                    ];
+
+                    // CSV Rows
+                    const rows = leads.map((lead) => [
+                      lead.name || "",
+                      lead.email || "",
+                      lead.phone || "",
+                      lead.city || "",
+                      lead.interest || "",
+                      lead.message
+                        ? `"${lead.message.replace(/"/g, '""')}"`
+                        : "",
+                      lead.status || "Novo",
+                      lead.created_at
+                        ? new Date(lead.created_at).toLocaleDateString("pt-BR")
+                        : "",
+                    ]);
+
+                    // Build CSV
+                    const csv = [headers, ...rows]
+                      .map((row) => row.join(","))
+                      .join("\n");
+
+                    // Download
+                    const blob = new Blob(["\uFEFF" + csv], {
+                      type: "text/csv;charset=utf-8;",
+                    });
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = `leads_${
+                      new Date().toISOString().split("T")[0]
+                    }.csv`;
+                    link.click();
+                  }}
+                >
                   Exportar CSV
                 </Button>
               </div>
@@ -628,7 +811,19 @@ export const Admin: React.FC = () => {
                             </div>
                           </td>
                           <td className="p-4 hidden md:table-cell">
-                            {lead.area || "Não especificado"}
+                            <div className="text-xs">
+                              <div className="font-semibold">
+                                {lead.interest || "Não especificado"}
+                              </div>
+                              {lead.message && (
+                                <div
+                                  className="text-neutral-500 mt-1 truncate max-w-xs"
+                                  title={lead.message}
+                                >
+                                  {lead.message}
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="p-4">
                             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded font-bold">
@@ -674,6 +869,14 @@ export const Admin: React.FC = () => {
                   className="flex items-center gap-2"
                   onClick={() => {
                     setEditingItem(null);
+                    setPostForm({
+                      title: "",
+                      category: "",
+                      slug: "",
+                      image: "",
+                      excerpt: "",
+                      content: "",
+                    });
                     setShowPostModal(true);
                   }}
                 >
@@ -710,6 +913,14 @@ export const Admin: React.FC = () => {
                           title="Editar"
                           onClick={() => {
                             setEditingItem(post);
+                            setPostForm({
+                              title: post.title || "",
+                              category: post.category || "",
+                              slug: post.slug || "",
+                              image: post.image || "",
+                              excerpt: post.excerpt || "",
+                              content: post.content || "",
+                            });
                             setShowPostModal(true);
                           }}
                         >
@@ -718,6 +929,44 @@ export const Admin: React.FC = () => {
                         <button
                           className="p-2 text-neutral-500 hover:text-red-600 transition-colors"
                           title="Excluir"
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                "Tem certeza que deseja excluir este artigo?"
+                              )
+                            )
+                              return;
+
+                            try {
+                              const token = localStorage.getItem("token");
+                              const res = await fetch(
+                                `${API_URL}/posts/${post.id}`,
+                                {
+                                  method: "DELETE",
+                                  headers: { Authorization: `Bearer ${token}` },
+                                }
+                              );
+
+                              if (!res.ok) {
+                                throw new Error(
+                                  `HTTP error! status: ${res.status}`
+                                );
+                              }
+
+                              const data = await res.json();
+                              if (data.success) {
+                                alert("Artigo excluído com sucesso!");
+                                fetchDashboardData();
+                              } else {
+                                throw new Error(
+                                  data.message || "Erro ao excluir"
+                                );
+                              }
+                            } catch (error: any) {
+                              console.error("Delete error:", error);
+                              alert(`Erro ao excluir artigo: ${error.message}`);
+                            }
+                          }}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -792,11 +1041,72 @@ export const Admin: React.FC = () => {
                               email: prof.email || "",
                               phone: prof.phone || "",
                               linkedin: prof.linkedin || "",
+                              location: prof.location || "",
+                              education: Array.isArray(prof.education)
+                                ? prof.education
+                                : [],
+                              specializations: Array.isArray(
+                                prof.specializations
+                              )
+                                ? prof.specializations
+                                : [],
                             });
                             setShowProfessionalModal(true);
                           }}
                         >
                           Editar
+                        </button>
+                        <button
+                          className="text-xs border border-red-200 bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 transition"
+                          onClick={async () => {
+                            if (
+                              !window.confirm(
+                                `Deseja realmente excluir ${prof.name}?`
+                              )
+                            )
+                              return;
+
+                            const token = localStorage.getItem("token");
+                            try {
+                              const res = await fetch(
+                                `${API_URL}/professionals/${prof.id}`,
+                                {
+                                  method: "DELETE",
+                                  headers: { Authorization: `Bearer ${token}` },
+                                }
+                              );
+
+                              if (!res.ok) {
+                                throw new Error(
+                                  `HTTP ${res.status}: ${res.statusText}`
+                                );
+                              }
+
+                              const data = await res.json();
+                              if (data.success) {
+                                alert("Profissional excluído com sucesso!");
+                                fetchDashboardData();
+                              } else {
+                                alert(
+                                  `Erro: ${data.message || "Falha ao excluir"}`
+                                );
+                              }
+                            } catch (error) {
+                              console.error(
+                                "Error deleting professional:",
+                                error
+                              );
+                              alert(
+                                `Erro ao excluir profissional: ${
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Erro desconhecido"
+                                }`
+                              );
+                            }
+                          }}
+                        >
+                          Remover
                         </button>
                       </div>
                     </div>
@@ -870,16 +1180,62 @@ export const Admin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      URL da Imagem
+                      Imagem de Capa
                     </label>
-                    <input
-                      type="url"
-                      value={postForm.image}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, image: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                              const canvas = document.createElement("canvas");
+                              const maxWidth = 800;
+                              const maxHeight = 600;
+                              let width = img.width;
+                              let height = img.height;
+
+                              if (width > height) {
+                                if (width > maxWidth) {
+                                  height *= maxWidth / width;
+                                  width = maxWidth;
+                                }
+                              } else {
+                                if (height > maxHeight) {
+                                  width *= maxHeight / height;
+                                  height = maxHeight;
+                                }
+                              }
+
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext("2d");
+                              ctx?.drawImage(img, 0, 0, width, height);
+                              const base64 = canvas.toDataURL(
+                                "image/jpeg",
+                                0.85
+                              );
+                              setPostForm({ ...postForm, image: base64 });
+                            };
+                            img.src = event.target?.result as string;
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                      {postForm.image && (
+                        <img
+                          src={postForm.image}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded"
+                        />
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
@@ -898,15 +1254,26 @@ export const Admin: React.FC = () => {
                     <label className="block text-sm font-medium mb-1">
                       Conteúdo *
                     </label>
-                    <textarea
-                      required
+                    <ReactQuill
+                      theme="snow"
                       value={postForm.content}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, content: e.target.value })
+                      onChange={(value) =>
+                        setPostForm({ ...postForm, content: value })
                       }
-                      rows={6}
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    ></textarea>
+                      modules={{
+                        toolbar: [
+                          [{ header: [1, 2, 3, false] }],
+                          ["bold", "italic", "underline", "strike"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                          ["blockquote", "code-block"],
+                          [{ align: [] }],
+                          ["link"],
+                          ["clean"],
+                        ],
+                      }}
+                      className="bg-white"
+                      style={{ height: "300px", marginBottom: "50px" }}
+                    />
                   </div>
                   <div className="flex gap-3 pt-4">
                     <button
@@ -1189,6 +1556,139 @@ export const Admin: React.FC = () => {
                       className="w-full border border-neutral-300 rounded px-3 py-2"
                     />
                   </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Localização
+                    </label>
+                    <input
+                      type="text"
+                      value={professionalForm.location}
+                      onChange={(e) =>
+                        setProfessionalForm({
+                          ...professionalForm,
+                          location: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Belo Horizonte - MG"
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+
+                  {/* Education (Array) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Formação Acadêmica
+                    </label>
+                    {professionalForm.education.map((edu, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={edu}
+                          onChange={(e) => {
+                            const newEducation = [
+                              ...professionalForm.education,
+                            ];
+                            newEducation[index] = e.target.value;
+                            setProfessionalForm({
+                              ...professionalForm,
+                              education: newEducation,
+                            });
+                          }}
+                          placeholder="Ex: Direito - UFMG"
+                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newEducation =
+                              professionalForm.education.filter(
+                                (_, i) => i !== index
+                              );
+                            setProfessionalForm({
+                              ...professionalForm,
+                              education: newEducation,
+                            });
+                          }}
+                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfessionalForm({
+                          ...professionalForm,
+                          education: [...professionalForm.education, ""],
+                        });
+                      }}
+                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                    >
+                      + Adicionar Formação
+                    </button>
+                  </div>
+
+                  {/* Specializations (Array) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Especializações
+                    </label>
+                    {professionalForm.specializations.map((spec, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={spec}
+                          onChange={(e) => {
+                            const newSpecs = [
+                              ...professionalForm.specializations,
+                            ];
+                            newSpecs[index] = e.target.value;
+                            setProfessionalForm({
+                              ...professionalForm,
+                              specializations: newSpecs,
+                            });
+                          }}
+                          placeholder="Ex: Direito Trabalhista"
+                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newSpecs =
+                              professionalForm.specializations.filter(
+                                (_, i) => i !== index
+                              );
+                            setProfessionalForm({
+                              ...professionalForm,
+                              specializations: newSpecs,
+                            });
+                          }}
+                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfessionalForm({
+                          ...professionalForm,
+                          specializations: [
+                            ...professionalForm.specializations,
+                            "",
+                          ],
+                        });
+                      }}
+                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                    >
+                      + Adicionar Especialização
+                    </button>
+                  </div>
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="submit"
@@ -1241,11 +1741,26 @@ export const Admin: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      Password *
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={userForm.email}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, email: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Password{" "}
+                      {editingItem ? "(deixe vazio para não alterar)" : "*"}
                     </label>
                     <input
                       type="password"
-                      required
+                      required={!editingItem}
                       value={userForm.password}
                       onChange={(e) =>
                         setUserForm({ ...userForm, password: e.target.value })
@@ -1268,6 +1783,20 @@ export const Admin: React.FC = () => {
                       <option value="editor">Editor</option>
                       <option value="admin">Admin</option>
                     </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="approved"
+                      checked={userForm.approved}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, approved: e.target.checked })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="approved" className="text-sm font-medium">
+                      Usuário Aprovado
+                    </label>
                   </div>
                   <div className="flex gap-3 pt-4">
                     <button
