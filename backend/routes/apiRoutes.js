@@ -12,6 +12,10 @@ router.post("/leads", mainController.createLead); // Form submission from public
 router.get("/posts", contentController.getPosts);
 router.get("/professionals", contentController.getProfessionals);
 
+// Password Reset (Public - NO AUTH REQUIRED)
+router.post("/forgot-password", contentController.forgotPassword);
+router.post("/reset-password", contentController.resetPassword);
+
 // Protected Routes (Admin)
 router.use(authMiddleware);
 

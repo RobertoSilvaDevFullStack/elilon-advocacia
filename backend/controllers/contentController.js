@@ -1,4 +1,7 @@
 const db = require("../database-postgres");
+const crypto = require("crypto");
+// TEMPORÁRIO: Comentado até nodemailer estar instalado
+// const { sendResetEmail } = require("../config/email");
 
 // POSTS
 exports.getPosts = async (req, res) => {
@@ -264,5 +267,106 @@ exports.deleteUser = async (req, res) => {
   } catch (err) {
     console.error("Delete user error:", err);
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// PASSWORD RESET
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    // Buscar usuário por email
+    const userResult = await db.query(
+      "SELECT id, username, email FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (userResult.rows.length === 0) {
+      // Não revelar se email existe (segurança)
+      return res.json({
+        success: true,
+        message: "Se o email existir, você receberá instruções de recuperação.",
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    // Gerar token único
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hora
+
+    // Salvar token no banco
+    await db.query(
+      "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
+      [user.id, resetToken, expiresAt]
+    );
+
+    // TEMPORÁRIO: Desabilitado envio de email até nodemailer estar instalado
+    // await sendResetEmail(user.email, resetToken);
+
+    // LOG temporário para teste (REMOVER depois)
+    console.log("==============================================");
+    console.log("RESET TOKEN GERADO (TEMPORÁRIO - APENAS TESTE)");
+    console.log("User:", user.email);
+    console.log("Token:", resetToken);
+    console.log(
+      "Link:",
+      `https://elilonlopesadvogados.com.br/admin/reset-password?token=${resetToken}`
+    );
+    console.log("==============================================");
+
+    res.json({
+      success: true,
+      message: "Se o email existir, você receberá instruções de recuperação.",
+    });
+  } catch (err) {
+    console.error("Forgot password error:", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Erro ao processar solicitação" });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  try {
+    // Buscar token válido
+    const tokenResult = await db.query(
+      `SELECT t.id, t.user_id, t.used, t.expires_at 
+       FROM password_reset_tokens t 
+       WHERE t.token = $1 AND t.used = FALSE AND t.expires_at > NOW()`,
+      [token]
+    );
+
+    if (tokenResult.rows.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Token inválido ou expirado",
+      });
+    }
+
+    const resetToken = tokenResult.rows[0];
+
+    // Hash da nova senha
+    const bcrypt = require("bcryptjs");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Atualizar senha
+    await db.query("UPDATE users SET password = $1 WHERE id = $2", [
+      hashedPassword,
+      resetToken.user_id,
+    ]);
+
+    // Marcar token como usado
+    await db.query(
+      "UPDATE password_reset_tokens SET used = TRUE WHERE id = $1",
+      [resetToken.id]
+    );
+
+    res.json({ success: true, message: "Senha atualizada com sucesso!" });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ success: false, message: "Erro ao resetar senha" });
   }
 };

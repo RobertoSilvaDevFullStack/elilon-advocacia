@@ -18,6 +18,7 @@ import { Blog } from "./pages/Blog";
 import { BlogPostDetail } from "./pages/BlogPostDetail";
 import { Contact } from "./pages/Contact";
 import { Admin } from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { TermsOfUse } from "./pages/TermsOfUse";
 
@@ -54,6 +55,7 @@ const App: React.FC = () => {
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPostDetail />} />
           <Route path="/contato" element={<Contact />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos" element={<TermsOfUse />} />

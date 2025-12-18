@@ -89,6 +89,8 @@ export const Admin: React.FC = () => {
     approved: false,
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   // AUTH LOGIN
   const handleLogin = async (e: React.FormEvent) => {
@@ -362,16 +364,60 @@ export const Admin: React.FC = () => {
             <Button className="w-full justify-center">Entrar</Button>
             <button
               type="button"
-              onClick={() =>
-                alert(
-                  "Para recuperar sua senha, entre em contato com o administrador informando seu nome de usuário ou email cadastrado."
-                )
-              }
+              onClick={() => setShowForgotPasswordModal(true)}
               className="w-full text-sm text-accent-600 hover:text-accent-700 mt-3 underline"
             >
               Esqueceu sua senha?
             </button>
           </form>
+          {showForgotPasswordModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <h3 className="text-xl font-bold mb-4">Recuperar Senha</h3>
+                <p className="text-sm text-neutral-600 mb-6">
+                  Digite seu email para receber as instruções de recuperação.
+                </p>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="w-full border border-neutral-300 p-3 rounded mb-4"
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowForgotPasswordModal(false);
+                      setResetEmail("");
+                    }}
+                    className="flex-1 px-4 py-2 border rounded hover:bg-neutral-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`${API_URL}/forgot-password`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: resetEmail }),
+                        });
+                        const data = await res.json();
+                        alert(data.message);
+                        setShowForgotPasswordModal(false);
+                        setResetEmail("");
+                      } catch (err) {
+                        alert("Erro ao enviar solicitação");
+                      }
+                    }}
+                    className="flex-1 px-4 py-2 bg-accent-600 text-white rounded hover:bg-accent-700"
+                  >
+                    Enviar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="mt-4 text-center">
             <Link
               to="/"
