@@ -68,6 +68,25 @@ exports.createProfessional = async (req, res) => {
   }
 };
 
+exports.updateProfessional = async (req, res) => {
+  const { id } = req.params;
+  const { name, role, oab, area, bio, image, email, phone, linkedin } =
+    req.body;
+  try {
+    await db.query(
+      `UPDATE professionals 
+       SET name = $1, role = $2, oab = $3, area = $4, bio = $5, image = $6, 
+           email = $7, phone = $8, linkedin = $9
+       WHERE id = $10`,
+      [name, role, oab, area, bio, image, email, phone, linkedin, id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Update professional error:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 exports.deleteProfessional = async (req, res) => {
   const { id } = req.params;
   try {

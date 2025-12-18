@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
-import { PROFESSIONALS } from "../constants";
 import {
   Linkedin,
   Mail,
@@ -13,16 +12,78 @@ import {
   BookOpen,
 } from "lucide-react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+
+interface Professional {
+  id: number;
+  name: string;
+  role: string;
+  oab: string;
+  area: string;
+  image: string;
+  bio: string;
+  email: string;
+  linkedin: string;
+  phone: string;
+  location?: string;
+  education?: string[];
+  specializations?: string[];
+}
+
 export const ProfessionalDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const professional = PROFESSIONALS.find((p) => p.id === Number(id));
+  const [professional, setProfessional] = useState<Professional | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  useEffect(() => {
+    const fetchProfessional = async () => {
+      try {
+        const response = await fetch(`${API_URL}/professionals`);
+        const data = await response.json();
+
+        // Check if data is array or object with professionals
+        const professionalsArray = Array.isArray(data)
+          ? data
+          : data.professionals || [];
+
+        const found = professionalsArray.find(
+          (p: Professional) => p.id === Number(id)
+        );
+
+        if (found) {
+          setProfessional(found);
+        } else {
+          setNotFound(true);
+        }
+      } catch (error) {
+        console.error("Error fetching professional:", error);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfessional();
+  }, [id]);
 
   // Scroll to top when mounting
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  if (!professional) {
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-lg text-neutral-600">Carregando...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (notFound || !professional) {
     return <Navigate to="/profissionais" replace />;
   }
 

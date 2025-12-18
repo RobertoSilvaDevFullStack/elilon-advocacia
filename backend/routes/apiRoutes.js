@@ -8,6 +8,10 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.post("/track", mainController.trackVisit);
 router.post("/leads", mainController.createLead); // Form submission from public site
 
+// Public Content Routes (Read-only)
+router.get("/posts", contentController.getPosts);
+router.get("/professionals", contentController.getProfessionals);
+
 // Protected Routes (Admin)
 router.use(authMiddleware);
 
@@ -22,14 +26,13 @@ router.put("/leads/:id/status", mainController.updateLeadStatus);
 router.post("/settings", mainController.saveSettings);
 router.get("/settings", mainController.getSettings);
 
-// Content: Posts
-router.get("/posts", contentController.getPosts);
+// Content: Posts (Admin)
 router.post("/posts", contentController.createPost);
 router.delete("/posts/:id", contentController.deletePost);
 
-// Content: Professionals
-router.get("/professionals", contentController.getProfessionals);
+// Content: Professionals (Admin)
 router.post("/professionals", contentController.createProfessional);
+router.put("/professionals/:id", contentController.updateProfessional);
 router.delete("/professionals/:id", contentController.deleteProfessional);
 
 // Users

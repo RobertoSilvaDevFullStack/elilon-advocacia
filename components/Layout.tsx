@@ -99,7 +99,7 @@ const Navbar: React.FC = () => {
         {/* Mobile Toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden text-accent-500 z-50 relative"
+          className="lg:hidden text-accent-500 z-[70] relative"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} className="text-white" />}
         </button>
@@ -107,9 +107,9 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 bg-preto-500 z-40 transform transition-transform duration-300 ${
+        className={`fixed inset-0 bg-preto-500 z-[60] transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } flex flex-col justify-center items-center lg:hidden`}
+        } flex flex-col justify-center items-center lg:hidden pt-20`}
       >
         {NAV_ITEMS.map((item) => (
           <div key={item.path} className="flex flex-col items-center mb-6">
