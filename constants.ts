@@ -26,20 +26,20 @@ export const AREAS: AreaOfPractice[] = [
     image: "/images/direito-trabalhista.jpg",
   },
   {
-    id: 2,
-    title: "Direito Civil",
-    slug: "civil",
-    description:
-      "Soluções em contratos, responsabilidade civil, família e sucessões.",
-    image: "/images/direito-civil.png",
-  },
-  {
     id: 3,
     title: "Direito Previdenciário",
     slug: "previdenciario",
     description:
       "Planejamento previdenciário e requerimento de benefícios do INSS.",
     image: "/images/direito-previdenciario.jpg",
+  },
+  {
+    id: 5,
+    title: "Direito Tributário",
+    slug: "tributario",
+    description:
+      "Planejamento tributário, defesa em autuações e recuperação de créditos.",
+    image: "/images/direito-tributario.jpg",
   },
   {
     id: 4,
@@ -50,12 +50,12 @@ export const AREAS: AreaOfPractice[] = [
     image: "/images/direito-imobiliario.jpg",
   },
   {
-    id: 5,
-    title: "Direito Tributário",
-    slug: "tributario",
+    id: 2,
+    title: "Direito Civil",
+    slug: "civil",
     description:
-      "Planejamento tributário, defesa em autuações e recuperação de créditos.",
-    image: "/images/direito-tributario.jpg",
+      "Soluções em contratos, responsabilidade civil, família e sucessões.",
+    image: "/images/direito-civil.png",
   },
 ];
 

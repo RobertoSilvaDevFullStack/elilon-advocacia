@@ -34,6 +34,9 @@ export const Professionals: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedLetter, setSelectedLetter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 6;
 
   useEffect(() => {
     const fetchProfessionals = async () => {
@@ -42,10 +45,8 @@ export const Professionals: React.FC = () => {
         const data = await response.json();
         // Check if data is array direct (Postgres controller) or { success: ... }
         if (Array.isArray(data)) {
-          console.log("Professionals loaded:", data);
           setProfessionals(data);
         } else if (data.success && Array.isArray(data.professionals)) {
-          console.log("Professionals loaded:", data.professionals);
           setProfessionals(data.professionals);
         }
       } catch (error) {
@@ -58,8 +59,26 @@ export const Professionals: React.FC = () => {
     fetchProfessionals();
   }, []);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    selectedLocation,
+    selectedArea,
+    selectedRole,
+    selectedLetter,
+  ]);
+
   const filteredProfessionals = useMemo(() => {
-    return professionals.filter((p) => {
+    const hasFilters =
+      searchTerm ||
+      selectedLocation ||
+      selectedArea ||
+      selectedRole ||
+      selectedLetter;
+
+    let filtered = professionals.filter((p) => {
       const matchesSearch = p.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -84,6 +103,17 @@ export const Professionals: React.FC = () => {
         matchesLetter
       );
     });
+
+    // Dr. Elilon sempre primeiro quando não há filtros
+    if (!hasFilters) {
+      filtered = filtered.sort((a, b) => {
+        if (a.name.includes("Elilon")) return -1;
+        if (b.name.includes("Elilon")) return 1;
+        return 0;
+      });
+    }
+
+    return filtered;
   }, [
     professionals,
     searchTerm,
@@ -92,6 +122,13 @@ export const Professionals: React.FC = () => {
     selectedRole,
     selectedLetter,
   ]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProfessionals.length / ITEMS_PER_PAGE);
+  const paginatedProfessionals = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredProfessionals.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredProfessionals, currentPage]);
 
   const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -191,8 +228,8 @@ export const Professionals: React.FC = () => {
               <div className="col-span-full text-center py-20 text-neutral-500">
                 Carregando profissionais...
               </div>
-            ) : filteredProfessionals.length > 0 ? (
-              filteredProfessionals.map((prof, index) => (
+            ) : paginatedProfessionals.length > 0 ? (
+              paginatedProfessionals.map((prof, index) => (
                 <ScrollReveal
                   animation="fade-in-up"
                   delay={
@@ -273,6 +310,45 @@ export const Professionals: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-12">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border border-neutral-300 text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Anterior
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-4 py-2 border transition-colors ${
+                      currentPage === page
+                        ? "bg-accent-600 text-white border-accent-600"
+                        : "border-neutral-300 text-neutral-600 hover:bg-neutral-100"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border border-neutral-300 text-neutral-600 hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Próxima
+              </button>
+            </div>
+          )}
         </div>
       </section>
     </Layout>

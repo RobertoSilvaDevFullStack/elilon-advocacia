@@ -34,7 +34,6 @@ type ViewState =
 
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
-  console.log("🔧 API URL configured:", API_URL);
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [username, setUsername] = useState("");
@@ -292,10 +291,8 @@ export const Admin: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataProfessionals = await resProfessionals.json();
-      console.log("📋 Professionals API Response:", dataProfessionals);
       if (Array.isArray(dataProfessionals)) {
         setProfessionals(dataProfessionals);
-        console.log("✅ Professionals loaded:", dataProfessionals);
       }
 
       // Posts
@@ -303,10 +300,8 @@ export const Admin: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const dataPosts = await resPosts.json();
-      console.log("📋 Posts API Response:", dataPosts);
       if (Array.isArray(dataPosts)) {
         setPosts(dataPosts);
-        console.log("✅ Posts loaded:", dataPosts);
       }
     } catch (e) {
       console.error("Error fetching admin data", e);

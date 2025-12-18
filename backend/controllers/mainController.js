@@ -49,11 +49,15 @@ exports.createLead = async (req, res) => {
   const { name, email, phone, city, interest, message } = req.body;
 
   try {
-    // 1. Save to Local DB
-    await db.query(
-      `INSERT INTO leads (name, email, phone, city, interest, message) VALUES ($1,$2,$3,$4,$5,$6)`,
-      [name, email, phone, city, interest, message]
+    // 1. Save to Local DB with RETURNING
+    const result = await db.query(
+      `INSERT INTO leads (name, email, phone, city, interest, message, status) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [name, email, phone, city, interest, message, "Novo"]
     );
+
+    const lead = result.rows[0];
+    console.log("✅ Lead salvo no banco:", lead.id);
 
     // 2. Update Daily Stats
     const today = new Date().toISOString().split("T")[0];
@@ -63,7 +67,30 @@ exports.createLead = async (req, res) => {
       [today]
     );
 
-    // 3. Trigger Webhook (Integration)
+    // 3. Send to Exact Sales (async - doesn't block response)
+    const { sendLeadToExactSales } = require("../services/exactSalesService");
+    sendLeadToExactSales(lead)
+      .then((result) => {
+        if (result.success) {
+          console.log("✅ Lead enviado para Exact Sales:", lead.id);
+          // Update status in DB
+          db.query("UPDATE leads SET status = $1 WHERE id = $2", [
+            "Enviado para Exact Sales",
+            lead.id,
+          ]).catch((err) => console.error("Erro ao atualizar status:", err));
+        } else {
+          console.error("❌ Falha ao enviar para Exact Sales:", result.message);
+          db.query("UPDATE leads SET status = $1 WHERE id = $2", [
+            "Erro de Integração",
+            lead.id,
+          ]).catch((err) => console.error("Erro ao atualizar status:", err));
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Erro crítico ao enviar para Exact Sales:", err);
+      });
+
+    // 4. Legacy Webhook (keep for compatibility)
     const settingsResult = await db.query(
       "SELECT value FROM settings WHERE key = 'webhook_url'"
     );
@@ -75,10 +102,15 @@ exports.createLead = async (req, res) => {
         .catch((err) => console.error("Webhook failed", err.message));
     }
 
-    res.json({ success: true, message: "Lead saved" });
+    // 5. Respond immediately to user
+    res.json({
+      success: true,
+      message: "Lead cadastrado com sucesso!",
+      id: lead.id,
+    });
   } catch (err) {
     console.error("Create lead error:", err);
-    res.status(500).json({ success: false, message: "DB Error" });
+    res.status(500).json({ success: false, message: "Erro ao cadastrar lead" });
   }
 };
 
