@@ -65,10 +65,10 @@ const App: React.FC = () => {
           */}
 
           {/* Coming Soon - REMOVER ESTA LINHA NO DIA 02/01/2026 */}
-          <Route path="/" element={<ComingSoon />} />
+          {/* <Route path="/" element={<ComingSoon />} /> */}
 
           {/* Main Site - DESCOMENTAR ESTA LINHA NO DIA 02/01/2026 */}
-          {/* <Route path="/" element={<Home />} /> */}
+          <Route path="/" element={<Home />} />
 
           {/* Acesso temporário ao site completo durante desenvolvimento */}
           <Route path="/site" element={<Home />} />

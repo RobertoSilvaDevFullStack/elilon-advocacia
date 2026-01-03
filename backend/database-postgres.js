@@ -15,7 +15,9 @@ const pool = new Pool({
 pool.connect((err, client, release) => {
   if (err) {
     console.error("❌ Erro ao conectar ao PostgreSQL:", err.message);
-    process.exit(1);
+    console.log("💡 Dica: Verifique DATABASE_URL no .env");
+    console.log("💡 Formato esperado: postgresql://user:password@host:5432/database");
+    // Não fazer process.exit(1) para permitir debug
   } else {
     console.log("✅ Conectado ao PostgreSQL com sucesso!");
     release();

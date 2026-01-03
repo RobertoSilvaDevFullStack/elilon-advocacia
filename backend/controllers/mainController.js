@@ -1,4 +1,4 @@
-const db = require("../database-postgres");
+const db = require("../database/index");
 const axios = require("axios");
 
 // ANALYTICS

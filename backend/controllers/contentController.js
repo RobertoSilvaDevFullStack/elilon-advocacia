@@ -1,4 +1,4 @@
-const db = require("../database-postgres");
+const db = require("../database/index");
 const crypto = require("crypto");
 // TEMPORÁRIO: Comentado até nodemailer estar instalado
 // const { sendResetEmail } = require("../config/email");
@@ -45,9 +45,9 @@ exports.updatePost = async (req, res) => {
   // Generate slug from title if provided
   const slug = title
     ? title
-        .toLowerCase()
-        .replace(/ /g, "-")
-        .replace(/[^\w-]+/g, "")
+      .toLowerCase()
+      .replace(/ /g, "-")
+      .replace(/[^\w-]+/g, "")
     : undefined;
 
   try {
