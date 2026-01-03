@@ -6,50 +6,30 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// Manual CORS headers - aggressive approach
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const allowedOrigins = [
-    "https://elilonlopesadvogados.com.br",
-    "https://www.elilonlopesadvogados.com.br",  // Adicionar variação com www
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ];
-
-  // Debug: Log origin para identificar problemas
-  if (origin && !allowedOrigins.includes(origin)) {
-    console.log(`⚠️ Origin não permitido: ${origin}`);
-  }
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-
-  // Handle preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  next();
-});
-
 // CORS configuration - allow frontend domains
 const corsOptions = {
-  origin: [
-    "https://elilonlopesadvogados.com.br",
-    "https://www.elilonlopesadvogados.com.br",  // Adicionar variação com www
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "https://elilonlopesadvogados.com.br",
+      "https://www.elilonlopesadvogados.com.br",
+      "http://localhost:3000",
+      "http://localhost:5173",
+    ];
+
+    // Permitir requests sem origin (Postman, curl, etc)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log(`⚠️ Origin não permitido: ${origin}`);
+      callback(null, true); // TEMPORÁRIO: Permitir todos para debug
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
 };
 
 app.use(cors(corsOptions));
