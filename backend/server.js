@@ -11,9 +11,15 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     "https://elilonlopesadvogados.com.br",
+    "https://www.elilonlopesadvogados.com.br",  // Adicionar variação com www
     "http://localhost:3000",
     "http://localhost:5173",
   ];
+
+  // Debug: Log origin para identificar problemas
+  if (origin && !allowedOrigins.includes(origin)) {
+    console.log(`⚠️ Origin não permitido: ${origin}`);
+  }
 
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -38,6 +44,7 @@ app.use((req, res, next) => {
 const corsOptions = {
   origin: [
     "https://elilonlopesadvogados.com.br",
+    "https://www.elilonlopesadvogados.com.br",  // Adicionar variação com www
     "http://localhost:3000",
     "http://localhost:5173",
   ],
