@@ -106,6 +106,7 @@ export const Admin: React.FC = () => {
       if (data.success) {
         setIsLoggedIn(true);
         localStorage.setItem("token", data.token);
+        localStorage.setItem("lastActivity", Date.now().toString()); // Track login time
       } else {
         alert(data.message || "Erro ao fazer login");
       }
@@ -325,6 +326,72 @@ export const Admin: React.FC = () => {
     }
   };
 
+  // Check for existing token on mount (persistent login)
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const lastActivity = localStorage.getItem("lastActivity");
+
+    if (token) {
+      // Check if token is still valid (30 minutes = 1800000ms)
+      const now = Date.now();
+      const lastActivityTime = lastActivity ? parseInt(lastActivity) : now;
+      const inactiveTime = now - lastActivityTime;
+      const THIRTY_MINUTES = 30 * 60 * 1000; // 30 minutos em ms
+
+      if (inactiveTime < THIRTY_MINUTES) {
+        // Token válido e dentro do período de inatividade
+        setIsLoggedIn(true);
+        localStorage.setItem("lastActivity", now.toString());
+      } else {
+        // Token expirou por inatividade
+        localStorage.removeItem("token");
+        localStorage.removeItem("lastActivity");
+        setIsLoggedIn(false);
+      }
+    }
+  }, []);
+
+  // Track user activity and auto-logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const updateActivity = () => {
+      localStorage.setItem("lastActivity", Date.now().toString());
+    };
+
+    // Update activity on these events
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(event => {
+      window.addEventListener(event, updateActivity);
+    });
+
+    // Check for inactivity every minute
+    const inactivityInterval = setInterval(() => {
+      const lastActivity = localStorage.getItem("lastActivity");
+      if (lastActivity) {
+        const now = Date.now();
+        const inactiveTime = now - parseInt(lastActivity);
+        const THIRTY_MINUTES = 30 * 60 * 1000;
+
+        if (inactiveTime >= THIRTY_MINUTES) {
+          // Auto logout
+          localStorage.removeItem("token");
+          localStorage.removeItem("lastActivity");
+          setIsLoggedIn(false);
+          alert("Sessão expirada por inatividade. Faça login novamente.");
+        }
+      }
+    }, 60000); // Check every 1 minute
+
+    // Cleanup
+    return () => {
+      events.forEach(event => {
+        window.removeEventListener(event, updateActivity);
+      });
+      clearInterval(inactivityInterval);
+    };
+  }, [isLoggedIn]);
+
   useEffect(() => {
     if (isLoggedIn) fetchDashboardData();
   }, [isLoggedIn]);
@@ -429,13 +496,11 @@ export const Admin: React.FC = () => {
   const NavButton = ({ view, icon: Icon, label }: any) => (
     <button
       onClick={() => setCurrentView(view)}
-      className={`w-full flex items-center ${
-        sidebarCollapsed ? "justify-center" : "space-x-3"
-      } px-4 py-3 rounded transition-colors ${
-        currentView === view
+      className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"
+        } px-4 py-3 rounded transition-colors ${currentView === view
           ? "bg-accent-600 text-white"
           : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
-      }`}
+        }`}
       title={sidebarCollapsed ? label : undefined}
     >
       <Icon size={20} />
@@ -447,15 +512,13 @@ export const Admin: React.FC = () => {
     <div className="min-h-screen bg-neutral-50 flex font-sans">
       {/* Sidebar */}
       <aside
-        className={`${
-          sidebarCollapsed ? "w-20" : "w-64"
-        } bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300`}
+        className={`${sidebarCollapsed ? "w-20" : "w-64"
+          } bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300`}
       >
         <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
           <span
-            className={`text-lg font-headline font-bold tracking-widest text-accent-500 ${
-              sidebarCollapsed ? "hidden" : ""
-            }`}
+            className={`text-lg font-headline font-bold tracking-widest text-accent-500 ${sidebarCollapsed ? "hidden" : ""
+              }`}
           >
             ADMIN
           </span>
@@ -474,9 +537,8 @@ export const Admin: React.FC = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`transition-transform ${
-                sidebarCollapsed ? "rotate-180" : ""
-              }`}
+              className={`transition-transform ${sidebarCollapsed ? "rotate-180" : ""
+                }`}
             >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -495,10 +557,13 @@ export const Admin: React.FC = () => {
         </nav>
         <div className="p-4 border-t border-neutral-800">
           <button
-            onClick={() => setIsLoggedIn(false)}
-            className={`w-full flex items-center ${
-              sidebarCollapsed ? "justify-center" : "space-x-3"
-            } px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors`}
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("lastActivity");
+              setIsLoggedIn(false);
+            }}
+            className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"
+              } px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors`}
           >
             <LogOut size={20} />
             {!sidebarCollapsed && <span>Sair</span>}
@@ -511,7 +576,11 @@ export const Admin: React.FC = () => {
         {/* Mobile Header */}
         <header className="md:hidden bg-neutral-900 text-white p-4 flex justify-between items-center shadow-md">
           <span className="font-headline font-bold text-accent-500">ADMIN</span>
-          <button onClick={() => setIsLoggedIn(false)}>
+          <button onClick={() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("lastActivity");
+            setIsLoggedIn(false);
+          }}>
             <LogOut size={20} />
           </button>
         </header>
@@ -649,23 +718,21 @@ export const Admin: React.FC = () => {
                           <td className="p-4 text-sm">{user.email || "-"}</td>
                           <td className="p-4">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-bold uppercase ${
-                                user.role === "admin" ||
+                              className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === "admin" ||
                                 user.role === "superadmin"
-                                  ? "bg-purple-100 text-purple-800"
-                                  : "bg-gray-100 text-gray-800"
-                              }`}
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-800"
+                                }`}
                             >
                               {user.role}
                             </span>
                           </td>
                           <td className="p-4">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-bold ${
-                                user.approved
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                              }`}
+                              className={`px-2 py-1 rounded text-xs font-bold ${user.approved
+                                ? "bg-green-100 text-green-800"
+                                : "bg-yellow-100 text-yellow-800"
+                                }`}
                             >
                               {user.approved ? "Aprovado" : "Pendente"}
                             </span>
@@ -810,9 +877,8 @@ export const Admin: React.FC = () => {
                     });
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
-                    link.download = `leads_${
-                      new Date().toISOString().split("T")[0]
-                    }.csv`;
+                    link.download = `leads_${new Date().toISOString().split("T")[0]
+                      }.csv`;
                     link.click();
                   }}
                 >
@@ -1138,10 +1204,9 @@ export const Admin: React.FC = () => {
                                 error
                               );
                               alert(
-                                `Erro ao excluir profissional: ${
-                                  error instanceof Error
-                                    ? error.message
-                                    : "Erro desconhecido"
+                                `Erro ao excluir profissional: ${error instanceof Error
+                                  ? error.message
+                                  : "Erro desconhecido"
                                 }`
                               );
                             }
