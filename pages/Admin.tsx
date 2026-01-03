@@ -36,6 +36,7 @@ export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Prevent login screen flash
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [currentView, setCurrentView] = useState<ViewState>("dashboard");
@@ -349,6 +350,9 @@ export const Admin: React.FC = () => {
         setIsLoggedIn(false);
       }
     }
+
+    // Finish checking auth (prevents login screen flash)
+    setIsCheckingAuth(false);
   }, []);
 
   // Track user activity and auto-logout after 30 minutes of inactivity
@@ -395,6 +399,18 @@ export const Admin: React.FC = () => {
   useEffect(() => {
     if (isLoggedIn) fetchDashboardData();
   }, [isLoggedIn]);
+
+  // Show loading while checking authentication (prevents login screen flash)
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-neutral-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-500 mx-auto mb-4"></div>
+          <p className="text-neutral-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoggedIn) {
     return (
@@ -1101,6 +1117,20 @@ export const Admin: React.FC = () => {
                   className="flex items-center gap-2"
                   onClick={() => {
                     setEditingItem(null);
+                    setProfessionalForm({
+                      name: "",
+                      role: "",
+                      oab: "",
+                      area: "",
+                      bio: "",
+                      image: "",
+                      email: "",
+                      linkedin: "",
+                      phone: "",
+                      location: "",
+                      education: [],
+                      specializations: [],
+                    });
                     setShowProfessionalModal(true);
                   }}
                 >
