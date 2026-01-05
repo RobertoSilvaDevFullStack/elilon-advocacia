@@ -155,12 +155,15 @@ const Footer: React.FC = () => {
           </form>
         </div>
       </div>
-      <div className="container mx-auto px-4 mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-neutral-500">
-        <p>
+      <div className="container mx-auto px-4 mt-8 text-center">
+        <p className="text-xs text-neutral-500 mb-2">
           &copy; {new Date().getFullYear()} Elilon Lopes Advogados Sociedade de
           Advogados. Todos os direitos reservados.
         </p>
-        <div className="flex space-x-4 mt-4 md:mt-0">
+        <p className="text-sm font-semibold text-neutral-300 mb-4">
+          ELILON LOPES DE ABREU SOCIEDADE INDIVIDUAL DE ADVOCACIA
+        </p>
+        <div className="flex flex-wrap justify-center space-x-4 text-xs text-neutral-500">
           <Link to="/privacidade" className="hover:text-accent-400">
             Política de Privacidade
           </Link>
