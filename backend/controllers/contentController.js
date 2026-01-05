@@ -370,3 +370,58 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ success: false, message: "Erro ao resetar senha" });
   }
 };
+
+// APPROVE USER
+exports.approveUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(
+      "UPDATE users SET approved = true WHERE id = $1 RETURNING id, username, email, role, approved",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Usuário aprovado com sucesso!",
+      user: result.rows[0]
+    });
+  } catch (err) {
+    console.error("Approve user error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// REJECT USER (Delete)
+exports.rejectUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query(
+      "DELETE FROM users WHERE id = $1 RETURNING id, username",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado"
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Cadastro de ${result.rows[0].username} foi rejeitado e removido`
+    });
+  } catch (err) {
+    console.error("Reject user error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

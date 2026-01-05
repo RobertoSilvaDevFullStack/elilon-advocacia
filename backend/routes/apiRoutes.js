@@ -16,6 +16,11 @@ router.get("/professionals", contentController.getProfessionals);
 router.post("/forgot-password", contentController.forgotPassword);
 router.post("/reset-password", contentController.resetPassword);
 
+// Auth Routes (Public)
+const authController = require("../controllers/authController");
+router.post("/auth/register", authController.register);
+router.post("/auth/login", authController.login);
+
 // Protected Routes (Admin)
 router.use(authMiddleware);
 
@@ -44,7 +49,8 @@ router.delete("/professionals/:id", contentController.deleteProfessional);
 router.post("/users", contentController.createUser);
 router.get("/users", contentController.getUsers);
 router.put("/users/:id", contentController.updateUser);
-router.patch("/users/:id/approve", contentController.toggleUserApproval);
+router.put("/users/:id/approve", contentController.approveUser);
+router.delete("/users/:id/reject", contentController.rejectUser);
 router.delete("/users/:id", contentController.deleteUser);
 
 module.exports = router;

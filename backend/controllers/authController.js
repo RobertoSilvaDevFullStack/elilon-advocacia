@@ -16,7 +16,7 @@ exports.login = async (req, res) => {
     if (result.rows.length === 0) {
       return res
         .status(404)
-        .json({ success: false, message: "User not found" });
+        .json({ success: false, message: "Usuário não encontrado" });
     }
 
     const user = result.rows[0];
@@ -25,7 +25,16 @@ exports.login = async (req, res) => {
     if (!passwordIsValid) {
       return res
         .status(401)
-        .json({ success: false, token: null, message: "Invalid Password" });
+        .json({ success: false, token: null, message: "Senha inválida" });
+    }
+
+    // Check if user is approved
+    if (!user.approved) {
+      return res.status(403).json({
+        success: false,
+        code: "PENDING_APPROVAL",
+        message: "Sua conta está pendente de aprovação. Aguarde contato do administrador."
+      });
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
@@ -39,35 +48,80 @@ exports.login = async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, message: "Erro no servidor" });
   }
 };
 
 exports.register = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
-  if (!username || !password) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Username and password required" });
+  // Validate required fields
+  if (!username || !email || !password) {
+    return res.status(400).json({
+      success: false,
+      message: "Preencha todos os campos obrigatórios"
+    });
   }
 
-  const hashedPassword = bcrypt.hashSync(password, 8);
+  // Validate password length
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "A senha deve ter no mínimo 6 caracteres"
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({
+      success: false,
+      message: "Email inválido"
+    });
+  }
 
   try {
-    await db.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      username,
-      hashedPassword,
-    ]);
+    // Check if username or email already exists
+    const existingUser = await db.query(
+      "SELECT * FROM users WHERE username = $1 OR email = $2",
+      [username, email]
+    );
 
-    res
-      .status(200)
-      .json({ success: true, message: "User registered successfully!" });
+    if (existingUser.rows.length > 0) {
+      const existing = existingUser.rows[0];
+      if (existing.username === username) {
+        return res.status(400).json({
+          success: false,
+          message: "Nome de usuário já cadastrado"
+        });
+      }
+      if (existing.email === email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email já cadastrado"
+        });
+      }
+    }
+
+    // Hash password
+    const hashedPassword = bcrypt.hashSync(password, 8);
+
+    // Insert new user with approved = false and role = 'editor'
+    const result = await db.query(
+      "INSERT INTO users (username, email, password, role, approved) VALUES ($1, $2, $3, $4, $5) RETURNING id, username, email, role, approved",
+      [username, email, hashedPassword, 'editor', false]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Cadastro realizado com sucesso! Aguarde a aprovação do administrador para acessar o sistema.",
+      user: result.rows[0]
+    });
   } catch (err) {
     console.error("Register error:", err);
     res.status(500).json({
       success: false,
-      message: "Error registering user (Username might be taken)",
+      message: "Erro ao cadastrar usuário. Tente novamente."
     });
   }
 };

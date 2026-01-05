@@ -92,6 +92,16 @@ export const Admin: React.FC = () => {
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
 
+  // Registration States
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [registerMessage, setRegisterMessage] = useState("");
+
   // AUTH LOGIN
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,15 +117,67 @@ export const Admin: React.FC = () => {
       if (data.success) {
         setIsLoggedIn(true);
         localStorage.setItem("token", data.token);
-        localStorage.setItem("lastActivity", Date.now().toString()); // Track login time
+        localStorage.setItem("lastActivity", Date.now().toString());
       } else {
-        alert(data.message || "Erro ao fazer login");
+        // Handle pending approval
+        if (data.code === "PENDING_APPROVAL") {
+          alert("⏳ " + data.message);
+        } else {
+          alert(data.message || "Erro ao fazer login");
+        }
       }
     } catch (error) {
       console.error("Login failed", error);
       alert(
         "Erro de conexão com o servidor. Verifique se o backend está rodando."
       );
+    }
+  };
+
+  // AUTH REGISTER
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validations
+    if (!registerForm.username || !registerForm.email || !registerForm.password) {
+      return alert("Preencha todos os campos");
+    }
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      return alert("As senhas não coincidem");
+    }
+
+    if (registerForm.password.length < 6) {
+      return alert("A senha deve ter no mínimo 6 caracteres");
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: registerForm.username,
+          email: registerForm.email,
+          password: registerForm.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setRegisterMessage(data.message);
+        setRegisterForm({
+          username: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+        });
+      } else {
+        alert(data.message || "Erro ao cadastrar");
+      }
+    } catch (error) {
+      console.error("Register failed", error);
+      alert("Erro de conexão com o servidor");
     }
   };
 
@@ -447,7 +509,121 @@ export const Admin: React.FC = () => {
             >
               Esqueceu sua senha?
             </button>
+            <button
+              type="button"
+              onClick={() => setShowRegisterModal(true)}
+              className="w-full text-sm text-neutral-600 hover:text-accent-600 mt-2"
+            >
+              Não tem uma conta? <span className="font-semibold text-accent-600">Cadastre-se</span>
+            </button>
           </form>
+
+          {/* Registration Modal */}
+          {showRegisterModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
+                {registerMessage ? (
+                  <>
+                    <h3 className="text-xl font-bold mb-4 text-green-600">✅ Cadastro Realizado!</h3>
+                    <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
+                      {registerMessage}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowRegisterModal(false);
+                        setRegisterMessage("");
+                      }}
+                      className="w-full bg-accent-600 text-white py-2 rounded hover:bg-accent-700"
+                    >
+                      Fechar
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-bold mb-4">Cadastrar-se</h3>
+                    <p className="text-sm text-neutral-600 mb-6">
+                      Crie sua conta e aguarde a aprovação do administrador.
+                    </p>
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Nome de Usuário
+                        </label>
+                        <input
+                          type="text"
+                          value={registerForm.username}
+                          onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
+                          className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={registerForm.email}
+                          onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                          className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Senha
+                        </label>
+                        <input
+                          type="password"
+                          value={registerForm.password}
+                          onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                          className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
+                          required
+                          minLength={6}
+                        />
+                        <p className="text-xs text-neutral-500 mt-1">Mínimo 6 caracteres</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Confirmar Senha
+                        </label>
+                        <input
+                          type="password"
+                          value={registerForm.confirmPassword}
+                          onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                          className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          type="submit"
+                          className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700"
+                        >
+                          Cadastrar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowRegisterModal(false);
+                            setRegisterForm({ username: "", email: "", password: "", confirmPassword: "" });
+                          }}
+                          className="flex-1 border border-neutral-300 py-2 rounded hover:bg-neutral-50"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {showForgotPasswordModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -773,51 +949,87 @@ export const Admin: React.FC = () => {
                             >
                               Editar
                             </button>
+
+                            {!user.approved && (
+                              <button
+                                className="text-green-600 hover:underline text-xs font-semibold"
+                                onClick={async () => {
+                                  if (confirm(`Aprovar cadastro de ${user.username}?`)) {
+                                    const token = localStorage.getItem("token");
+                                    try {
+                                      const response = await fetch(`${API_URL}/users/${user.id}/approve`, {
+                                        method: "PUT",
+                                        headers: { Authorization: `Bearer ${token}` },
+                                      });
+                                      const data = await response.json();
+                                      if (data.success) {
+                                        alert("✅ " + data.message);
+                                        fetchDashboardData();
+                                      } else {
+                                        alert("Erro ao aprovar usuário");
+                                      }
+                                    } catch (error) {
+                                      alert("Erro de conexão");
+                                    }
+                                  }
+                                }}
+                              >
+                                ✅ Aprovar
+                              </button>
+                            )}
+
+                            {!user.approved && (
+                              <button
+                                className="text-red-600 hover:underline text-xs"
+                                onClick={async () => {
+                                  if (confirm(`Rejeitar cadastro de ${user.username}? Esta ação não pode ser desfeita.`)) {
+                                    const token = localStorage.getItem("token");
+                                    try {
+                                      const response = await fetch(`${API_URL}/users/${user.id}/reject`, {
+                                        method: "DELETE",
+                                        headers: { Authorization: `Bearer ${token}` },
+                                      });
+                                      const data = await response.json();
+                                      if (data.success) {
+                                        alert(data.message);
+                                        fetchDashboardData();
+                                      } else {
+                                        alert("Erro ao rejeitar");
+                                      }
+                                    } catch (error) {
+                                      alert("Erro de conexão");
+                                    }
+                                  }
+                                }}
+                              >
+                                ❌ Rejeitar
+                              </button>
+                            )}
+
                             <button
                               className="text-red-600 hover:underline text-xs"
                               onClick={async () => {
-                                if (
-                                  !confirm(
-                                    `Tem certeza que deseja excluir o usuário "${user.username}"?`
-                                  )
-                                )
-                                  return;
-
-                                try {
+                                if (confirm(`Deletar usuário ${user.username}?`)) {
                                   const token = localStorage.getItem("token");
-                                  const res = await fetch(
-                                    `${API_URL}/users/${user.id}`,
-                                    {
+                                  try {
+                                    const response = await fetch(`${API_URL}/users/${user.id}`, {
                                       method: "DELETE",
-                                      headers: {
-                                        Authorization: `Bearer ${token}`,
-                                      },
+                                      headers: { Authorization: `Bearer ${token}` },
+                                    });
+                                    if (response.ok) {
+                                      alert("Usuário excluído com sucesso!");
+                                      fetchDashboardData();
+                                    } else {
+                                      alert("Erro ao excluir usuário");
                                     }
-                                  );
-
-                                  if (!res.ok)
-                                    throw new Error(
-                                      `HTTP error! status: ${res.status}`
-                                    );
-
-                                  const data = await res.json();
-                                  if (data.success) {
-                                    alert("Usuário excluído com sucesso!");
-                                    fetchDashboardData();
-                                  } else {
-                                    throw new Error(
-                                      data.message || "Erro ao excluir"
-                                    );
+                                  } catch (error: any) {
+                                    console.error("Delete error:", error);
+                                    alert(`Erro ao excluir usuário: ${error.message}`);
                                   }
-                                } catch (error: any) {
-                                  console.error("Delete error:", error);
-                                  alert(
-                                    `Erro ao excluir usuário: ${error.message}`
-                                  );
                                 }
                               }}
                             >
-                              Excluir
+                              Deletar
                             </button>
                           </td>
                         </tr>
@@ -1254,708 +1466,714 @@ export const Admin: React.FC = () => {
         </div>
 
         {/* POST FORM MODAL */}
-        {showPostModal && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowPostModal(false)}
-          >
+        {
+          showPostModal && (
             <div
-              className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowPostModal(false)}
             >
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-6">
-                  {editingItem ? "Editar Artigo" : "Novo Artigo"}
-                </h2>
-                <form onSubmit={handlePostSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Título *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={postForm.title}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, title: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Categoria *
-                    </label>
-                    <select
-                      required
-                      value={postForm.category}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, category: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    >
-                      <option value="">Selecione...</option>
-                      <option value="TRABALHISTA">Trabalhista</option>
-                      <option value="TRIBUTÁRIO">Tributário</option>
-                      <option value="AGRONEGÓCIO">Agronegócio</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Slug
-                    </label>
-                    <input
-                      type="text"
-                      value={postForm.slug}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, slug: e.target.value })
-                      }
-                      placeholder="auto-gerado do título"
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Imagem de Capa
-                    </label>
-                    <div className="space-y-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          const reader = new FileReader();
-                          reader.onload = (event) => {
-                            const img = new Image();
-                            img.onload = () => {
-                              const canvas = document.createElement("canvas");
-                              const maxWidth = 800;
-                              const maxHeight = 600;
-                              let width = img.width;
-                              let height = img.height;
-
-                              if (width > height) {
-                                if (width > maxWidth) {
-                                  height *= maxWidth / width;
-                                  width = maxWidth;
-                                }
-                              } else {
-                                if (height > maxHeight) {
-                                  width *= maxHeight / height;
-                                  height = maxHeight;
-                                }
-                              }
-
-                              canvas.width = width;
-                              canvas.height = height;
-                              const ctx = canvas.getContext("2d");
-                              ctx?.drawImage(img, 0, 0, width, height);
-                              const base64 = canvas.toDataURL(
-                                "image/jpeg",
-                                0.85
-                              );
-                              setPostForm({ ...postForm, image: base64 });
-                            };
-                            img.src = event.target?.result as string;
-                          };
-                          reader.readAsDataURL(file);
-                        }}
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
-                      {postForm.image && (
-                        <img
-                          src={postForm.image}
-                          alt="Preview"
-                          className="w-full h-48 object-cover rounded"
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Resumo
-                    </label>
-                    <textarea
-                      value={postForm.excerpt}
-                      onChange={(e) =>
-                        setPostForm({ ...postForm, excerpt: e.target.value })
-                      }
-                      rows={2}
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    ></textarea>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Conteúdo *
-                    </label>
-                    <ReactQuill
-                      theme="snow"
-                      value={postForm.content}
-                      onChange={(value) =>
-                        setPostForm({ ...postForm, content: value })
-                      }
-                      modules={{
-                        toolbar: [
-                          [{ header: [1, 2, 3, false] }],
-                          ["bold", "italic", "underline", "strike"],
-                          [{ list: "ordered" }, { list: "bullet" }],
-                          ["blockquote", "code-block"],
-                          [{ align: [] }],
-                          ["link"],
-                          ["clean"],
-                        ],
-                      }}
-                      className="bg-white"
-                      style={{ height: "300px", marginBottom: "50px" }}
-                    />
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                    >
-                      {loading ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowPostModal(false)}
-                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showProfessionalModal && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowProfessionalModal(false)}
-          >
-            <div
-              className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-6">
-                  {editingItem ? "Editar Profissional" : "Novo Profissional"}
-                </h2>
-                <form onSubmit={handleProfessionalSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+              <div
+                className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold mb-6">
+                    {editingItem ? "Editar Artigo" : "Novo Artigo"}
+                  </h2>
+                  <form onSubmit={handlePostSubmit} className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Nome *
+                        Título *
                       </label>
                       <input
                         type="text"
                         required
-                        value={professionalForm.name}
+                        value={postForm.title}
                         onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            name: e.target.value,
-                          })
+                          setPostForm({ ...postForm, title: e.target.value })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Cargo *
+                        Categoria *
                       </label>
-                      <input
-                        type="text"
+                      <select
                         required
-                        value={professionalForm.role}
+                        value={postForm.category}
                         onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            role: e.target.value,
-                          })
+                          setPostForm({ ...postForm, category: e.target.value })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        OAB
-                      </label>
-                      <input
-                        type="text"
-                        value={professionalForm.oab}
-                        onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            oab: e.target.value,
-                          })
-                        }
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
+                      >
+                        <option value="">Selecione...</option>
+                        <option value="TRABALHISTA">Trabalhista</option>
+                        <option value="TRIBUTÁRIO">Tributário</option>
+                        <option value="AGRONEGÓCIO">Agronegócio</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Área
+                        Slug
                       </label>
                       <input
                         type="text"
-                        value={professionalForm.area}
+                        value={postForm.slug}
                         onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            area: e.target.value,
-                          })
+                          setPostForm({ ...postForm, slug: e.target.value })
                         }
+                        placeholder="auto-gerado do título"
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Bio
-                    </label>
-                    <textarea
-                      value={professionalForm.bio}
-                      onChange={(e) =>
-                        setProfessionalForm({
-                          ...professionalForm,
-                          bio: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    ></textarea>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Foto do Profissional
-                    </label>
-
-                    {/* Preview da imagem */}
-                    {professionalForm.image && (
-                      <div className="mb-3 flex justify-center">
-                        <img
-                          src={professionalForm.image}
-                          alt="Preview"
-                          className="w-32 h-32 object-cover rounded border-2 border-neutral-300"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      {/* Botão para upload local */}
-                      <label className="flex-1 cursor-pointer">
-                        <div className="w-full bg-primary-600 text-white text-center px-4 py-2 rounded hover:bg-primary-700 transition text-sm font-medium">
-                          📤 Upload Local
-                        </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Imagem de Capa
+                      </label>
+                      <div className="space-y-2">
                         <input
                           type="file"
                           accept="image/*"
-                          className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
 
-                            // Criar preview e redimensionar
                             const reader = new FileReader();
                             reader.onload = (event) => {
                               const img = new Image();
                               img.onload = () => {
-                                // Redimensionar para 400x400
                                 const canvas = document.createElement("canvas");
+                                const maxWidth = 800;
+                                const maxHeight = 600;
+                                let width = img.width;
+                                let height = img.height;
+
+                                if (width > height) {
+                                  if (width > maxWidth) {
+                                    height *= maxWidth / width;
+                                    width = maxWidth;
+                                  }
+                                } else {
+                                  if (height > maxHeight) {
+                                    width *= maxHeight / height;
+                                    height = maxHeight;
+                                  }
+                                }
+
+                                canvas.width = width;
+                                canvas.height = height;
                                 const ctx = canvas.getContext("2d");
-
-                                const size = 400;
-                                canvas.width = size;
-                                canvas.height = size;
-
-                                // Calcular crop para manter proporção
-                                const scale = Math.max(
-                                  size / img.width,
-                                  size / img.height
-                                );
-                                const x = size / 2 - (img.width / 2) * scale;
-                                const y = size / 2 - (img.height / 2) * scale;
-
-                                ctx?.drawImage(
-                                  img,
-                                  x,
-                                  y,
-                                  img.width * scale,
-                                  img.height * scale
-                                );
-
-                                // Converter para base64
-                                const resizedBase64 = canvas.toDataURL(
+                                ctx?.drawImage(img, 0, 0, width, height);
+                                const base64 = canvas.toDataURL(
                                   "image/jpeg",
                                   0.85
                                 );
-
-                                setProfessionalForm({
-                                  ...professionalForm,
-                                  image: resizedBase64,
-                                });
+                                setPostForm({ ...postForm, image: base64 });
                               };
                               img.src = event.target?.result as string;
                             };
                             reader.readAsDataURL(file);
                           }}
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
                         />
+                        {postForm.image && (
+                          <img
+                            src={postForm.image}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Resumo
+                      </label>
+                      <textarea
+                        value={postForm.excerpt}
+                        onChange={(e) =>
+                          setPostForm({ ...postForm, excerpt: e.target.value })
+                        }
+                        rows={2}
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Conteúdo *
+                      </label>
+                      <ReactQuill
+                        theme="snow"
+                        value={postForm.content}
+                        onChange={(value) =>
+                          setPostForm({ ...postForm, content: value })
+                        }
+                        modules={{
+                          toolbar: [
+                            [{ header: [1, 2, 3, false] }],
+                            ["bold", "italic", "underline", "strike"],
+                            [{ list: "ordered" }, { list: "bullet" }],
+                            ["blockquote", "code-block"],
+                            [{ align: [] }],
+                            ["link"],
+                            ["clean"],
+                          ],
+                        }}
+                        className="bg-white"
+                        style={{ height: "300px", marginBottom: "50px" }}
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                      >
+                        {loading ? "Salvando..." : "Salvar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPostModal(false)}
+                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {
+          showProfessionalModal && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowProfessionalModal(false)}
+            >
+              <div
+                className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold mb-6">
+                    {editingItem ? "Editar Profissional" : "Novo Profissional"}
+                  </h2>
+                  <form onSubmit={handleProfessionalSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Nome *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={professionalForm.name}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              name: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Cargo *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={professionalForm.role}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              role: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          OAB
+                        </label>
+                        <input
+                          type="text"
+                          value={professionalForm.oab}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              oab: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Área
+                        </label>
+                        <input
+                          type="text"
+                          value={professionalForm.area}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              area: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Bio
+                      </label>
+                      <textarea
+                        value={professionalForm.bio}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            bio: e.target.value,
+                          })
+                        }
+                        rows={3}
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      ></textarea>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Foto do Profissional
                       </label>
 
-                      {/* Botão para URL externa */}
+                      {/* Preview da imagem */}
+                      {professionalForm.image && (
+                        <div className="mb-3 flex justify-center">
+                          <img
+                            src={professionalForm.image}
+                            alt="Preview"
+                            className="w-32 h-32 object-cover rounded border-2 border-neutral-300"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        {/* Botão para upload local */}
+                        <label className="flex-1 cursor-pointer">
+                          <div className="w-full bg-primary-600 text-white text-center px-4 py-2 rounded hover:bg-primary-700 transition text-sm font-medium">
+                            📤 Upload Local
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+
+                              // Criar preview e redimensionar
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const img = new Image();
+                                img.onload = () => {
+                                  // Redimensionar para 400x400
+                                  const canvas = document.createElement("canvas");
+                                  const ctx = canvas.getContext("2d");
+
+                                  const size = 400;
+                                  canvas.width = size;
+                                  canvas.height = size;
+
+                                  // Calcular crop para manter proporção
+                                  const scale = Math.max(
+                                    size / img.width,
+                                    size / img.height
+                                  );
+                                  const x = size / 2 - (img.width / 2) * scale;
+                                  const y = size / 2 - (img.height / 2) * scale;
+
+                                  ctx?.drawImage(
+                                    img,
+                                    x,
+                                    y,
+                                    img.width * scale,
+                                    img.height * scale
+                                  );
+
+                                  // Converter para base64
+                                  const resizedBase64 = canvas.toDataURL(
+                                    "image/jpeg",
+                                    0.85
+                                  );
+
+                                  setProfessionalForm({
+                                    ...professionalForm,
+                                    image: resizedBase64,
+                                  });
+                                };
+                                img.src = event.target?.result as string;
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                          />
+                        </label>
+
+                        {/* Botão para URL externa */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const url = prompt("Cole a URL da imagem:");
+                            if (url) {
+                              setProfessionalForm({
+                                ...professionalForm,
+                                image: url,
+                              });
+                            }
+                          }}
+                          className="flex-1 bg-neutral-200 text-neutral-700 px-4 py-2 rounded hover:bg-neutral-300 transition text-sm font-medium"
+                        >
+                          🔗 URL Externa
+                        </button>
+                      </div>
+
+                      {/* Input manual (opcional) */}
+                      <input
+                        type="text"
+                        value={professionalForm.image}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            image: e.target.value,
+                          })
+                        }
+                        placeholder="Ou cole a URL/Base64 manualmente"
+                        className="w-full border border-neutral-300 rounded px-3 py-2 mt-2 text-xs text-neutral-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          value={professionalForm.email}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              email: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Telefone
+                        </label>
+                        <input
+                          type="tel"
+                          value={professionalForm.phone}
+                          onChange={(e) =>
+                            setProfessionalForm({
+                              ...professionalForm,
+                              phone: e.target.value,
+                            })
+                          }
+                          className="w-full border border-neutral-300 rounded px-3 py-2"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        LinkedIn
+                      </label>
+                      <input
+                        type="url"
+                        value={professionalForm.linkedin}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            linkedin: e.target.value,
+                          })
+                        }
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Localização
+                      </label>
+                      <input
+                        type="text"
+                        value={professionalForm.location}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            location: e.target.value,
+                          })
+                        }
+                        placeholder="Ex: Belo Horizonte - MG"
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                    </div>
+
+                    {/* Education (Array) */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Formação Acadêmica
+                      </label>
+                      {professionalForm.education.map((edu, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={edu}
+                            onChange={(e) => {
+                              const newEducation = [
+                                ...professionalForm.education,
+                              ];
+                              newEducation[index] = e.target.value;
+                              setProfessionalForm({
+                                ...professionalForm,
+                                education: newEducation,
+                              });
+                            }}
+                            placeholder="Ex: Direito - UFMG"
+                            className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newEducation =
+                                professionalForm.education.filter(
+                                  (_, i) => i !== index
+                                );
+                              setProfessionalForm({
+                                ...professionalForm,
+                                education: newEducation,
+                              });
+                            }}
+                            className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
                       <button
                         type="button"
                         onClick={() => {
-                          const url = prompt("Cole a URL da imagem:");
-                          if (url) {
-                            setProfessionalForm({
-                              ...professionalForm,
-                              image: url,
-                            });
-                          }
+                          setProfessionalForm({
+                            ...professionalForm,
+                            education: [...professionalForm.education, ""],
+                          });
                         }}
-                        className="flex-1 bg-neutral-200 text-neutral-700 px-4 py-2 rounded hover:bg-neutral-300 transition text-sm font-medium"
+                        className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
                       >
-                        🔗 URL Externa
+                        + Adicionar Formação
                       </button>
                     </div>
 
-                    {/* Input manual (opcional) */}
-                    <input
-                      type="text"
-                      value={professionalForm.image}
-                      onChange={(e) =>
-                        setProfessionalForm({
-                          ...professionalForm,
-                          image: e.target.value,
-                        })
-                      }
-                      placeholder="Ou cole a URL/Base64 manualmente"
-                      className="w-full border border-neutral-300 rounded px-3 py-2 mt-2 text-xs text-neutral-500"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
+                    {/* Specializations (Array) */}
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Email
+                        Especializações
+                      </label>
+                      {professionalForm.specializations.map((spec, index) => (
+                        <div key={index} className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={spec}
+                            onChange={(e) => {
+                              const newSpecs = [
+                                ...professionalForm.specializations,
+                              ];
+                              newSpecs[index] = e.target.value;
+                              setProfessionalForm({
+                                ...professionalForm,
+                                specializations: newSpecs,
+                              });
+                            }}
+                            placeholder="Ex: Direito Trabalhista"
+                            className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newSpecs =
+                                professionalForm.specializations.filter(
+                                  (_, i) => i !== index
+                                );
+                              setProfessionalForm({
+                                ...professionalForm,
+                                specializations: newSpecs,
+                              });
+                            }}
+                            className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfessionalForm({
+                            ...professionalForm,
+                            specializations: [
+                              ...professionalForm.specializations,
+                              "",
+                            ],
+                          });
+                        }}
+                        className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                      >
+                        + Adicionar Especialização
+                      </button>
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                      >
+                        {loading ? "Salvando..." : "Salvar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowProfessionalModal(false)}
+                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )
+        }
+
+        {
+          showUserModal && (
+            <div
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={() => setShowUserModal(false)}
+            >
+              <div
+                className="bg-white rounded-lg max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <h2 className="text-2xl font-bold mb-6">
+                    {editingItem ? "Editar Usuário" : "Novo Usuário"}
+                  </h2>
+                  <form onSubmit={handleUserSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Username *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={userForm.username}
+                        onChange={(e) =>
+                          setUserForm({ ...userForm, username: e.target.value })
+                        }
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Email *
                       </label>
                       <input
                         type="email"
-                        value={professionalForm.email}
+                        required
+                        value={userForm.email}
                         onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            email: e.target.value,
-                          })
+                          setUserForm({ ...userForm, email: e.target.value })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Telefone
+                        Password{" "}
+                        {editingItem ? "(deixe vazio para não alterar)" : "*"}
                       </label>
                       <input
-                        type="tel"
-                        value={professionalForm.phone}
+                        type="password"
+                        required={!editingItem}
+                        value={userForm.password}
                         onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            phone: e.target.value,
-                          })
+                          setUserForm({ ...userForm, password: e.target.value })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      LinkedIn
-                    </label>
-                    <input
-                      type="url"
-                      value={professionalForm.linkedin}
-                      onChange={(e) =>
-                        setProfessionalForm({
-                          ...professionalForm,
-                          linkedin: e.target.value,
-                        })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-
-                  {/* Location */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Localização
-                    </label>
-                    <input
-                      type="text"
-                      value={professionalForm.location}
-                      onChange={(e) =>
-                        setProfessionalForm({
-                          ...professionalForm,
-                          location: e.target.value,
-                        })
-                      }
-                      placeholder="Ex: Belo Horizonte - MG"
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-
-                  {/* Education (Array) */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Formação Acadêmica
-                    </label>
-                    {professionalForm.education.map((edu, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={edu}
-                          onChange={(e) => {
-                            const newEducation = [
-                              ...professionalForm.education,
-                            ];
-                            newEducation[index] = e.target.value;
-                            setProfessionalForm({
-                              ...professionalForm,
-                              education: newEducation,
-                            });
-                          }}
-                          placeholder="Ex: Direito - UFMG"
-                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newEducation =
-                              professionalForm.education.filter(
-                                (_, i) => i !== index
-                              );
-                            setProfessionalForm({
-                              ...professionalForm,
-                              education: newEducation,
-                            });
-                          }}
-                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfessionalForm({
-                          ...professionalForm,
-                          education: [...professionalForm.education, ""],
-                        });
-                      }}
-                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
-                    >
-                      + Adicionar Formação
-                    </button>
-                  </div>
-
-                  {/* Specializations (Array) */}
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Especializações
-                    </label>
-                    {professionalForm.specializations.map((spec, index) => (
-                      <div key={index} className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={spec}
-                          onChange={(e) => {
-                            const newSpecs = [
-                              ...professionalForm.specializations,
-                            ];
-                            newSpecs[index] = e.target.value;
-                            setProfessionalForm({
-                              ...professionalForm,
-                              specializations: newSpecs,
-                            });
-                          }}
-                          placeholder="Ex: Direito Trabalhista"
-                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newSpecs =
-                              professionalForm.specializations.filter(
-                                (_, i) => i !== index
-                              );
-                            setProfessionalForm({
-                              ...professionalForm,
-                              specializations: newSpecs,
-                            });
-                          }}
-                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setProfessionalForm({
-                          ...professionalForm,
-                          specializations: [
-                            ...professionalForm.specializations,
-                            "",
-                          ],
-                        });
-                      }}
-                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
-                    >
-                      + Adicionar Especialização
-                    </button>
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                    >
-                      {loading ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowProfessionalModal(false)}
-                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Role *
+                      </label>
+                      <select
+                        required
+                        value={userForm.role}
+                        onChange={(e) =>
+                          setUserForm({ ...userForm, role: e.target.value })
+                        }
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      >
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="approved"
+                        checked={userForm.approved}
+                        onChange={(e) =>
+                          setUserForm({ ...userForm, approved: e.target.checked })
+                        }
+                        className="w-4 h-4"
+                      />
+                      <label htmlFor="approved" className="text-sm font-medium">
+                        Usuário Aprovado
+                      </label>
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                      >
+                        {loading ? "Salvando..." : "Salvar"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowUserModal(false)}
+                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {showUserModal && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowUserModal(false)}
-          >
-            <div
-              className="bg-white rounded-lg max-w-md w-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-6">
-                  {editingItem ? "Editar Usuário" : "Novo Usuário"}
-                </h2>
-                <form onSubmit={handleUserSubmit} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Username *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={userForm.username}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, username: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={userForm.email}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, email: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Password{" "}
-                      {editingItem ? "(deixe vazio para não alterar)" : "*"}
-                    </label>
-                    <input
-                      type="password"
-                      required={!editingItem}
-                      value={userForm.password}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, password: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Role *
-                    </label>
-                    <select
-                      required
-                      value={userForm.role}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, role: e.target.value })
-                      }
-                      className="w-full border border-neutral-300 rounded px-3 py-2"
-                    >
-                      <option value="editor">Editor</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="approved"
-                      checked={userForm.approved}
-                      onChange={(e) =>
-                        setUserForm({ ...userForm, approved: e.target.checked })
-                      }
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="approved" className="text-sm font-medium">
-                      Usuário Aprovado
-                    </label>
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                    >
-                      {loading ? "Salvando..." : "Salvar"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowUserModal(false)}
-                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
+          )
+        }
+      </main >
+    </div >
   );
 };
