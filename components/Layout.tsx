@@ -171,7 +171,7 @@ const Footer: React.FC = () => {
             Termos de Uso
           </Link>
           <a
-            href="http://robertosilvadevfullstack.cloud/"
+            href="https://www.robertosilvadevfullstack.cloud"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-accent-400"
