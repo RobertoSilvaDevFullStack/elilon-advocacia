@@ -52,6 +52,31 @@ export const Home: React.FC = () => {
       <SEO
         title="Home"
         description="Elilon Lopes Advogados - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "LegalService",
+          name: "Elilon Lopes Advogados",
+          url: "https://elilonlopesadvogados.com.br",
+          logo: "https://elilonlopesadvogados.com.br/images/logo-nova.png",
+          image: "https://elilonlopesadvogados.com.br/og-image.jpg",
+          description:
+            "Sociedade de Advogados especializada em Direito Empresarial, Trabalhista e Civil em Montes Claros - MG.",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "Rua Engenheiro João Antônio Pimenta, 155, Centro",
+            addressLocality: "Montes Claros",
+            addressRegion: "MG",
+            postalCode: "39400-000",
+            addressCountry: "BR",
+          },
+          telephone: "+55-38-2200-1615",
+          priceRange: "$$$",
+          sameAs: [
+            "https://www.linkedin.com/in/elilon-lopes",
+            "https://www.instagram.com/elilonlopesadvogados",
+            "https://www.facebook.com/elilon.lopesdeabreu",
+          ],
+        }}
       />
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
@@ -178,8 +203,8 @@ export const Home: React.FC = () => {
                   index === currentAreaIndex
                     ? "opacity-100 translate-x-0 z-10"
                     : index < currentAreaIndex
-                    ? "opacity-0 -translate-x-full z-0"
-                    : "opacity-0 translate-x-full z-0"
+                      ? "opacity-0 -translate-x-full z-0"
+                      : "opacity-0 translate-x-full z-0"
                 }`}
               >
                 <Link
@@ -296,8 +321,8 @@ export const Home: React.FC = () => {
                       index === currentBlogIndex
                         ? "opacity-100 translate-x-0 z-10"
                         : index < currentBlogIndex
-                        ? "opacity-0 -translate-x-full z-0"
-                        : "opacity-0 translate-x-full z-0"
+                          ? "opacity-0 -translate-x-full z-0"
+                          : "opacity-0 translate-x-full z-0"
                     }`}
                   >
                     <Link

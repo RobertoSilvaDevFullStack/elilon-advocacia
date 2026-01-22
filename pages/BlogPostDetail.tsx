@@ -43,7 +43,7 @@ export const BlogPostDetail: React.FC = () => {
         if (foundPost) {
           setPost(foundPost);
           setRelatedPosts(
-            posts.filter((p: BlogPost) => p.id !== foundPost.id).slice(0, 3)
+            posts.filter((p: BlogPost) => p.id !== foundPost.id).slice(0, 3),
           );
         } else {
           setNotFound(true);
@@ -74,7 +74,24 @@ export const BlogPostDetail: React.FC = () => {
 
   return (
     <Layout>
-      <SEO title={post.title} description={post.excerpt} image={post.image} />
+      <SEO
+        title={post.title}
+        description={post.excerpt}
+        image={post.image}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          image: [post.image],
+          datePublished: post.created_at,
+          description: post.excerpt,
+          author: {
+            "@type": "Organization",
+            name: "Elilon Lopes Advogados",
+            url: "https://elilonlopesadvogados.com.br",
+          },
+        }}
+      />
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px]">
         <img

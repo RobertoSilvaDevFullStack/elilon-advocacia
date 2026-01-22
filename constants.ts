@@ -23,7 +23,7 @@ export const AREAS: AreaOfPractice[] = [
     slug: "trabalhista",
     description:
       "Consultoria em rescisões, contratos e compliance trabalhista.",
-    image: "/images/direito-trabalhista.jpg",
+    image: "/images/direito-trabalhista.webp",
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ export const AREAS: AreaOfPractice[] = [
     slug: "previdenciario",
     description:
       "Planejamento previdenciário e requerimento de benefícios do INSS.",
-    image: "/images/direito-previdenciario.jpg",
+    image: "/images/direito-previdenciario.webp",
   },
   {
     id: 5,
@@ -39,7 +39,7 @@ export const AREAS: AreaOfPractice[] = [
     slug: "tributario",
     description:
       "Planejamento tributário, defesa em autuações e recuperação de créditos.",
-    image: "/images/direito-tributario.jpg",
+    image: "/images/direito-tributario.webp",
   },
   {
     id: 4,
@@ -47,7 +47,7 @@ export const AREAS: AreaOfPractice[] = [
     slug: "imobiliario",
     description:
       "Assessoria em compra, venda, locação e regularização de imóveis.",
-    image: "/images/direito-imobiliario.jpg",
+    image: "/images/direito-imobiliario.webp",
   },
   {
     id: 2,
@@ -55,7 +55,7 @@ export const AREAS: AreaOfPractice[] = [
     slug: "civil",
     description:
       "Soluções em contratos, responsabilidade civil, família e sucessões.",
-    image: "/images/direito-civil.png",
+    image: "/images/direito-civil.webp",
   },
 ];
 
@@ -69,7 +69,7 @@ export const PROFESSIONALS: Professional[] = [
     email: "juridico@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin: "https://www.linkedin.com/in/elilon-lopes/",
-    image: "/images/elilon-lopes.JPG",
+    image: "/images/elilon-lopes.webp",
     bio: "Dr. Elilon Lopes possui mais de 20 anos de experiência em Direito Trabalhista Empresarial, atuando na defesa dos interesses de grandes corporações. É referência em negociações sindicais e gestão de passivo trabalhista.",
     oab: "OAB/MG 00.000",
     education: [
@@ -93,7 +93,7 @@ export const PROFESSIONALS: Professional[] = [
     phone: "(38) 2200-1615",
     linkedin:
       "https://www.linkedin.com/in/einsteinberg-ribeiro-mon%C3%A7%C3%A3o-210b41275/",
-    image: "/images/einsteinberg-ribeiro-mourao.jpeg",
+    image: "/images/einsteinberg-ribeiro-mourao.webp",
     bio: "Dr. Einsteinberg Ribeiro Monção é advogado formado pela Universidade Estadual de Montes Claros (UNIMONTES), com experiência consolidada em instituições de prestígio como a Justiça Federal e a Polícia Federal. Na Justiça Federal, atuou diretamente no apoio à análise processual e organização de documentos jurídicos estratégicos. Na Polícia Federal, desenvolveu expertise em procedimentos investigativos complexos e suporte às demandas institucionais. Sua atuação é marcada pela ética, técnica e estratégia, oferecendo soluções jurídicas seguras e personalizadas.",
     oab: "OAB/MG",
     education: [
@@ -114,7 +114,7 @@ export const PROFESSIONALS: Professional[] = [
     email: "Anaflaviacordeiro@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin: "#",
-    image: "/images/ana-flavia-cordeiro.jpeg",
+    image: "/images/ana-flavia-cordeiro.webp",
     bio: "Dra. Ana Flávia Cordeiro é advogada formada pela Universidade Estadual de Montes Claros (UNIMONTES), com trajetória voltada à justiça e equidade. Atualmente, é pós-graduanda em Direitos Humanos, Direito das Pessoas Vulneráveis e Direito do Consumidor pela Faculdade I9 e aluna especial do Mestrado em Desenvolvimento Social da UNIMONTES. Especialista em Direito e Processo do Trabalho, oferece assessoramento jurídico estratégico e humanizado, buscando soluções eficazes para empresas e indivíduos sempre pautada na ética e transparência.",
     oab: "OAB/MG",
     education: [
@@ -137,7 +137,7 @@ export const PROFESSIONALS: Professional[] = [
     email: "claramarinho@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin: "https://www.linkedin.com/in/claramarinhocn/",
-    image: "/images/clara.jpeg",
+    image: "/images/clara.webp",
     bio: "Dra. Clara Marinho de Caires Nunes é advogada inscrita na OAB/MG nº 240.870, graduada pela UNIMONTES e pós-graduanda em Direitos Humanos e Direito do Trabalho. Com sólida experiência jurídico-administrativa, destaca-se pela gestão, organização e produção de conteúdo jurídico. Possui formação complementar em idiomas (Inglês, Espanhol e Chinês), o que lhe confere uma visão global e versátil na resolução de demandas.",
     oab: "OAB/MG 240.870",
     education: [
@@ -160,7 +160,7 @@ export const PROFESSIONALS: Professional[] = [
     email: "nadinysilva@elilonlopesadvogados.com.br",
     phone: "(38) 2200-1615",
     linkedin: "https://www.linkedin.com/in/nadiny-silva-14bb02235/",
-    image: "/images/nadine.jpeg",
+    image: "/images/nadine.webp",
     bio: "Atua com excelência no setor imobiliário, assessorando construtoras, incorporadoras e investidores. Especialista em regularização fundiária e contratos de compra e venda.",
     oab: "OAB/MG",
     education: [
@@ -184,7 +184,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "20 Out 2023",
     category: "Trabalhista",
     slug: "compliance-trabalhista",
-    image: "/images/compliance-trabalhista.jpg",
+    image: "/images/compliance-trabalhista.webp",
     author: "Dr. Elilon Lopes",
     content: `
       <p>O <strong>Compliance Trabalhista</strong> tornou-se uma ferramenta indispensável para empresas que buscam sustentabilidade e segurança jurídica. Muito além de apenas cumprir a lei, um programa de compliance eficaz estabelece uma cultura ética e transparente no ambiente corporativo.</p>
@@ -220,7 +220,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "15 Out 2023",
     category: "Tributário",
     slug: "reforma-tributaria",
-    image: "/images/reforma-tributaria.jpg",
+    image: "/images/reforma-tributaria.webp",
     author: "Equipe Elilon Advocacia",
     content: `
       <p>A <strong>Reforma Tributária</strong> aprovada recentemente traz mudanças estruturais significativas para o sistema brasileiro, com impactos diretos sobre todos os setores da economia, especialmente o de serviços.</p>
@@ -246,7 +246,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "10 Out 2023",
     category: "Agronegócio",
     slug: "lgpd-agro",
-    image: "/images/lgpd-agro.jpg",
+    image: "/images/lgpd-agro.webp",
     author: "Dra. Nadine",
     content: `
       <p>A <strong>Lei Geral de Proteção de Dados (LGPD)</strong> não se restringe às empresas de tecnologia ou grandes centros urbanos. O Agronegócio, cada vez mais tecnológico e conectado, lida com um volume imenso de dados que precisam de proteção.</p>

@@ -1,6 +1,24 @@
 import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import Sitemap from "vite-plugin-sitemap";
+import viteCompression from "vite-plugin-compression";
+
+const dynamicRoutes = [
+  "/blog/compliance-trabalhista",
+  "/blog/reforma-tributaria",
+  "/blog/lgpd-agro",
+  "/sobre",
+  "/sobre/entrega",
+  "/sobre/inovacao",
+  "/sobre/depoimentos",
+  "/profissionais",
+  "/areas",
+  "/blog",
+  "/contato",
+  "/privacidade",
+  "/termos",
+];
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, ".", "");
@@ -15,12 +33,19 @@ export default defineConfig(({ mode }) => {
       port: 4173,
       host: "0.0.0.0",
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      Sitemap({
+        hostname: "https://elilonlopesadvogados.com.br",
+        dynamicRoutes,
+      }),
+      viteCompression(),
+    ],
     define: {
       "process.env.API_KEY": JSON.stringify(env.GEMINI_API_KEY),
       "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
       "import.meta.env.VITE_API_URL": JSON.stringify(
-        env.VITE_API_URL || "http://localhost:5000/api"
+        env.VITE_API_URL || "http://localhost:5000/api",
       ),
     },
     resolve: {

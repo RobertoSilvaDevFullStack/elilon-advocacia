@@ -6,6 +6,7 @@ interface SEOProps {
   description: string;
   image?: string;
   url?: string;
+  schema?: object;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -13,6 +14,7 @@ export const SEO: React.FC<SEOProps> = ({
   description,
   image = "/og-image.jpg", // Default image if one exists, or we can use a logo
   url,
+  schema,
 }) => {
   const siteTitle = "Elilon Lopes Advogados | Sociedade de Advogados";
   const fullTitle =
@@ -24,6 +26,7 @@ export const SEO: React.FC<SEOProps> = ({
       {/* Standard metadata */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
+      <link rel="canonical" href={currentUrl} />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
@@ -38,6 +41,11 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="twitter:title" content={fullTitle} />
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={image} />
+
+      {/* Structured Data */}
+      {schema && (
+        <script type="application/ld+json">{JSON.stringify(schema)}</script>
+      )}
     </Helmet>
   );
 };

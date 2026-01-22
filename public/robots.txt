@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://elilonlopesadvogados.com.br/sitemap.xml

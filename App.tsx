@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,22 +6,75 @@ import {
   Navigate,
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
-import { Home } from "./pages/Home";
-import { About } from "./pages/About";
-import { Professionals } from "./pages/Professionals";
-import { Solutions } from "./pages/Solutions";
-import { Innovation } from "./pages/Innovation";
-import { Testimonials } from "./pages/Testimonials";
-import { ProfessionalDetail } from "./pages/ProfessionalDetail";
-import { Areas } from "./pages/Areas";
-import { Blog } from "./pages/Blog";
-import { BlogPostDetail } from "./pages/BlogPostDetail";
-import { Contact } from "./pages/Contact";
-import { Admin } from "./pages/Admin";
-import ResetPassword from "./pages/ResetPassword";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
-import { TermsOfUse } from "./pages/TermsOfUse";
-import ComingSoon from "./pages/ComingSoon";
+
+// Lazy loading components
+const Home = React.lazy(() =>
+  import("./pages/Home").then((module) => ({ default: module.Home })),
+);
+const About = React.lazy(() =>
+  import("./pages/About").then((module) => ({ default: module.About })),
+);
+const Professionals = React.lazy(() =>
+  import("./pages/Professionals").then((module) => ({
+    default: module.Professionals,
+  })),
+);
+const Solutions = React.lazy(() =>
+  import("./pages/Solutions").then((module) => ({ default: module.Solutions })),
+);
+const Innovation = React.lazy(() =>
+  import("./pages/Innovation").then((module) => ({
+    default: module.Innovation,
+  })),
+);
+const Testimonials = React.lazy(() =>
+  import("./pages/Testimonials").then((module) => ({
+    default: module.Testimonials,
+  })),
+);
+const ProfessionalDetail = React.lazy(() =>
+  import("./pages/ProfessionalDetail").then((module) => ({
+    default: module.ProfessionalDetail,
+  })),
+);
+const Areas = React.lazy(() =>
+  import("./pages/Areas").then((module) => ({ default: module.Areas })),
+);
+const Blog = React.lazy(() =>
+  import("./pages/Blog").then((module) => ({ default: module.Blog })),
+);
+const BlogPostDetail = React.lazy(() =>
+  import("./pages/BlogPostDetail").then((module) => ({
+    default: module.BlogPostDetail,
+  })),
+);
+const Contact = React.lazy(() =>
+  import("./pages/Contact").then((module) => ({ default: module.Contact })),
+);
+const Admin = React.lazy(() =>
+  import("./pages/Admin").then((module) => ({ default: module.Admin })),
+);
+const PrivacyPolicy = React.lazy(() =>
+  import("./pages/PrivacyPolicy").then((module) => ({
+    default: module.PrivacyPolicy,
+  })),
+);
+const TermsOfUse = React.lazy(() =>
+  import("./pages/TermsOfUse").then((module) => ({
+    default: module.TermsOfUse,
+  })),
+);
+
+// Default exports
+const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
+const ComingSoon = React.lazy(() => import("./pages/ComingSoon"));
+
+// Loading Fallback
+const Loading = () => (
+  <div className="min-h-screen flex items-center justify-center bg-neutral-50 text-accent-600">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-600"></div>
+  </div>
+);
 
 // Scroll to top component
 const ScrollToTop = () => {
@@ -41,8 +94,9 @@ const App: React.FC = () => {
     <HelmetProvider>
       <Router>
         <ScrollToTop />
-        <Routes>
-          {/* 
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* 
             ========================================
             🚀 ATIVAR SITE COMPLETO - 02/01/2026
             ========================================
@@ -64,35 +118,36 @@ const App: React.FC = () => {
             ========================================
           */}
 
-          {/* Coming Soon - REMOVER ESTA LINHA NO DIA 02/01/2026 */}
-          {/* <Route path="/" element={<ComingSoon />} /> */}
+            {/* Coming Soon - REMOVER ESTA LINHA NO DIA 02/01/2026 */}
+            {/* <Route path="/" element={<ComingSoon />} /> */}
 
-          {/* Main Site - DESCOMENTAR ESTA LINHA NO DIA 02/01/2026 */}
-          <Route path="/" element={<Home />} />
+            {/* Main Site - DESCOMENTAR ESTA LINHA NO DIA 02/01/2026 */}
+            <Route path="/" element={<Home />} />
 
-          {/* Acesso temporário ao site completo durante desenvolvimento */}
-          <Route path="/site" element={<Home />} />
+            {/* Acesso temporário ao site completo durante desenvolvimento */}
+            <Route path="/site" element={<Home />} />
 
-          {/* About Routes */}
-          <Route path="/sobre" element={<About />} />
-          <Route path="/sobre/entrega" element={<Solutions />} />
-          <Route path="/sobre/inovacao" element={<Innovation />} />
-          <Route path="/sobre/depoimentos" element={<Testimonials />} />
+            {/* About Routes */}
+            <Route path="/sobre" element={<About />} />
+            <Route path="/sobre/entrega" element={<Solutions />} />
+            <Route path="/sobre/inovacao" element={<Innovation />} />
+            <Route path="/sobre/depoimentos" element={<Testimonials />} />
 
-          <Route path="/profissionais" element={<Professionals />} />
-          <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
-          <Route path="/areas" element={<Areas />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPostDetail />} />
-          <Route path="/contato" element={<Contact />} />
-          <Route path="/admin/reset-password" element={<ResetPassword />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/privacidade" element={<PrivacyPolicy />} />
-          <Route path="/termos" element={<TermsOfUse />} />
+            <Route path="/profissionais" element={<Professionals />} />
+            <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
+            <Route path="/areas" element={<Areas />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPostDetail />} />
+            <Route path="/contato" element={<Contact />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/privacidade" element={<PrivacyPolicy />} />
+            <Route path="/termos" element={<TermsOfUse />} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Fallback */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Router>
     </HelmetProvider>
   );
