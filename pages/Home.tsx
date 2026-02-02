@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
@@ -47,6 +47,36 @@ export const Home: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [isMobile]);
+
+  // Memoize sorted blog posts to avoid re-calculation on every render
+  const sortedBlogPosts = useMemo(() => {
+    return [...BLOG_POSTS].sort((a, b) => {
+      const months: { [key: string]: number } = {
+        Jan: 0,
+        Fev: 1,
+        Mar: 2,
+        Abr: 3,
+        Mai: 4,
+        Jun: 5,
+        Jul: 6,
+        Ago: 7,
+        Set: 8,
+        Out: 9,
+        Nov: 10,
+        Dez: 11,
+      };
+      const parseDate = (dateStr: string) => {
+        const parts = dateStr.split(" ");
+        if (parts.length !== 3) return 0;
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+      };
+      return parseDate(b.date) - parseDate(a.date);
+    });
+  }, []);
+
   return (
     <Layout>
       <SEO
@@ -154,6 +184,8 @@ export const Home: React.FC = () => {
                 <img
                   src="/images/elilon-sorrindo.JPG"
                   alt="Equipe Elilon Lopes Advogados"
+                  width="800"
+                  height="1000"
                   className="w-full max-w-2xl h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
                 />
                 <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-accent-500 opacity-80"></div>
@@ -215,6 +247,9 @@ export const Home: React.FC = () => {
                     <img
                       src={area.image}
                       alt={area.title}
+                      width="400"
+                      height="320"
+                      loading="lazy"
                       className="w-full h-full object-cover opacity-40 group-hover:opacity-20 transition-opacity duration-500"
                     />
                   </div>
@@ -259,6 +294,9 @@ export const Home: React.FC = () => {
                   <img
                     src={area.image}
                     alt={area.title}
+                    width="400"
+                    height="320"
+                    loading="lazy"
                     className="w-full h-full object-cover opacity-40 group-hover:opacity-20 transition-opacity duration-500"
                   />
                 </div>
@@ -288,71 +326,48 @@ export const Home: React.FC = () => {
           {/* Mobile: Blog Carousel */}
           <div className="md:hidden relative mt-12">
             <div className="relative h-96 overflow-hidden">
-              {BLOG_POSTS.sort((a, b) => {
-                const months: { [key: string]: number } = {
-                  Jan: 0,
-                  Fev: 1,
-                  Mar: 2,
-                  Abr: 3,
-                  Mai: 4,
-                  Jun: 5,
-                  Jul: 6,
-                  Ago: 7,
-                  Set: 8,
-                  Out: 9,
-                  Nov: 10,
-                  Dez: 11,
-                };
-                const parseDate = (dateStr: string) => {
-                  const parts = dateStr.split(" ");
-                  if (parts.length !== 3) return 0;
-                  const day = parseInt(parts[0], 10);
-                  const month = months[parts[1]];
-                  const year = parseInt(parts[2], 10);
-                  return new Date(year, month, day).getTime();
-                };
-                return parseDate(b.date) - parseDate(a.date);
-              })
-                .slice(0, 3)
-                .map((post, index) => (
-                  <div
-                    key={post.id}
-                    className={`absolute inset-0 transition-all duration-500 ${
-                      index === currentBlogIndex
-                        ? "opacity-100 translate-x-0 z-10"
-                        : index < currentBlogIndex
-                          ? "opacity-0 -translate-x-full z-0"
-                          : "opacity-0 translate-x-full z-0"
-                    }`}
+              {sortedBlogPosts.slice(0, 3).map((post, index) => (
+                <div
+                  key={post.id}
+                  className={`absolute inset-0 transition-all duration-500 ${
+                    index === currentBlogIndex
+                      ? "opacity-100 translate-x-0 z-10"
+                      : index < currentBlogIndex
+                        ? "opacity-0 -translate-x-full z-0"
+                        : "opacity-0 translate-x-full z-0"
+                  }`}
+                >
+                  <Link
+                    to={`/blog/${post.slug}`}
+                    className="block h-full group bg-white hover:shadow-xl transition-shadow duration-300"
                   >
-                    <Link
-                      to={`/blog/${post.slug}`}
-                      className="block h-full group bg-white hover:shadow-xl transition-shadow duration-300"
-                    >
-                      <div className="h-48 overflow-hidden">
-                        <img
-                          src={post.image}
-                          alt={post.title}
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="p-6">
-                        <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
-                          {post.category}
-                        </span>
-                        <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
-                          {post.title}
-                        </h3>
-                        <p className="text-neutral-500 text-sm mb-4">
-                          {post.summary}
-                        </p>
-                        <span className="text-xs text-neutral-400">
-                          {post.date}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        width="400"
+                        height="200"
+                        loading="lazy"
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
+                        {post.category}
+                      </span>
+                      <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
+                        {post.title}
+                      </h3>
+                      <p className="text-neutral-500 text-sm mb-4">
+                        {post.summary}
+                      </p>
+                      <span className="text-xs text-neutral-400">
+                        {post.date}
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              ))}
             </div>
             {/* Blog Carousel Indicators */}
             <div className="flex justify-center gap-2 mt-4">
@@ -373,63 +388,36 @@ export const Home: React.FC = () => {
 
           {/* Desktop: Blog Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            {BLOG_POSTS.sort((a, b) => {
-              const months: { [key: string]: number } = {
-                Jan: 0,
-                Fev: 1,
-                Mar: 2,
-                Abr: 3,
-                Mai: 4,
-                Jun: 5,
-                Jul: 6,
-                Ago: 7,
-                Set: 8,
-                Out: 9,
-                Nov: 10,
-                Dez: 11,
-              };
-
-              const parseDate = (dateStr: string) => {
-                const parts = dateStr.split(" ");
-                if (parts.length !== 3) return 0;
-                const day = parseInt(parts[0], 10);
-                const month = months[parts[1]];
-                const year = parseInt(parts[2], 10);
-                return new Date(year, month, day).getTime();
-              };
-
-              return parseDate(b.date) - parseDate(a.date);
-            })
-              .slice(0, 3)
-              .map((post) => (
-                <Link
-                  to={`/blog/${post.slug}`}
-                  key={post.id}
-                  className="group bg-white hover:shadow-xl transition-shadow duration-300"
-                >
-                  <div className="h-48 overflow-hidden">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
-                      {post.category}
-                    </span>
-                    <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
-                      {post.title}
-                    </h3>
-                    <p className="text-neutral-500 text-sm mb-4">
-                      {post.summary}
-                    </p>
-                    <span className="text-xs text-neutral-400">
-                      {post.date}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+            {sortedBlogPosts.slice(0, 3).map((post) => (
+              <Link
+                to={`/blog/${post.slug}`}
+                key={post.id}
+                className="group bg-white hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="h-48 overflow-hidden">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    width="400"
+                    height="200"
+                    loading="lazy"
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-6">
+                  <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
+                    {post.category}
+                  </span>
+                  <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-neutral-500 text-sm mb-4">
+                    {post.summary}
+                  </p>
+                  <span className="text-xs text-neutral-400">{post.date}</span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
