@@ -3,6 +3,7 @@ import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
+import DOMPurify from "isomorphic-dompurify";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
@@ -136,7 +137,11 @@ export const BlogPostDetail: React.FC = () => {
             </Link>
 
             <article className="prose prose-lg max-w-none prose-headings:font-headline prose-headings:font-bold prose-headings:text-neutral-900 prose-p:text-neutral-600 prose-li:text-neutral-600 prose-a:text-accent-600 hover:prose-a:text-accent-500">
-              <div dangerouslySetInnerHTML={{ __html: post.content || "" }} />
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(post.content || ""),
+                }}
+              />
             </article>
 
             {/* Share Section */}

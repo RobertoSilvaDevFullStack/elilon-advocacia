@@ -24,7 +24,7 @@ function initializeTables() {
       role TEXT DEFAULT 'editor',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,
-    createDefaultAdmin
+    createDefaultAdmin,
   );
 
   // 2. Posts Table
@@ -41,7 +41,7 @@ function initializeTables() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // 3. Professionals Table  
+  // 3. Professionals Table
   sqliteDb.run(`CREATE TABLE IF NOT EXISTS professionals (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
@@ -88,14 +88,16 @@ function createDefaultAdmin() {
   const insert = "INSERT INTO users (username, password, role) VALUES (?,?,?)";
   const hashedPassword = bcrypt.hashSync("admin123", 10);
 
-  sqliteDb.get("SELECT * FROM users WHERE username = ?", ["admin"], (err, row) => {
-    if (!row) {
-      sqliteDb.run(insert, ["admin", hashedPassword, "admin"]);
-      console.log("👤 Usuário admin padrão criado:");
-      console.log("   Username: admin");
-      console.log("   Password: admin123");
-    }
-  });
+  sqliteDb.get(
+    "SELECT * FROM users WHERE username = ?",
+    ["admin"],
+    (err, row) => {
+      if (!row) {
+        sqliteDb.run(insert, ["admin", hashedPassword, "admin"]);
+        console.log("👤 Usuário admin padrão criado.");
+      }
+    },
+  );
 }
 
 // Create PostgreSQL-compatible API wrapper for SQLite
@@ -104,10 +106,10 @@ const db = {
   query: (sql, params = []) => {
     return new Promise((resolve, reject) => {
       // Convert PostgreSQL placeholders ($1, $2) to SQLite placeholders (?, ?)
-      const sqliteSql = sql.replace(/\$(\d+)/g, '?');
+      const sqliteSql = sql.replace(/\$(\d+)/g, "?");
 
       // For SELECT queries
-      if (sqliteSql.trim().toUpperCase().startsWith('SELECT')) {
+      if (sqliteSql.trim().toUpperCase().startsWith("SELECT")) {
         sqliteDb.all(sqliteSql, params, (err, rows) => {
           if (err) {
             reject(err);
@@ -118,9 +120,9 @@ const db = {
         });
       }
       // For INSERT/UPDATE/DELETE with RETURNING
-      else if (sqliteSql.includes('RETURNING')) {
+      else if (sqliteSql.includes("RETURNING")) {
         // SQLite doesn't support RETURNING, so we need to handle it differently
-        const cleanSql = sqliteSql.replace(/RETURNING.*/i, '').trim();
+        const cleanSql = sqliteSql.replace(/RETURNING.*/i, "").trim();
 
         sqliteDb.run(cleanSql, params, function (err) {
           if (err) {
@@ -142,7 +144,7 @@ const db = {
         });
       }
     });
-  }
+  },
 };
 
 module.exports = db;

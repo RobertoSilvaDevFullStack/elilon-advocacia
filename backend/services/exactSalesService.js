@@ -33,7 +33,7 @@ async function sendLeadToExactSales(lead) {
       origem: "Site Institucional",
     };
 
-    console.log("📤 Enviando lead para Exact Sales:", lead.email);
+    console.log("📤 Enviando lead para Exact Sales (dados ocultos)");
 
     const response = await axios.post(`${EXACT_SALES_API}/leads`, payload, {
       headers: {
@@ -52,7 +52,7 @@ async function sendLeadToExactSales(lead) {
       console.error(
         "Response error:",
         error.response.status,
-        error.response.data
+        error.response.data,
       );
       return {
         success: false,

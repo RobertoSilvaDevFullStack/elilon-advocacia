@@ -7,7 +7,7 @@ const crypto = require("crypto");
 exports.getPosts = async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT * FROM posts ORDER BY created_at DESC"
+      "SELECT * FROM posts ORDER BY created_at DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -29,7 +29,7 @@ exports.createPost = async (req, res) => {
   try {
     const result = await db.query(
       `INSERT INTO posts (title, slug, category, content, image, excerpt, author_id) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-      [title, slug, category, content, image, excerpt, author_id]
+      [title, slug, category, content, image, excerpt, author_id],
     );
     res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
@@ -45,9 +45,9 @@ exports.updatePost = async (req, res) => {
   // Generate slug from title if provided
   const slug = title
     ? title
-      .toLowerCase()
-      .replace(/ /g, "-")
-      .replace(/[^\w-]+/g, "")
+        .toLowerCase()
+        .replace(/ /g, "-")
+        .replace(/[^\w-]+/g, "")
     : undefined;
 
   try {
@@ -55,7 +55,7 @@ exports.updatePost = async (req, res) => {
       `UPDATE posts 
        SET title = $1, slug = $2, category = $3, content = $4, image = $5, excerpt = $6
        WHERE id = $7`,
-      [title, slug, category, content, image, excerpt, id]
+      [title, slug, category, content, image, excerpt, id],
     );
     res.json({ success: true });
   } catch (err) {
@@ -119,7 +119,7 @@ exports.createProfessional = async (req, res) => {
         location,
         JSON.stringify(education || []),
         JSON.stringify(specializations || []),
-      ]
+      ],
     );
     res.json({ success: true, id: result.rows[0].id });
   } catch (err) {
@@ -164,7 +164,7 @@ exports.updateProfessional = async (req, res) => {
         JSON.stringify(education || []),
         JSON.stringify(specializations || []),
         id,
-      ]
+      ],
     );
     res.json({ success: true });
   } catch (err) {
@@ -195,7 +195,7 @@ exports.createUser = async (req, res) => {
     const result = await db.query(
       `INSERT INTO users (username, email, password, role, approved) 
        VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [username, email, hashedPassword, role, approved || false]
+      [username, email, hashedPassword, role, approved || false],
     );
 
     res.json({ success: true, id: result.rows[0].id });
@@ -208,7 +208,7 @@ exports.createUser = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const result = await db.query(
-      "SELECT id, username, email, role, approved, created_at FROM users ORDER BY created_at DESC"
+      "SELECT id, username, email, role, approved, created_at FROM users ORDER BY created_at DESC",
     );
     res.json(result.rows);
   } catch (err) {
@@ -228,13 +228,13 @@ exports.updateUser = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       await db.query(
         `UPDATE users SET username = $1, email = $2, role = $3, approved = $4, password = $5 WHERE id = $6`,
-        [username, email, role, approved, hashedPassword, id]
+        [username, email, role, approved, hashedPassword, id],
       );
     } else {
       // Update without password
       await db.query(
         `UPDATE users SET username = $1, email = $2, role = $3, approved = $4 WHERE id = $5`,
-        [username, email, role, approved, id]
+        [username, email, role, approved, id],
       );
     }
     res.json({ success: true });
@@ -278,7 +278,7 @@ exports.forgotPassword = async (req, res) => {
     // Buscar usuário por email
     const userResult = await db.query(
       "SELECT id, username, email FROM users WHERE email = $1",
-      [email]
+      [email],
     );
 
     if (userResult.rows.length === 0) {
@@ -298,22 +298,14 @@ exports.forgotPassword = async (req, res) => {
     // Salvar token no banco
     await db.query(
       "INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
-      [user.id, resetToken, expiresAt]
+      [user.id, resetToken, expiresAt],
     );
 
     // TEMPORÁRIO: Desabilitado envio de email até nodemailer estar instalado
     // await sendResetEmail(user.email, resetToken);
 
     // LOG temporário para teste (REMOVER depois)
-    console.log("==============================================");
-    console.log("RESET TOKEN GERADO (TEMPORÁRIO - APENAS TESTE)");
-    console.log("User:", user.email);
-    console.log("Token:", resetToken);
-    console.log(
-      "Link:",
-      `https://elilonlopesadvogados.com.br/admin/reset-password?token=${resetToken}`
-    );
-    console.log("==============================================");
+    // console.log("RESET TOKEN GERADO (LOG REMOVIDO POR SEGURANÇA)");
 
     res.json({
       success: true,
@@ -336,7 +328,7 @@ exports.resetPassword = async (req, res) => {
       `SELECT t.id, t.user_id, t.used, t.expires_at 
        FROM password_reset_tokens t 
        WHERE t.token = $1 AND t.used = FALSE AND t.expires_at > NOW()`,
-      [token]
+      [token],
     );
 
     if (tokenResult.rows.length === 0) {
@@ -361,7 +353,7 @@ exports.resetPassword = async (req, res) => {
     // Marcar token como usado
     await db.query(
       "UPDATE password_reset_tokens SET used = TRUE WHERE id = $1",
-      [resetToken.id]
+      [resetToken.id],
     );
 
     res.json({ success: true, message: "Senha atualizada com sucesso!" });
@@ -378,20 +370,20 @@ exports.approveUser = async (req, res) => {
   try {
     const result = await db.query(
       "UPDATE users SET approved = true WHERE id = $1 RETURNING id, username, email, role, approved",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Usuário não encontrado"
+        message: "Usuário não encontrado",
       });
     }
 
     res.json({
       success: true,
       message: "Usuário aprovado com sucesso!",
-      user: result.rows[0]
+      user: result.rows[0],
     });
   } catch (err) {
     console.error("Approve user error:", err);
@@ -406,19 +398,19 @@ exports.rejectUser = async (req, res) => {
   try {
     const result = await db.query(
       "DELETE FROM users WHERE id = $1 RETURNING id, username",
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Usuário não encontrado"
+        message: "Usuário não encontrado",
       });
     }
 
     res.json({
       success: true,
-      message: `Cadastro de ${result.rows[0].username} foi rejeitado e removido`
+      message: `Cadastro de ${result.rows[0].username} foi rejeitado e removido`,
     });
   } catch (err) {
     console.error("Reject user error:", err);

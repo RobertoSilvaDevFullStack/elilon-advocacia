@@ -16,7 +16,9 @@ pool.connect((err, client, release) => {
   if (err) {
     console.error("❌ Erro ao conectar ao PostgreSQL:", err.message);
     console.log("💡 Dica: Verifique DATABASE_URL no .env");
-    console.log("💡 Formato esperado: postgresql://user:password@host:5432/database");
+    console.log(
+      "💡 Formato esperado: postgresql://user:password@host:5432/database",
+    );
     // Não fazer process.exit(1) para permitir debug
   } else {
     console.log("✅ Conectado ao PostgreSQL com sucesso!");
@@ -135,7 +137,7 @@ async function createDefaultAdmin(client) {
   try {
     const checkUser = await client.query(
       "SELECT * FROM users WHERE username = $1",
-      ["admin"]
+      ["admin"],
     );
 
     if (checkUser.rows.length === 0) {
@@ -143,14 +145,12 @@ async function createDefaultAdmin(client) {
 
       await client.query(
         "INSERT INTO users (username, password, role) VALUES ($1, $2, $3)",
-        ["admin", hashedPassword, "admin"]
+        ["admin", hashedPassword, "admin"],
       );
 
-      console.log("\n👤 Usuário admin padrão criado:");
-      console.log("   Username: admin");
-      console.log("   Password: admin123");
+      console.log("\n👤 Usuário admin padrão criado.");
       console.log(
-        "   ⚠️  IMPORTANTE: Altere essa senha após o primeiro login!"
+        "   ⚠️  IMPORTANTE: Altere essa senha após o primeiro login!",
       );
     } else {
       console.log("\n👤 Usuário admin já existe no banco");

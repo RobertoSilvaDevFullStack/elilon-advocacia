@@ -23,13 +23,13 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.log(`⚠️ Origin não permitido: ${origin}`);
-      callback(null, true); // TEMPORÁRIO: Permitir todos para debug
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true,
   optionsSuccessStatus: 200,
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH']
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
 };
 
 app.use(cors(corsOptions));
