@@ -65,6 +65,13 @@ const TermsOfUse = React.lazy(() =>
   })),
 );
 
+// Landing Pages
+const BPCLandingPage = React.lazy(() => import("./pages/BPCLandingPage"));
+const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
+
+// Components
+import MetaPixel from "./components/MetaPixel";
+
 // Default exports
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
 const ComingSoon = React.lazy(() => import("./pages/ComingSoon"));
@@ -127,6 +134,10 @@ const App: React.FC = () => {
             {/* Acesso temporário ao site completo durante desenvolvimento */}
             <Route path="/site" element={<Home />} />
 
+            {/* Landing Pages */}
+            <Route path="/bpc" element={<BPCLandingPage />} />
+            <Route path="/isencao-ir" element={<IRLandingPage />} />
+
             {/* About Routes */}
             <Route path="/sobre" element={<About />} />
             <Route path="/sobre/entrega" element={<Solutions />} />
@@ -147,6 +158,7 @@ const App: React.FC = () => {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <MetaPixel />
         </Suspense>
       </Router>
     </HelmetProvider>

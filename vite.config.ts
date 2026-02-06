@@ -18,6 +18,8 @@ const dynamicRoutes = [
   "/contato",
   "/privacidade",
   "/termos",
+  "/bpc",
+  "/isencao-ir",
 ];
 
 export default defineConfig(({ mode }) => {
