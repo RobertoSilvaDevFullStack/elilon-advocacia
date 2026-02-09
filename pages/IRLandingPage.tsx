@@ -38,6 +38,7 @@ const IRLandingPage: React.FC = () => {
         href="https://wa.me/553899576682"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => window.fbq?.("track", "Contact")}
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#25D366]"
       >
         <svg

@@ -15,13 +15,15 @@ const Hero: React.FC = () => {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-gray-50 z-10"></div>
-        <div
-          className="w-full h-full bg-cover bg-center bg-no-repeat opacity-40 grayscale-[20%]"
-          style={{
-            backgroundImage:
-              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBfP96OknPw4L-SgfZbfIXN_iS3USf462dlG1yoeaKELM1KfLL8fIDT81cJAn7vUOtmyhxabqGFKhhmpsCA_5Qx2pzn8Z5HJEBL5z8pWIb7a4o6ZY380E-Soj8T2DZuPCxuwsLfLrjVssVcm7oOW9G9UMH7JdsqQwtLMnmpGbJoS2n7a5tX56f2QposMF2kpuaFyOx1ZxAvrfOxqgKKyYispUWo6CxFCBWCufyUzpgAPgPA-qRSJ6kR9zR-u5xpT8HSBk6Bqlmeskzj')",
-          }}
-        ></div>
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfP96OknPw4L-SgfZbfIXN_iS3USf462dlG1yoeaKELM1KfLL8fIDT81cJAn7vUOtmyhxabqGFKhhmpsCA_5Qx2pzn8Z5HJEBL5z8pWIb7a4o6ZY380E-Soj8T2DZuPCxuwsLfLrjVssVcm7oOW9G9UMH7JdsqQwtLMnmpGbJoS2n7a5tX56f2QposMF2kpuaFyOx1ZxAvrfOxqgKKyYispUWo6CxFCBWCufyUzpgAPgPA-qRSJ6kR9zR-u5xpT8HSBk6Bqlmeskzj"
+          alt=""
+          width={1920}
+          height={1080}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover opacity-40 grayscale-[20%]"
+        />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -44,17 +46,19 @@ const Hero: React.FC = () => {
         <div className="relative w-full max-w-3xl mx-auto mb-12 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-vinho-500 to-[#8a2b35] rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-2xl ring-1 ring-black/5">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA-di9LND6AQhXrd7k_KVRLmkujbxMQki78Zud_9jn8tcgtpm0hkrlK3oRc9Z5F2fR1jnrht0RYf5-0mUgYHVPVD3bZkIvI4nyMQAaEZ7sbZsp73LUJDtR8DEdN5TEt4BU_3ZXQh2ZIz7CMxGmDgiNsKyHSxGL7qCD6uc8ugLZCvOgy05_b3ph9P3oGFYuFZgV-l-COvMU_HIAAxh1nYjMoBV5CWCWOgT059PUlBox8pW7K2fE275rEzsghfCqtko8K3vRYbJP2AmHj')",
-              }}
-            >
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all duration-300 cursor-pointer">
-                <div className="w-20 h-20 bg-vinho-500/90 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl hover:scale-110 transition-transform duration-300">
-                  <Play className="ml-1 fill-white text-white" size={40} />
-                </div>
+            <img
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-di9LND6AQhXrd7k_KVRLmkujbxMQki78Zud_9jn8tcgtpm0hkrlK3oRc9Z5F2fR1jnrht0RYf5-0mUgYHVPVD3bZkIvI4nyMQAaEZ7sbZsp73LUJDtR8DEdN5TEt4BU_3ZXQh2ZIz7CMxGmDgiNsKyHSxGL7qCD6uc8ugLZCvOgy05_b3ph9P3oGFYuFZgV-l-COvMU_HIAAxh1nYjMoBV5CWCWOgT059PUlBox8pW7K2fE275rEzsghfCqtko8K3vRYbJP2AmHj"
+              alt="Vídeo sobre Isenção de IR"
+              width={896}
+              height={504}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-all duration-300 cursor-pointer">
+              <div className="w-20 h-20 bg-vinho-500/90 rounded-full flex items-center justify-center backdrop-blur-sm shadow-xl hover:scale-110 transition-transform duration-300">
+                <Play className="ml-1 fill-white text-white" size={40} />
               </div>
             </div>
           </div>

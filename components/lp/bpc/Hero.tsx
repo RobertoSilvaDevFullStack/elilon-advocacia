@@ -16,13 +16,15 @@ const Hero: React.FC = () => {
     <section className="relative pt-32 pb-16 lg:pb-24 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 z-0 opacity-[0.08] pointer-events-none overflow-hidden">
-        <div
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage:
-              "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDwwA8KoghVnjsO92RABGgstm6i98UdQH5KTJIMg11eiPc0Ne3qyiHbR_RUiTQVv9_Ou9ZQmY38QlVM6TdlTK1_9Jzklztx3chmWytWf8NTPoJW7a5UkboD2mc3LJD8l5MyF3LqFt8V1fN4_4ZihZgj_lvkT3z6T4ewzqSUuCaINSVPuGjWMzGFt7g3ajTqkRIPonHaiY8vOvOOWCfhQF-uw0UvkDvsN-yvpZFIyGtiEchvfxwHz4UeSb96zjYfw0a0dZh59DIVUOE')",
-          }}
-        ></div>
+        <img
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwwA8KoghVnjsO92RABGgstm6i98UdQH5KTJIMg11eiPc0Ne3qyiHbR_RUiTQVv9_Ou9ZQmY38QlVM6TdlTK1_9Jzklztx3chmWytWf8NTPoJW7a5UkboD2mc3LJD8l5MyF3LqFt8V1fN4_4ZihZgj_lvkT3z6T4ewzqSUuCaINSVPuGjWMzGFt7g3ajTqkRIPonHaiY8vOvOOWCfhQF-uw0UvkDvsN-yvpZFIyGtiEchvfxwHz4UeSb96zjYfw0a0dZh59DIVUOE"
+          alt=""
+          width={1920}
+          height={1080}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover"
+        />
       </div>
 
       <div className="relative z-10 max-w-[960px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
@@ -49,13 +51,16 @@ const Hero: React.FC = () => {
         {/* Video Placeholder */}
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl shadow-black/10 p-2 sm:p-4 mb-10">
           <div className="relative aspect-video w-full rounded-xl overflow-hidden group cursor-pointer bg-black">
-            <div
-              className="absolute inset-0 bg-cover bg-center opacity-70 group-hover:opacity-60 transition-opacity duration-300"
-              style={{
-                backgroundImage:
-                  "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDbXWDTwhjR86sGEi25W-g31_zqT8ThzwFwVAr72w1ESmXneh1W0YynWA00Hzk_-ZAzPqHG1pEQK9A0EqjZtoE9DFtMUh4GCyOxr9lQL9onYrAXvFa1xDKEAwI58aN8HiDSfA8nTdVuNzt-ctaeLP7k9HuNqeq9IsEiLGf9hNmvNpPc88yMH5ZSMNbSNNFjP0ETpRXyauCr18VIhF7Vv7YQdw-Wsa_fR8ueV3OxVKwzrGTRteHv8sXd5DmaE-1TryJfrbwGMxOwYZ8')",
-              }}
-            ></div>
+            <img
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbXWDTwhjR86sGEi25W-g31_zqT8ThzwFwVAr72w1ESmXneh1W0YynWA00Hzk_-ZAzPqHG1pEQK9A0EqjZtoE9DFtMUh4GCyOxr9lQL9onYrAXvFa1xDKEAwI58aN8HiDSfA8nTdVuNzt-ctaeLP7k9HuNqeq9IsEiLGf9hNmvNpPc88yMH5ZSMNbSNNFjP0ETpRXyauCr18VIhF7Vv7YQdw-Wsa_fR8ueV3OxVKwzrGTRteHv8sXd5DmaE-1TryJfrbwGMxOwYZ8"
+              alt="Vídeo sobre BPC LOAS"
+              width={896}
+              height={504}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-60 transition-opacity duration-300"
+            />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-vinho-500/90 rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform duration-300 backdrop-blur-sm">
                 <Play size={40} className="ml-2 fill-white" />
