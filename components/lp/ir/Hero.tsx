@@ -41,12 +41,12 @@ const Hero: React.FC = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/5fmUvxPhyy4"
+              src="https://www.youtube.com/embed/5fmUvxPhyy4?autoplay=1&mute=1&controls=0&loop=1&playlist=5fmUvxPhyy4&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1"
               title="Vídeo explicativo sobre Isenção de IR"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full pointer-events-none"
             ></iframe>
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-sm text-gray-500">
@@ -79,7 +79,7 @@ const Hero: React.FC = () => {
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
               <Award className="text-vinho-500" size={20} />
               <span className="font-semibold text-gray-700">
-                OAB/SP 150.653
+                OAB/MG 150.653
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
