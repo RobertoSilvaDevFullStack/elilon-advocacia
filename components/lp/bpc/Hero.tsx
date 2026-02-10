@@ -44,12 +44,12 @@ const Hero: React.FC = () => {
             <iframe
               width="100%"
               height="100%"
-              src="https://www.youtube.com/embed/bgsYefyy19A"
+              src="https://www.youtube.com/embed/bgsYefyy19A?autoplay=1&mute=1&controls=0&loop=1&playlist=bgsYefyy19A&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1"
               title="Vídeo sobre BPC LOAS"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full pointer-events-none"
             ></iframe>
           </div>
         </div>
@@ -81,7 +81,7 @@ const Hero: React.FC = () => {
                 <span className="text-xs uppercase font-bold tracking-wider text-gray-400">
                   Verificado
                 </span>
-                <span className="font-bold text-sm">OAB/SP 150.653</span>
+                <span className="font-bold text-sm">OAB/MG 150.653</span>
               </div>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
