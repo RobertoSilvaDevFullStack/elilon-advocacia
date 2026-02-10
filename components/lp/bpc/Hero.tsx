@@ -41,16 +41,15 @@ const Hero: React.FC = () => {
         {/* Video Placeholder */}
         <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl shadow-black/10 p-2 sm:p-4 mb-10">
           <div className="relative aspect-video w-full rounded-xl overflow-hidden group cursor-pointer bg-black">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/bgsYefyy19A?autoplay=1&mute=0&controls=0&loop=1&playlist=bgsYefyy19A&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1"
-              title="Vídeo sobre BPC LOAS"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            ></iframe>
+            <video
+              src="/images/Mae-de-autista-cheia-de-rotinas.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           </div>
         </div>
 

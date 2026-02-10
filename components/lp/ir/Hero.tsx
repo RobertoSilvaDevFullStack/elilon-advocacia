@@ -38,16 +38,15 @@ const Hero: React.FC = () => {
         <div className="relative w-full max-w-3xl mx-auto mb-12 group">
           <div className="absolute -inset-1 bg-gradient-to-r from-vinho-500 to-[#8a2b35] rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-900 shadow-2xl ring-1 ring-black/5">
-            <iframe
-              width="100%"
-              height="100%"
-              src="https://www.youtube.com/embed/5fmUvxPhyy4?autoplay=1&mute=0&controls=0&loop=1&playlist=5fmUvxPhyy4&rel=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1"
-              title="Vídeo explicativo sobre Isenção de IR"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="absolute inset-0 w-full h-full"
-            ></iframe>
+            <video
+              src="/images/aposentado-que-sofre-com-doenca.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-sm text-gray-500">
             <span className="material-symbols-outlined text-lg">info</span>
