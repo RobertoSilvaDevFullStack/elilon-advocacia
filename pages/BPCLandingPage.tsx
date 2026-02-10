@@ -4,6 +4,7 @@ import Header from "../components/lp/bpc/Header";
 import Hero from "../components/lp/bpc/Hero";
 import Requirements from "../components/lp/bpc/Requirements";
 import Process from "../components/lp/bpc/Process";
+import SocialProof from "../components/lp/bpc/SocialProof";
 import Footer from "../components/lp/bpc/Footer";
 
 const BPCLandingPage: React.FC = () => {
@@ -27,6 +28,7 @@ const BPCLandingPage: React.FC = () => {
         <Hero />
         <Requirements />
         <Process />
+        <SocialProof />
       </main>
 
       <Footer />
