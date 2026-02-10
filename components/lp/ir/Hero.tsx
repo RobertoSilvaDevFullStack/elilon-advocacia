@@ -44,7 +44,7 @@ const Hero: React.FC = () => {
               loop
               playsInline
               controls
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain"
             />
           </div>
           <div className="mt-3 flex items-center justify-center gap-2 text-sm text-gray-500">
