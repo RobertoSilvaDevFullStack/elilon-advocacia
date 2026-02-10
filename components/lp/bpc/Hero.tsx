@@ -45,7 +45,6 @@ const Hero: React.FC = () => {
               src="/images/Mae-de-autista-cheia-de-rotinas.mp4"
               autoPlay
               loop
-              muted
               playsInline
               controls
               className="absolute inset-0 w-full h-full object-cover"

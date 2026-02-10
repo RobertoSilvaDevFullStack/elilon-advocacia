@@ -42,7 +42,6 @@ const Hero: React.FC = () => {
               src="/images/aposentado-que-sofre-com-doenca.mp4"
               autoPlay
               loop
-              muted
               playsInline
               controls
               className="absolute inset-0 w-full h-full object-cover"
