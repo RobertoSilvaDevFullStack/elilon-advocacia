@@ -17,7 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyle =
-    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group";
+    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group min-h-[44px]";
 
   const variants = {
     primary:
@@ -108,9 +108,8 @@ export const ContactForm: React.FC<{ source?: string }> = ({
       }
 
       setSubmitted(true);
-    } catch (err) {
+    } catch {
       setError("Erro ao enviar mensagem. Por favor, tente novamente.");
-      console.error("Error submitting form:", err);
     } finally {
       setLoading(false);
     }
@@ -193,9 +192,17 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         className="w-full bg-neutral-50 border border-neutral-200 px-4 py-3 focus:outline-none focus:border-accent-500 transition-colors"
       ></textarea>
 
-      <div className="flex items-start gap-2">
-        <input required type="checkbox" id="lgpd" className="mt-1" />
-        <label htmlFor="lgpd" className="text-xs text-neutral-500">
+      <div className="flex items-center gap-3 cursor-pointer">
+        <input
+          required
+          type="checkbox"
+          id="lgpd"
+          className="w-5 h-5 min-w-[20px] accent-accent-500 cursor-pointer"
+        />
+        <label
+          htmlFor="lgpd"
+          className="text-xs text-neutral-500 cursor-pointer select-none py-2"
+        >
           Concordo com o tratamento dos meus dados conforme a Política de
           Privacidade e LGPD.
         </label>
@@ -227,8 +234,8 @@ export const Hero: React.FC<{
     height === "full"
       ? "h-screen"
       : height === "large"
-      ? "h-[70vh]"
-      : "h-[50vh]";
+        ? "h-[70vh]"
+        : "h-[50vh]";
 
   return (
     <section

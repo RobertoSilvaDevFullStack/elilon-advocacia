@@ -13,7 +13,7 @@ import Navbar from "./Navbar";
 const Footer: React.FC = () => {
   return (
     <footer className="bg-gradient-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
+      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3 mb-6">
@@ -30,30 +30,33 @@ const Footer: React.FC = () => {
             Excelência jurídica com foco em resultados. Atuamos com integridade
             e inovação para proteger os interesses de nossos clientes.
           </p>
-          <div className="flex space-x-4">
+          <div className="flex space-x-2">
             <a
               href="https://www.linkedin.com/in/elilon-lopes"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-200 hover:text-accent-400 transition-colors"
+              className="text-neutral-200 hover:text-accent-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="LinkedIn"
             >
-              <Linkedin size={20} />
+              <Linkedin size={24} />
             </a>
             <a
               href="https://www.instagram.com/elilonlopesadvogados"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Instagram"
             >
-              <Instagram size={20} />
+              <Instagram size={24} />
             </a>
             <a
               href="https://www.facebook.com/elilon.lopesdeabreu"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Facebook"
             >
-              <Facebook size={20} />
+              <Facebook size={24} />
             </a>
           </div>
         </div>
@@ -116,7 +119,7 @@ const Footer: React.FC = () => {
             <li className="flex items-start gap-3">
               <MapPin className="text-accent-500 mt-1 min-w-[16px]" size={16} />
               <span>
-                Rua Engenheiro João Antônio Pimenta, 155, Centro
+                Rua João Pinheiro, 95, Centro
                 <br />
                 Montes Claros - MG
               </span>
@@ -147,9 +150,9 @@ const Footer: React.FC = () => {
             <input
               type="email"
               placeholder="Seu e-mail"
-              className="bg-neutral-800 border-none text-white px-4 py-2 text-sm focus:ring-1 focus:ring-accent-500"
+              className="bg-neutral-800 border-none text-white px-4 py-3 text-base focus:ring-1 focus:ring-accent-500 min-h-[44px]"
             />
-            <button className="bg-accent-500 text-white text-sm uppercase font-semibold py-2 hover:bg-accent-600 transition-colors">
+            <button className="bg-accent-500 text-white text-sm uppercase font-semibold py-3 hover:bg-accent-600 transition-colors min-h-[44px]">
               Inscrever-se
             </button>
           </form>
@@ -163,18 +166,24 @@ const Footer: React.FC = () => {
         <p className="text-sm font-semibold text-neutral-300 mb-4">
           ELILON LOPES DE ABREU SOCIEDADE INDIVIDUAL DE ADVOCACIA
         </p>
-        <div className="flex flex-wrap justify-center space-x-4 text-xs text-neutral-500">
-          <Link to="/privacidade" className="hover:text-accent-400">
+        <div className="flex flex-wrap justify-center gap-2 text-xs text-neutral-500">
+          <Link
+            to="/privacidade"
+            className="hover:text-accent-400 py-2 px-3 min-h-[44px] flex items-center"
+          >
             Política de Privacidade
           </Link>
-          <Link to="/termos" className="hover:text-accent-400">
+          <Link
+            to="/termos"
+            className="hover:text-accent-400 py-2 px-3 min-h-[44px] flex items-center"
+          >
             Termos de Uso
           </Link>
           <a
             href="https://www.robertosilvadevfullstack.cloud"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-accent-400"
+            className="hover:text-accent-400 py-2 px-3 min-h-[44px] flex items-center"
           >
             Developed by: Roberto Silva
           </a>
@@ -189,7 +198,7 @@ const FloatingWhatsApp: React.FC = () => (
     href="https://wa.me/553899576682"
     target="_blank"
     rel="noopener noreferrer"
-    className="fixed bottom-6 right-6 z-50 bg-green-600 text-white p-3 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center"
+    className="fixed bottom-6 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center min-w-[56px] min-h-[56px]"
     aria-label="Fale conosco no WhatsApp"
   >
     <svg

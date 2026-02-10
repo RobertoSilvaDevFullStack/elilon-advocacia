@@ -6,6 +6,34 @@ body {
   font-family: "Inter", sans-serif;
   background-color: #fdfdfd;
   color: #111;
+  -webkit-tap-highlight-color: rgba(161, 51, 62, 0.15);
+  scroll-behavior: smooth;
+}
+
+/* Mobile touch optimization */
+a,
+button,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .scroll-reveal {
+    opacity: 1 !important;
+  }
 }
 
 h1,
@@ -25,7 +53,6 @@ h6 {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 
 /* Scroll Reveal Animations */
 @keyframes fadeInUp {
@@ -111,8 +138,18 @@ h6 {
   animation-name: scaleUp;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+.delay-200 {
+  animation-delay: 0.2s;
+}
+.delay-300 {
+  animation-delay: 0.3s;
+}
+.delay-400 {
+  animation-delay: 0.4s;
+}
+.delay-500 {
+  animation-delay: 0.5s;
+}

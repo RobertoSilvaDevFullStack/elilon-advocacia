@@ -74,7 +74,6 @@ import MetaPixel from "./components/MetaPixel";
 
 // Default exports
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
-const ComingSoon = React.lazy(() => import("./pages/ComingSoon"));
 
 // Loading Fallback
 const Loading = () => (
@@ -103,36 +102,7 @@ const App: React.FC = () => {
         <ScrollToTop />
         <Suspense fallback={<Loading />}>
           <Routes>
-            {/* 
-            ========================================
-            🚀 ATIVAR SITE COMPLETO - 02/01/2026
-            ========================================
-            
-            INSTRUÇÕES PARA LANÇAMENTO:
-            
-            1. REMOVER a linha 52 (Coming Soon)
-            2. DESCOMENTAR a linha 57 (Home completa)
-            3. SALVAR o arquivo
-            4. Executar: npm run build
-            5. Fazer upload do dist/ via FileZilla
-            
-            ANTES (ATUAL):
-            <Route path="/" element={<ComingSoon />} />
-            
-            DEPOIS (DIA 02/01/2026):
             <Route path="/" element={<Home />} />
-            
-            ========================================
-          */}
-
-            {/* Coming Soon - REMOVER ESTA LINHA NO DIA 02/01/2026 */}
-            {/* <Route path="/" element={<ComingSoon />} /> */}
-
-            {/* Main Site - DESCOMENTAR ESTA LINHA NO DIA 02/01/2026 */}
-            <Route path="/" element={<Home />} />
-
-            {/* Acesso temporário ao site completo durante desenvolvimento */}
-            <Route path="/site" element={<Home />} />
 
             {/* Landing Pages */}
             <Route path="/bpc" element={<BPCLandingPage />} />

@@ -92,7 +92,7 @@ const Hero: React.FC = () => {
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">
               <Award className="text-vinho-500" size={20} />
               <span className="font-semibold text-gray-700">
-                OAB/SP 123.456
+                OAB/SP 150.653
               </span>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100">

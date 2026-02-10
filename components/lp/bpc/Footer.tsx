@@ -35,10 +35,7 @@ const Footer: React.FC = () => {
           <div className="md:text-right flex flex-col items-center md:items-end gap-3 text-sm text-neutral-300">
             <div className="flex items-center gap-2">
               <MapPin size={16} className="text-vinho-500" />
-              <span>
-                Rua Engenheiro João Antônio Pimenta, 155, Centro - Montes
-                Claros/MG
-              </span>
+              <span>Rua João Pinheiro, 95, Centro - Montes Claros/MG</span>
             </div>
             <div className="flex items-center gap-2">
               <Phone size={16} className="text-vinho-500" />

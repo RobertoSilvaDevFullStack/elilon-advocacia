@@ -93,7 +93,7 @@ export const Home: React.FC = () => {
             "Sociedade de Advogados especializada em Direito Empresarial, Trabalhista e Civil em Montes Claros - MG.",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "Rua Engenheiro João Antônio Pimenta, 155, Centro",
+            streetAddress: "Rua João Pinheiro, 95, Centro",
             addressLocality: "Montes Claros",
             addressRegion: "MG",
             postalCode: "39400-000",
@@ -113,7 +113,7 @@ export const Home: React.FC = () => {
         <div className="absolute inset-0 z-0">
           {/* YouTube Lazy Load - Performance Optimized */}
           <LazyYouTube
-            videoId="qyZJ364WPEs"
+            videoId="nxZTDjDXjOw"
             title="Vídeo Institucional Elilon Lopes Advogados"
             className="absolute opacity-40 pointer-events-auto"
           />

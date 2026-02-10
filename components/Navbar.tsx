@@ -88,7 +88,7 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="lg:hidden text-white"
+          className="lg:hidden text-white p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle menu"
         >
@@ -97,26 +97,30 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile Menu */}
-      {isOpen && (
-        <div className="lg:hidden mt-4 py-4 border-t border-neutral-700">
-          <div className="container mx-auto px-4 flex flex-col gap-4">
+      <div
+        className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="mt-4 py-4 border-t border-neutral-700">
+          <div className="container mx-auto px-4 flex flex-col gap-1">
             {NAV_ITEMS.map((item) => (
               <div key={item.path}>
                 <Link
                   to={item.path}
                   onClick={() => !item.subItems && setIsOpen(false)}
-                  className="text-white hover:text-vermelho-400 transition-colors py-2 font-medium block"
+                  className="text-white hover:text-vermelho-400 transition-colors py-3 font-medium min-h-[44px] flex items-center"
                 >
                   {item.label}
                 </Link>
                 {item.subItems && (
-                  <div className="ml-4 flex flex-col gap-2 mt-2">
+                  <div className="ml-4 flex flex-col gap-1 mt-1">
                     {item.subItems.map((sub) => (
                       <Link
                         key={sub.path}
                         to={sub.path}
                         onClick={() => setIsOpen(false)}
-                        className="text-neutral-300 hover:text-white transition-colors py-1 text-sm block"
+                        className="text-neutral-300 hover:text-white transition-colors py-2 text-sm min-h-[44px] flex items-center"
                       >
                         {sub.label}
                       </Link>
@@ -128,13 +132,13 @@ const Navbar: React.FC = () => {
             <Link
               to="/contato"
               onClick={() => setIsOpen(false)}
-              className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-5 py-3 text-sm uppercase tracking-wider font-semibold hover:shadow-lg transition-all text-center block mt-2"
+              className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-5 py-3 text-sm uppercase tracking-wider font-semibold hover:shadow-lg transition-all text-center mt-2 min-h-[44px] flex items-center justify-center"
             >
               Fale Conosco
             </Link>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

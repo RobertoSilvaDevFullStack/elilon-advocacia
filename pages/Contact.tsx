@@ -42,7 +42,7 @@ export const Contact: React.FC = () => {
                       Escritório Central
                     </h4>
                     <p className="text-neutral-600">
-                      Rua Engenheiro João Antônio Pimenta, 155, Centro
+                      Rua João Pinheiro, 95, Centro
                     </p>
                     <p className="text-neutral-600">Montes Claros - MG</p>
                   </div>
