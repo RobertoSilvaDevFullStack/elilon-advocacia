@@ -82,7 +82,10 @@ const SocialProof: React.FC = () => {
           <button
             onClick={() => {
               window.fbq?.("track", "Contact");
-              window.open("https://wa.me/553899576682", "_blank");
+              window.open(
+                "https://wa.me/553899576682?text=Ol%C3%A1!%20Vim%20pelo%20an%C3%BAncio.%20Quero%20falar%20com%20um%20advogado%3F",
+                "_blank",
+              );
             }}
             className="inline-flex items-center justify-center gap-2 bg-white text-vinho-500 hover:bg-gray-50 text-lg font-bold py-4 px-8 rounded-lg shadow-lg transition-colors duration-200"
           >

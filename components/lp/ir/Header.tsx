@@ -12,7 +12,10 @@ const Header: React.FC = () => {
   }, []);
 
   const scrollToContact = () => {
-    window.open("https://wa.me/553899576682", "_blank");
+    window.open(
+      "https://wa.me/553899576682?text=Ol%C3%A1!%20Vim%20pelo%20an%C3%BAncio.%20Quero%20falar%20com%20um%20advogado%3F",
+      "_blank",
+    );
   };
 
   return (

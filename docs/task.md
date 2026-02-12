@@ -1,0 +1,20 @@
+- [x] Planejamento e Design
+  - [x] Brainstorming de soluções
+  - [x] Pesquisa API Exact Sales
+  - [x] Traduzir e Finalizar Plano de Implementação <!-- id: 0 -->
+  - [x] Atualizar plano para arquitetura com n8n e IA <!-- id: 1 -->
+  - [x] Definir Cronograma e Orçamento (7-10 dias) <!-- id: 12 -->
+- [ ] Implementação Backend (Proxy n8n)
+  - [ ] Criar Serviço Chat (`chat.service.js`) <!-- id: 2 -->
+  - [ ] Criar Controller Chat (`chat.controller.js`) <!-- id: 3 -->
+  - [ ] Configurar Rotas (`chat.routes.js`) <!-- id: 4 -->
+  - [ ] Registrar rotas no `app.js` <!-- id: 5 -->
+- [ ] Implementação Frontend
+  - [ ] Criar Componente ChatWidget (Botão) <!-- id: 6 -->
+  - [ ] Criar UI do Chat (ChatApp - Mensagens, Input) <!-- id: 7 -->
+  - [ ] Conectar Frontend ao Backend Proxy <!-- id: 8 -->
+- [ ] Configuração n8n (External)
+  - [ ] Criar Workflow Webhook + AI Agent <!-- id: 9 -->
+  - [ ] Integrar n8n com Exact Sales <!-- id: 10 -->
+- [ ] Verificação e Testes
+  - [ ] Teste de fluxo completo (Frontend -> Backend -> n8n -> IA) <!-- id: 11 -->

@@ -55,7 +55,12 @@ const Hero: React.FC = () => {
         {/* CTA Button */}
         <div className="flex flex-col items-center w-full max-w-2xl gap-8">
           <button
-            onClick={() => window.open("https://wa.me/553899576682", "_blank")}
+            onClick={() =>
+              window.open(
+                "https://wa.me/553899576682?text=Ol%C3%A1!%20Vim%20pelo%20an%C3%BAncio.%20Quero%20falar%20com%20um%20advogado%3F",
+                "_blank",
+              )
+            }
             className="animate-pulse hover:animate-none hover:scale-105 w-full sm:w-auto bg-vinho-500 hover:bg-vinho-600 text-white font-sans font-bold text-lg sm:text-xl py-5 px-8 sm:px-12 rounded-xl transition-all flex items-center justify-center gap-3 shadow-xl"
           >
             <svg
