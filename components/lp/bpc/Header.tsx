@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
+import { openWhatsApp } from "../../../utils/whatsapp";
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -12,10 +13,7 @@ const Header: React.FC = () => {
   }, []);
 
   const scrollToContact = () => {
-    window.open(
-      "https://wa.me/553899576682?text=Ol%C3%A1!%20Vim%20pelo%20an%C3%BAncio.%20Quero%20falar%20com%20um%20advogado%3F",
-      "_blank",
-    );
+    openWhatsApp("bpc_header_cta");
   };
 
   return (
