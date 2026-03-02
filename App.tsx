@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 
@@ -84,9 +85,7 @@ const Loading = () => (
 
 // Scroll to top component
 const ScrollToTop = () => {
-  const { pathname } = React.useLocation
-    ? React.useLocation()
-    : { pathname: "" };
+  const { pathname } = useLocation();
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
