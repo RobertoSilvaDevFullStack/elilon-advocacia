@@ -4,7 +4,10 @@ export const getApiBaseUrl = () => {
   const configuredUrl = import.meta.env.VITE_API_URL;
 
   if (typeof window !== "undefined") {
-    if (configuredUrl && configuredUrl.includes("api.elilonlopesadvogados.com.br")) {
+    if (
+      configuredUrl &&
+      configuredUrl.includes("api.elilonlopesadvogados.com.br")
+    ) {
       return `${window.location.origin}${FALLBACK_API_PATH}`;
     }
 
