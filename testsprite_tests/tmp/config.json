@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "executionArgs": {
+    "projectName": "elilon-advocacia",
+    "projectPath": "g:\\PROJETOS\\elilon-advocacia",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "production",
+    "envs": {
+      "API_KEY": "sk-user-yODIo1EmgaT8uuDPVl9hlYPyk3Bbz5n5ZnVt_EuaflMH8YGSDw5EdyilNxx6k2YiOhZomIWuBvlr7jDKUIY6v0M70gO24dnr14W_8l7TDWhdvy2YOfnBQL6og5TcySriIGM"
+    }
+  },
+  "serverPort": 60561,
+  "proxy": "http://d6abf1df-0697-4488-ba74-bf7590f5f5f5:rdXo2jnfZJAFA5UuKyKdvxGf3gFjxZky@tun.testsprite.com:8080"
+}
