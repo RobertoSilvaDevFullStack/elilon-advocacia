@@ -19,7 +19,11 @@ export const SEO: React.FC<SEOProps> = ({
   const siteTitle = "Elilon Lopes Advogados | Sociedade de Advogados";
   const fullTitle =
     title === siteTitle ? title : `${title} | Elilon Lopes Advogados`;
-  const currentUrl = url || window.location.href;
+  const currentUrl =
+    url ||
+    (typeof window !== "undefined"
+      ? window.location.href
+      : "https://elilonlopesadvogados.com.br");
 
   return (
     <Helmet>

@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import Header from "../components/lp/ir/Header";
 import Hero from "../components/lp/ir/Hero";
 import DiseasesList from "../components/lp/ir/DiseasesList";
 import Process from "../components/lp/ir/Process";
 import SocialProof from "../components/lp/ir/SocialProof";
 import Footer from "../components/lp/ir/Footer";
+import { SEO } from "../components/SEO";
 
 const IRLandingPage: React.FC = () => {
   useEffect(() => {
@@ -14,13 +14,11 @@ const IRLandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#161213]">
-      <Helmet>
-        <title>Isenção IR Doenças Graves - Elilon Lopes Advogados</title>
-        <meta
-          name="description"
-          content="Recupere o Imposto de Renda pago indevidamente. Isenção total para portadores de doenças graves conforme Lei 7.713/88."
-        />
-      </Helmet>
+      <SEO
+        title="Isenção IR Doenças Graves"
+        description="Recupere o Imposto de Renda pago indevidamente. Isenção total para portadores de doenças graves conforme Lei 7.713/88."
+        url="https://elilonlopesadvogados.com.br/isencao-ir"
+      />
 
       <Header />
 

@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import Header from "../components/lp/bpc/Header";
 import Hero from "../components/lp/bpc/Hero";
 import Requirements from "../components/lp/bpc/Requirements";
 import Process from "../components/lp/bpc/Process";
 import SocialProof from "../components/lp/bpc/SocialProof";
 import Footer from "../components/lp/bpc/Footer";
+import { SEO } from "../components/SEO";
 
 const BPCLandingPage: React.FC = () => {
   useEffect(() => {
@@ -14,13 +14,11 @@ const BPCLandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#161213]">
-      <Helmet>
-        <title>BPC LOAS - Elilon Lopes Advogados</title>
-        <meta
-          name="description"
-          content="Descubra se você tem direito ao benefício BPC/LOAS de 1 salário mínimo mensal. Análise gratuita por advogados especialistas."
-        />
-      </Helmet>
+      <SEO
+        title="BPC LOAS"
+        description="Descubra se você tem direito ao benefício BPC/LOAS de 1 salário mínimo mensal. Análise gratuita por advogados especialistas."
+        url="https://elilonlopesadvogados.com.br/bpc"
+      />
 
       <Header />
 
