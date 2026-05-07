@@ -110,6 +110,11 @@ export const Admin: React.FC = () => {
         body: JSON.stringify({ username, password }),
       });
 
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Resposta inesperada do servidor");
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -163,6 +168,11 @@ export const Admin: React.FC = () => {
           password: registerForm.password,
         }),
       });
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Resposta inesperada do servidor");
+      }
 
       const data = await response.json();
 

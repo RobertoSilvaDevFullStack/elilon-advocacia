@@ -1,26 +1,23 @@
-const FALLBACK_API_PATH = "/api";
+const LOCAL_API_URL = "http://localhost:5000/api";
+const PRODUCTION_API_URL = "https://api.elilonlopesadvogados.com.br/api";
 
 export const getApiBaseUrl = () => {
   const configuredUrl = import.meta.env.VITE_API_URL;
-
-  if (typeof window !== "undefined") {
-    if (
-      configuredUrl &&
-      configuredUrl.includes("api.elilonlopesadvogados.com.br")
-    ) {
-      return `${window.location.origin}${FALLBACK_API_PATH}`;
-    }
-
-    if (configuredUrl && configuredUrl.trim()) {
-      return configuredUrl.replace(/\/$/, "");
-    }
-
-    return `${window.location.origin}${FALLBACK_API_PATH}`;
-  }
 
   if (configuredUrl && configuredUrl.trim()) {
     return configuredUrl.replace(/\/$/, "");
   }
 
-  return FALLBACK_API_PATH;
+  if (typeof window !== "undefined") {
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return LOCAL_API_URL;
+    }
+
+    return PRODUCTION_API_URL;
+  }
+
+  return PRODUCTION_API_URL;
 };
