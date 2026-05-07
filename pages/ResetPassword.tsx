@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();

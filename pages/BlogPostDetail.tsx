@@ -4,9 +4,9 @@ import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface BlogPost {
   id: number;

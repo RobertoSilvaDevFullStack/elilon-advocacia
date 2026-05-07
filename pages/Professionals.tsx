@@ -6,9 +6,9 @@ import { LOCATIONS, ROLES, AREAS } from "../constants";
 import { Linkedin, Mail, Phone } from "lucide-react";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface Professional {
   id: number;
@@ -335,7 +335,7 @@ export const Professionals: React.FC = () => {
                   >
                     {page}
                   </button>
-                )
+                ),
               )}
 
               <button

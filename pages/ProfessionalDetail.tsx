@@ -11,9 +11,9 @@ import {
   Award,
   BookOpen,
 } from "lucide-react";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface Professional {
   id: number;
@@ -49,7 +49,7 @@ export const ProfessionalDetail: React.FC = () => {
           : data.professionals || [];
 
         const found = professionalsArray.find(
-          (p: Professional) => p.id === Number(id)
+          (p: Professional) => p.id === Number(id),
         );
 
         if (found) {

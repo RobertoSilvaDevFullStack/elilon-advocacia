@@ -4,9 +4,9 @@ import { Hero } from "../components/Components";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface BlogPost {
   id: number;
@@ -135,7 +135,7 @@ export const Blog: React.FC = () => {
                     >
                       {page}
                     </button>
-                  )
+                  ),
                 )}
               </div>
             )}
