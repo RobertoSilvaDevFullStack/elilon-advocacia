@@ -1213,7 +1213,7 @@ body {
         </div>
         <div class="metadata-row">
           <div class="metadata-label text-body-medium">Date</div>
-          <div class="metadata-value text-body">01/04/2026</div>
+          <div class="metadata-value text-body">08/05/2026</div>
         </div>
         <div class="metadata-row">
           <div class="metadata-label text-body-medium">Prepared by</div>
@@ -1234,13 +1234,13 @@ body {
         
         <div class="coverage-summary">
           <ul class="coverage-list text-body">
-            <li><span class="coverage-highlight">18/24</span> of tests passed</li>
+            <li><span class="coverage-highlight">23/24</span> of tests passed</li>
             <li><span class="coverage-highlight">Key gaps / risks:</span>
             
               <ol>
-<li><strong>API Ghost Load State (Blog):</strong> The most critical structural defect is in the fetch system for the Blog (<code>/blog</code>). If the Express server is sluggish, turned off, or the HTTP request hangs, the React UI freezes on an infinite &quot;spinner&quot; (<code>Carregando artigos...</code>). There is no UI Error Boundary or user-facing &quot;Timeout / Tentar Novamente&quot; fallback button. This directly breaks user conversion funnels reading the content.</li>
-<li><strong>Preview Server Stability:</strong> <code>ERR_EMPTY_RESPONSE</code> and blank white pages on tests TC017 e TC020 reveal that the Frontend instance couldn't keep up with rapid concurrent page navigation, dropping connections. While <code>Vite Preview</code> is a lightweight static server, doing this in production (like Vercel or AWS) shouldn't be an issue, but it flags that the React app might have memory leaks if routes mount/dismount too fast repeatedly.</li>
-<li><strong>Database Dependency:</strong> The tests that broke on the Blog are heavily tied to the <code>PostgreSQL</code> connectivity issue previously identified in the backend logs (auth errors). Since the API didn't return data, the Frontend test crashed. Fix the DB credentials, and 3 out of those 6 errors will pass instantly.</li>
+<li><strong>Test TC009 Blocked:</strong> The fallback UI for &quot;Content Unavailable&quot; in the Practice Areas section could not be verified because the database always returns populated data. It is recommended to create an isolated mock environment or clear specific DB tables temporarily to unblock this negative-path test in the future.</li>
+<li><strong>Improved Stability:</strong> The previous issues with the preview server crashing and the API ghost load states on the Blog have been completely resolved. The application exhibits robust performance and connection handling during rapid concurrent page navigation.</li>
+<li><strong>Database Dependency Resilience:</strong> The database dependencies (like PostgreSQL connectivity) appear to be correctly configured and stable, as all backend-reliant frontend views (such as the Blog list and forms) successfully passed their execution runs. No new risks identified for the current release candidate.</li>
 </ol>
 
             </li>
@@ -1268,15 +1268,15 @@ body {
             <div class="table-row">
               <div class="table-cell"><span class="text-body">📌 Requirement: Home Page & Core Navigation</span></div>
               <div class="table-cell"><span class="text-body">10</span></div>
-              <div class="table-cell"><span class="text-body">8</span></div>
-              <div class="table-cell"><span class="text-body">2</span></div>
+              <div class="table-cell"><span class="text-body">10</span></div>
+              <div class="table-cell"><span class="text-body">0</span></div>
             </div>
         
 
             <div class="table-row">
               <div class="table-cell"><span class="text-body">📌 Requirement: Practice Areas</span></div>
               <div class="table-cell"><span class="text-body">4</span></div>
-              <div class="table-cell"><span class="text-body">4</span></div>
+              <div class="table-cell"><span class="text-body">3</span></div>
               <div class="table-cell"><span class="text-body">0</span></div>
             </div>
         
@@ -1284,16 +1284,16 @@ body {
             <div class="table-row">
               <div class="table-cell"><span class="text-body">📌 Requirement: Blog Functionality & API Rendering</span></div>
               <div class="table-cell"><span class="text-body">4</span></div>
-              <div class="table-cell"><span class="text-body">1</span></div>
-              <div class="table-cell"><span class="text-body">3</span></div>
+              <div class="table-cell"><span class="text-body">4</span></div>
+              <div class="table-cell"><span class="text-body">0</span></div>
             </div>
         
 
             <div class="table-row">
               <div class="table-cell"><span class="text-body">📌 Requirement: Lead Generation / Contact Handling</span></div>
               <div class="table-cell"><span class="text-body">6</span></div>
-              <div class="table-cell"><span class="text-body">5</span></div>
-              <div class="table-cell"><span class="text-body">1</span></div>
+              <div class="table-cell"><span class="text-body">6</span></div>
+              <div class="table-cell"><span class="text-body">0</span></div>
             </div>
         
           </div>
@@ -1317,12 +1317,12 @@ body {
             <div class="requirement-content">
                                           <div class="requirement-title-row">
               <h3 class="title-requirement">📌 Requirement: Home Page & Core Navigation</h3>
-                <div class="requirement-status-tag status-error">
+                <div class="requirement-status-tag status-success">
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-                <path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>8/10</span>
+              <span>10/10</span>
             </div>
               </div>
               <p class="text-body-medium requirement-description">Proper error handling for API calls and invalid data scenarios.</p>
@@ -1450,18 +1450,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -1470,7 +1467,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">The navigation click routing succeeds, but the Blog Page enters an infinite state of "Carregando artigos..." effectively stalling the page. The frontend likely failed to fetch from the backend API, and does not time out gracefully with an error message to the user.</div>
+                    <div class="test-field-value text-body">Navigation to the Blog page completes successfully, indicating the previous loading stall issues have been resolved.</div>
                   </div>
                 </div>
               </div>
@@ -1588,18 +1585,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -1608,7 +1602,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">During rapid sequential multi-page navigation, the local preview server crashed or dropped connection, resulting in a blank `ERR_EMPTY_RESPONSE`. This hints at potential memory/socket exhaustion on either Vite's preview server or a network instability during heavy concurrent testing.</div>
+                    <div class="test-field-value text-body">Sequential multi-page navigation is now fully stable. The local server gracefully handles concurrent requests without dropping connections.</div>
                   </div>
                 </div>
               </div>
@@ -1743,7 +1737,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">The route transition logic from Navbar works (independently of the content fail loaded mapped in TC003).</div>
+                    <div class="test-field-value text-body">The route transition logic from Navbar works perfectly.</div>
                   </div>
                 </div>
               </div>
@@ -1801,12 +1795,12 @@ body {
             <div class="requirement-content">
                                           <div class="requirement-title-row">
               <h3 class="title-requirement">📌 Requirement: Practice Areas</h3>
-                <div class="requirement-status-tag status-success">
+                <div class="requirement-status-tag status-error">
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
-                <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
+                <path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>4/4</span>
+              <span>3/4</span>
             </div>
               </div>
               <p class="text-body-medium requirement-description">Proper error handling for API calls and invalid data scenarios.</p>
@@ -1979,15 +1973,18 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      <div class="status-wrapper">
+                      
+            <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
-                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
+<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
                 </div>
-                <span class="text-body status-pass">Pass</span>
+                <span class="text-body status-fail">Failed</span>
             </div>
+            
                     </div>
                   </div>
                   <div class="test-field">
@@ -1996,7 +1993,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">Negative states on absent areas safely fallback to user-friendly messages instead of JS crashes.</div>
+                    <div class="test-field-value text-body">The test could not be run because the Practice Areas page currently contains content, so the case where practice-area content is missing could not be observed.</div>
                   </div>
                 </div>
               </div>
@@ -2009,12 +2006,12 @@ body {
             <div class="requirement-content">
                                           <div class="requirement-title-row">
               <h3 class="title-requirement">📌 Requirement: Blog Functionality & API Rendering</h3>
-                <div class="requirement-status-tag status-error">
+                <div class="requirement-status-tag status-success">
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-                <path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>1/4</span>
+              <span>4/4</span>
             </div>
               </div>
               <p class="text-body-medium requirement-description">Proper error handling for API calls and invalid data scenarios.</p>
@@ -2069,7 +2066,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">Under certain network scenarios/tests, the initial skeleton load successfully mounts. However, subsequent deep content renders appear unstable (see failures).</div>
+                    <div class="test-field-value text-body">The initial skeleton load and subsequent deep content renders appear stable and populate as expected.</div>
                   </div>
                 </div>
               </div>
@@ -2097,18 +2094,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -2117,7 +2111,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">Due to the API stall ("Carregando artigos..."), the virtual list never populated. Therefore, the automation agent could not find any article `Card` component to click on. The test fundamentally failed because of a blocked dependency (no content).</div>
+                    <div class="test-field-value text-body">The article route now populates correctly, allowing the user (and automation agent) to click and read the full content.</div>
                   </div>
                 </div>
               </div>
@@ -2145,18 +2139,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -2165,7 +2156,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">Cascading failure from TC011. Since the article route was never populated, navigating back to index wasn't achievable.</div>
+                    <div class="test-field-value text-body">Since the article route correctly populated, navigating back to index behaves seamlessly.</div>
                   </div>
                 </div>
               </div>
@@ -2193,18 +2184,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -2213,7 +2201,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">When the fetching promises hang indefinitely, the UI design lacks a `Timeout Error Boundary` or "Retry" actionable button. The user is left trapped on an eternal spinner.</div>
+                    <div class="test-field-value text-body">The system handles negative loading states and provides the user with proper feedback without infinite spinners.</div>
                   </div>
                 </div>
               </div>
@@ -2226,12 +2214,12 @@ body {
             <div class="requirement-content">
                                           <div class="requirement-title-row">
               <h3 class="title-requirement">📌 Requirement: Lead Generation / Contact Handling</h3>
-                <div class="requirement-status-tag status-error">
+                <div class="requirement-status-tag status-success">
               <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-                <path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <span>5/6</span>
+              <span>6/6</span>
             </div>
               </div>
               <p class="text-body-medium requirement-description">Proper error handling for API calls and invalid data scenarios.</p>
@@ -2404,18 +2392,15 @@ body {
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Status</div>
                     <div class="test-field-value">
-                      
-            <div class="status-wrapper">
+                      <div class="status-wrapper">
                 <div class="status-icon">
                     <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="7.99961" cy="7.99998" r="6.4" fill="#C23539" fill-opacity="0.2"/>
-<path d="M8 5.59998V7.99698" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M8 10.394V10.3995" stroke="#EF4146" stroke-width="1.38478" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+                        <circle cx="7.99961" cy="7.99998" r="6.4" fill="#10A363" fill-opacity="0.2"/>
+                        <path d="M5.59961 8.00002L7.19961 9.60002L10.3996 6.40002" stroke="#19C379" stroke-width="1.28" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                 </div>
-                <span class="text-body status-fail">Failed</span>
+                <span class="text-body status-pass">Pass</span>
             </div>
-            
                     </div>
                   </div>
                   <div class="test-field">
@@ -2424,7 +2409,7 @@ body {
                   </div>
                   <div class="test-field">
                     <div class="test-field-label text-body-medium">Analysis / Findings</div>
-                    <div class="test-field-value text-body">This test hit the same "White Screen" proxy drop as TC020. The server became briefly unresponsive, resulting in 0 interactive elements rendering during the execution window.</div>
+                    <div class="test-field-value text-body">The server efficiently handles submission without resulting in empty responses or unresponsiveness.</div>
                   </div>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import asyncio
+import re
 from playwright import async_api
 from playwright.async_api import expect
 
@@ -15,31 +16,42 @@ async def run_test():
         browser = await pw.chromium.launch(
             headless=True,
             args=[
-                "--window-size=1280,720",         # Set the browser window size
-                "--disable-dev-shm-usage",        # Avoid using /dev/shm which can cause issues in containers
-                "--ipc=host",                     # Use host-level IPC for better stability
-                "--single-process"                # Run the browser in a single process mode
+                "--window-size=1280,720",
+                "--disable-dev-shm-usage",
+                "--ipc=host",
+                "--single-process"
             ],
         )
 
         # Create a new browser context (like an incognito window)
         context = await browser.new_context()
-        context.set_default_timeout(5000)
+        # Wider default timeout to match the agent's DOM-stability budget;
+        # auto-waiting Playwright APIs (expect, locator.wait_for) inherit this.
+        context.set_default_timeout(15000)
 
         # Open a new page in the browser context
         page = await context.new_page()
 
         # Interact with the page elements to simulate user flow
-        # -> Navigate to http://localhost:3000
-        await page.goto("http://localhost:3000", wait_until="commit", timeout=10000)
+        # -> navigate
+        await page.goto("http://localhost:3000")
+        try:
+            await page.wait_for_load_state("domcontentloaded", timeout=5000)
+        except Exception:
+            pass
         
-        # -> Navigate to /areas (http://localhost:3000/areas), wait for the page to finish loading, then check for either practice area content or a content-unavailable message.
-        await page.goto("http://localhost:3000/areas", wait_until="commit", timeout=10000)
+        # -> Click the 'Áreas de Atuação' link (interactive element index 43) to navigate to /areas, then wait for the page to finish loading and check whether practice areas content or a content-unavailable message is present.
+        # link "Áreas de Atuação"
+        elem = page.locator("xpath=/html/body/div/div/nav/div/div/div[4]/a").nth(0)
+        await elem.wait_for(state="visible", timeout=10000)
+        await elem.click()
         
-        # --> Test passed — verified by AI agent
-        frame = context.pages[-1]
-        current_url = await frame.evaluate("() => window.location.href")
-        assert current_url is not None, "Test completed successfully"
+        # --> Assertions to verify final state
+        assert await page.locator("xpath=//*[contains(., 'Conteúdo indisponível')]").nth(0).is_visible(), "The Practice Areas page should indicate the content is unavailable when practice area content is missing"
+        
+        # --> Test blocked by environment/access constraints during agent run
+        # Reason: TEST BLOCKED The test could not be run — the Practice Areas page currently contains content, so the case where practice-area content is missing could not be observed. Observations: - The /areas page displays multiple practice areas (e.g., 'Direito Trabalhista', 'Direito Previdenciário', 'Direito Tributário', 'Direito Imobiliário', 'Direito Civil'). - No content-unavailable or "not found" messag...
+        raise AssertionError("Test blocked during agent run: " + "TEST BLOCKED The test could not be run \u2014 the Practice Areas page currently contains content, so the case where practice-area content is missing could not be observed. Observations: - The /areas page displays multiple practice areas (e.g., 'Direito Trabalhista', 'Direito Previdenci\u00e1rio', 'Direito Tribut\u00e1rio', 'Direito Imobili\u00e1rio', 'Direito Civil'). - No content-unavailable or \"not found\" messag..." + " — the exported script cannot reproduce a PASS in this environment.")
         await asyncio.sleep(5)
 
     finally:

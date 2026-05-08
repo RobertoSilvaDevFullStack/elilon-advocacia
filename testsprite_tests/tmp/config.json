@@ -10,9 +10,9 @@
     "additionalInstruction": "",
     "serverMode": "production",
     "envs": {
-      "API_KEY": "sk-user-yODIo1EmgaT8uuDPVl9hlYPyk3Bbz5n5ZnVt_EuaflMH8YGSDw5EdyilNxx6k2YiOhZomIWuBvlr7jDKUIY6v0M70gO24dnr14W_8l7TDWhdvy2YOfnBQL6og5TcySriIGM"
+      "API_KEY": "sk-user-adNLf0vo7-QhPTYTzWXWImo455v2AgRcDbJLF-0j4CnyNpeuhtqMaJBU5_T_G5BwYqudTM5ljLq1IipzDTyjfVTwZaulcNhClPJNbh4Ef57Nq9UMx8yM1eF3-ROQWYmOLgM"
     }
   },
-  "serverPort": 60561,
+  "serverPort": 54784,
   "proxy": "http://d6abf1df-0697-4488-ba74-bf7590f5f5f5:rdXo2jnfZJAFA5UuKyKdvxGf3gFjxZky@tun.testsprite.com:8080"
 }
