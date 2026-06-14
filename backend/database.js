@@ -20,8 +20,10 @@ function initializeTables() {
     `CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE,
+      email TEXT UNIQUE,
       password TEXT,
       role TEXT DEFAULT 'editor',
+      approved INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`,
     createDefaultAdmin,
@@ -85,7 +87,7 @@ function initializeTables() {
 }
 
 function createDefaultAdmin() {
-  const insert = "INSERT INTO users (username, password, role) VALUES (?,?,?)";
+  const insert = "INSERT INTO users (username, email, password, role, approved) VALUES (?,?,?,?,?)";
   const hashedPassword = bcrypt.hashSync("admin123", 10);
 
   sqliteDb.get(
@@ -93,8 +95,10 @@ function createDefaultAdmin() {
     ["admin"],
     (err, row) => {
       if (!row) {
-        sqliteDb.run(insert, ["admin", hashedPassword, "admin"]);
+        sqliteDb.run(insert, ["admin", "admin@elilon.com.br", hashedPassword, "superadmin", 1]);
         console.log("👤 Usuário admin padrão criado.");
+      } else if (row.approved === null || row.approved === undefined) {
+        sqliteDb.run("UPDATE users SET approved = 1 WHERE username = 'admin'");
       }
     },
   );

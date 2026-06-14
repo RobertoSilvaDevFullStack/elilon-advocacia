@@ -195,20 +195,61 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Map Section */}
-      <section className="py-20 bg-neutral-50">
-        <div className="container mx-auto px-4">
-          <SectionTitle
-            title="Atuação Nacional"
-            subtitle="Onde Estamos"
-            centered
-          />
-          <div className="max-w-4xl mx-auto">
-            <p className="text-center text-neutral-600 mb-10">
-              Com sede em Montes Claros, atuamos estrategicamente em todo o
-              território nacional, com parceiros nas principais capitais.
+      {/* Map Section - Atuação Nacional */}
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-neutral-50 via-white to-neutral-50 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-vinho-200 to-transparent" />
+          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-vinho-200 to-transparent" />
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Header Section */}
+          <div className="text-center mb-12 lg:mb-16">
+            <span className="inline-block px-4 py-1.5 bg-vinho-50 text-vinho-600 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
+              Presença em Todo Brasil
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-headline font-bold text-neutral-900 mb-4">
+              Atuação <span className="text-vinho-500">Nacional</span>
+            </h2>
+            <p className="text-lg text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+              Com sede estratégica em{" "}
+              <strong className="text-vinho-600">Montes Claros - MG</strong>,
+              nosso escritório atua em todo o território brasileiro, oferecendo
+              soluções jurídicas personalizadas com a mesma excelência em
+              qualquer região do país.
             </p>
+          </div>
+
+          {/* Map Container - Full Width Responsive */}
+          <div className="relative">
             <BrazilMap />
+          </div>
+
+          {/* Stats Row - Below Map */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 sm:mt-8 lg:mt-12">
+            {[
+              { value: "27", label: "Estados Atendidos", icon: "🇧🇷" },
+              { value: "34", label: "Cidades com Atuação", icon: "📍" },
+              { value: "5", label: "Regiões do Brasil", icon: "🌎" },
+              { value: "100%", label: "Foco no Cliente", icon: "⭐" },
+            ].map((stat, index) => (
+              <div
+                key={stat.label}
+                className="text-center p-3 sm:p-4 lg:p-6 bg-white rounded-lg sm:rounded-xl shadow-sm border border-neutral-100 hover:shadow-md hover:border-vinho-200 transition-all duration-300 group"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <span className="text-xl sm:text-2xl mb-1 sm:mb-2 block">
+                  {stat.icon}
+                </span>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-vinho-600 group-hover:scale-110 transition-transform duration-300">
+                  {stat.value}
+                </p>
+                <p className="text-xs sm:text-sm text-neutral-600 font-medium leading-tight">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

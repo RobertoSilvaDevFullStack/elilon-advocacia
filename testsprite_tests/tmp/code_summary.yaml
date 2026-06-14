@@ -1,55 +1,134 @@
 version: "2"
-type: frontend
+type: backend
 tech_stack:
-  - React 18
-  - Vite
-  - Tailwind CSS
-  - React Router
-  - Node.js (Backend)
-routes:
-  - path: /
-    file: pages/Home.tsx
-    auth_required: false
-    description: Home page introducing the firm
-  - path: /areas
-    file: pages/Areas.tsx
-    auth_required: false
-    description: Practice areas explanation
-  - path: /admin
-    file: pages/Admin.tsx
-    auth_required: true
-    description: Private admin dashboard to manage blog and professionals
-  - path: /blog
-    file: pages/Blog.tsx
-    auth_required: false
-    description: List of articles
-  - path: /contato
-    file: pages/Contact.tsx
-    auth_required: false
-    description: Contact page form and info
+  - Node.js
+  - Express
+  - SQLite/PostgreSQL
 features:
-  - name: User Login (Admin)
-    description: Admin authentication via Supabase
+  - name: Authentication API
+    description: User login, registration, and password management
     files:
-      - pages/Admin.tsx
-    entry_route: /admin
-    user_interactions:
-      - Fill email input field
-      - Fill password input field
-      - Click Login button to submit
-    api_calls:
+      - backend/routes/authRoutes.js
+      - backend/controllers/authController.js
+    endpoints:
       - method: POST
-        endpoint: /auth/v1/token
-    auth_required: false
-  - name: Navigation View
-    description: Switch between different pages
+        path: /api/auth/login
+        description: Authenticate user
+        auth_required: false
+      - method: POST
+        path: /api/auth/register
+        description: Register user
+        auth_required: true
+      - method: POST
+        path: /api/auth/change-password
+        description: Change password
+        auth_required: true
+  - name: Lead Capture API
+    description: Public tracking and lead submission
     files:
-      - App.tsx
-      - components/Navbar.tsx
-    entry_route: /
-    user_interactions:
-      - Click links on Navbar
-      - Read content
-    api_calls: []
-    auth_required: false
+      - backend/routes/apiRoutes.js
+      - backend/controllers/mainController.js
+    endpoints:
+      - method: POST
+        path: /api/track
+        description: Track visit
+        auth_required: false
+      - method: POST
+        path: /api/leads
+        description: Create lead
+        auth_required: false
+      - method: GET
+        path: /api/leads
+        description: Get all leads
+        auth_required: true
+      - method: PUT
+        path: /api/leads/:id/status
+        description: Update lead status
+        auth_required: true
+  - name: Content Management API
+    description: Public and private endpoints for blog posts and professionals
+    files:
+      - backend/routes/apiRoutes.js
+      - backend/controllers/contentController.js
+    endpoints:
+      - method: GET
+        path: /api/posts
+        description: Get list of posts
+        auth_required: false
+      - method: GET
+        path: /api/professionals
+        description: Get list of professionals
+        auth_required: false
+      - method: POST
+        path: /api/posts
+        description: Create new post
+        auth_required: true
+      - method: PUT
+        path: /api/posts/:id
+        description: Update post
+        auth_required: true
+      - method: DELETE
+        path: /api/posts/:id
+        description: Delete post
+        auth_required: true
+      - method: POST
+        path: /api/professionals
+        description: Create professional
+        auth_required: true
+      - method: PUT
+        path: /api/professionals/:id
+        description: Update professional
+        auth_required: true
+      - method: DELETE
+        path: /api/professionals/:id
+        description: Delete professional
+        auth_required: true
+  - name: Dashboard & Settings API
+    description: Admin dashboard and settings configuration
+    files:
+      - backend/routes/apiRoutes.js
+      - backend/controllers/mainController.js
+    endpoints:
+      - method: GET
+        path: /api/dashboard
+        description: Dashboard stats
+        auth_required: true
+      - method: POST
+        path: /api/settings
+        description: Save settings
+        auth_required: true
+      - method: GET
+        path: /api/settings
+        description: Get settings
+        auth_required: true
+  - name: User Management API
+    description: Create, update, delete, approve/reject users
+    files:
+      - backend/routes/apiRoutes.js
+      - backend/controllers/contentController.js
+    endpoints:
+      - method: GET
+        path: /api/users
+        description: List users
+        auth_required: true
+      - method: POST
+        path: /api/users
+        description: Create user
+        auth_required: true
+      - method: PUT
+        path: /api/users/:id
+        description: Update user
+        auth_required: true
+      - method: DELETE
+        path: /api/users/:id
+        description: Delete user
+        auth_required: true
+      - method: PUT
+        path: /api/users/:id/approve
+        description: Approve user
+        auth_required: true
+      - method: DELETE
+        path: /api/users/:id/reject
+        description: Reject user
+        auth_required: true
 known_limitations: []

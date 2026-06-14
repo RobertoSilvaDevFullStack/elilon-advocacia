@@ -29,7 +29,7 @@ exports.login = async (req, res) => {
     }
 
     // Check if user is approved
-    if (!user.approved) {
+    if (user.approved === false || user.approved === 0 || user.approved === 'false') {
       return res.status(403).json({
         success: false,
         code: "PENDING_APPROVAL",
@@ -112,7 +112,7 @@ exports.register = async (req, res) => {
       [username, email, hashedPassword, 'editor', false]
     );
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: "Cadastro realizado com sucesso! Aguarde a aprovação do administrador para acessar o sistema.",
       user: result.rows[0]
