@@ -72,6 +72,7 @@ const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
 
 // Components
 import MetaPixel from "./components/MetaPixel";
+import { ChatWidget } from "./src/modules/chat";
 
 // Default exports
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
@@ -128,6 +129,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <MetaPixel />
+          <ChatWidget />
         </Suspense>
       </Router>
     </HelmetProvider>

@@ -1,0 +1,151 @@
+# API-001 — Especificação REST
+
+## Objetivo
+
+Fornecer uma camada de comunicação entre:
+
+* Chat Widget
+* N8N
+* Hermes
+* PostgreSQL
+* MinIO
+
+---
+
+# Base URL
+
+/api/v1
+
+---
+
+# POST /chat/start
+
+## Objetivo
+
+Iniciar uma nova sessão.
+
+## Request
+
+{}
+
+## Response
+
+{
+"session_id": "uuid",
+"status": "started",
+"next_step": "BOAS_VINDAS"
+}
+
+---
+
+# POST /chat/message
+
+## Objetivo
+
+Enviar mensagem do usuário.
+
+## Request
+
+{
+"session_id": "uuid",
+"message": "Meu benefício foi negado."
+}
+
+## Response
+
+{
+"response": "Entendi. Você poderia me informar qual benefício foi negado?",
+"step": "COLETAR_SUBAREA",
+"buttons": []
+}
+
+---
+
+# POST /chat/button
+
+## Objetivo
+
+Processar clique em botão.
+
+## Request
+
+{
+"session_id": "uuid",
+"button_id": "previdenciario"
+}
+
+## Response
+
+{
+"response": "Você selecionou Previdenciário.",
+"next_step": "ESCOLHER_SUBAREA"
+}
+
+---
+
+# POST /chat/upload
+
+## Objetivo
+
+Enviar documentos.
+
+## Multipart
+
+file
+
+session_id
+
+## Response
+
+{
+"success": true,
+"url": "https://storage/documento.pdf"
+}
+
+---
+
+# GET /chat/status
+
+## Objetivo
+
+Recuperar estado da conversa.
+
+## Response
+
+{
+"session_id": "uuid",
+"current_step": "COLETAR_EMAIL",
+"completed_steps": [
+"COLETAR_NOME",
+"COLETAR_TELEFONE"
+]
+}
+
+---
+
+# GET /chat/history
+
+## Objetivo
+
+Recuperar histórico.
+
+## Response
+
+{
+"messages": []
+}
+
+---
+
+# POST /chat/finalize
+
+## Objetivo
+
+Finalizar atendimento.
+
+## Response
+
+{
+"protocol": "JUR-2026-0001",
+"status": "completed"
+}

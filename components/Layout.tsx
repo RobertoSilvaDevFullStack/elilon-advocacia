@@ -197,7 +197,8 @@ const Footer: React.FC = () => {
 const FloatingWhatsApp: React.FC = () => (
   <button
     onClick={() => openWhatsApp("global_floating_whatsapp")}
-    className="fixed bottom-6 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center min-w-[56px] min-h-[56px] cursor-pointer"
+    className="fixed z-40 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center min-w-[56px] min-h-[56px] cursor-pointer"
+    style={{ bottom: "30px", right: "24px" }}
     aria-label="Fale conosco no WhatsApp"
   >
     <svg

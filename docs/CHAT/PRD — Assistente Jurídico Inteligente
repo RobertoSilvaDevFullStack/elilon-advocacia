@@ -1,0 +1,473 @@
+# PRD — Assistente Jurídico Inteligente
+
+## 1. Visão Geral
+
+### Objetivo
+
+Desenvolver um assistente jurídico inteligente integrado ao site do escritório, capaz de realizar o atendimento inicial de potenciais clientes, coletar informações relevantes sobre o caso, armazenar os dados, gerar protocolos e encaminhar automaticamente os atendimentos para a equipe jurídica.
+
+O objetivo principal é automatizar a triagem inicial, aumentar a velocidade de resposta, padronizar a coleta de informações e melhorar a conversão de visitantes em clientes.
+
+---
+
+# 2. Objetivos do Projeto
+
+## Objetivos de Negócio
+
+* Reduzir atendimentos repetitivos.
+* Melhorar a experiência inicial do cliente.
+* Garantir coleta padronizada de informações.
+* Gerar leads qualificados.
+* Encaminhar atendimentos automaticamente.
+* Centralizar informações em banco de dados.
+* Integrar atendimento humano ao processo.
+
+## Objetivos Técnicos
+
+* Desenvolver um Chat Widget próprio.
+* Integrar o Widget ao Hermes.
+* Utilizar N8N como orquestrador dos fluxos.
+* Persistir informações em PostgreSQL.
+* Permitir upload de documentos.
+* Integrar com Kinbox.
+* Integrar com e-mail corporativo.
+* Preparar a arquitetura para futuras expansões.
+
+---
+
+# 3. Arquitetura Geral
+
+## Fluxo Macro
+
+Cliente
+↓
+Site do Escritório
+↓
+Chat Widget
+↓
+API de Atendimento
+↓
+N8N
+↓
+Hermes
+↓
+N8N
+↓
+PostgreSQL
+↓
+Kinbox
+↓
+E-mail
+↓
+Equipe Jurídica
+
+---
+
+# 4. Componentes da Solução
+
+## 4.1 Chat Widget
+
+Responsável pela interface de atendimento.
+
+### Funcionalidades
+
+* Abrir e fechar conversa.
+* Exibir mensagens.
+* Receber mensagens.
+* Exibir botões de seleção.
+* Exibir mensagens rápidas.
+* Upload de documentos.
+* Exibir protocolo ao final.
+* Exibir mensagens de carregamento.
+* Manter sessão ativa.
+
+### Tecnologias
+
+* React
+* Next.js
+* TypeScript
+
+---
+
+## 4.2 API de Atendimento
+
+Responsável pela comunicação entre Widget e Backend.
+
+### Endpoints
+
+POST /chat/start
+
+Cria uma nova sessão.
+
+POST /chat/message
+
+Recebe mensagens do usuário.
+
+POST /chat/upload
+
+Recebe documentos.
+
+GET /chat/history
+
+Recupera histórico da sessão.
+
+GET /chat/status
+
+Recupera estado atual da conversa.
+
+---
+
+## 4.3 N8N
+
+Responsável pela orquestração.
+
+Funções:
+
+* Controle do fluxo.
+* Controle de estado.
+* Integração Hermes.
+* Integração PostgreSQL.
+* Integração Kinbox.
+* Integração E-mail.
+* Geração de protocolo.
+
+---
+
+## 4.4 Hermes
+
+Responsável pela inteligência conversacional.
+
+Funções:
+
+* Interpretação das respostas.
+* Qualificação do caso.
+* Geração de resumo.
+* Classificação das informações.
+* Extração de dados relevantes.
+
+Importante:
+
+O Hermes não controla o fluxo.
+
+O fluxo será controlado pelo N8N.
+
+---
+
+# 5. Controle de Estado
+
+O sistema utilizará State Machine.
+
+Exemplo:
+
+{
+"session_id": "abc123",
+"step": "coletando_area",
+"area": null,
+"subarea": null
+}
+
+Cada etapa concluída altera o estado da conversa.
+
+Isso garante previsibilidade e reduz falhas.
+
+---
+
+# 6. Fluxo de Atendimento
+
+## Etapa 1 — Boas-vindas
+
+Objetivo:
+
+Receber o visitante e explicar o funcionamento do atendimento.
+
+---
+
+## Etapa 2 — Identificação
+
+Coletar:
+
+* Nome Completo
+* Telefone
+* E-mail
+* Cidade
+* Estado
+
+---
+
+## Etapa 3 — Área Jurídica
+
+Pergunta:
+
+Qual área melhor representa sua necessidade?
+
+Botões:
+
+* Previdenciário
+* Trabalhista
+* Tributário
+* Cível
+
+Nenhuma resposta livre nesta etapa.
+
+---
+
+## Etapa 4 — Subárea
+
+### Previdenciário
+
+* BPC/LOAS
+* Aposentadoria
+* Auxílio-Doença
+* Pensão
+* Revisão
+
+### Trabalhista
+
+* Rescisão
+* FGTS
+* Horas Extras
+* Assédio
+* Acidente de Trabalho
+
+### Tributário
+
+* Impostos
+* Planejamento Tributário
+* Restituição
+* Execução Fiscal
+
+### Cível
+
+* Contratos
+* Consumidor
+* Família
+* Indenização
+
+Também utilizar botões.
+
+---
+
+## Etapa 5 — Qualificação do Caso
+
+Perguntas:
+
+* O que aconteceu?
+* Quando aconteceu?
+* Qual sua principal dúvida?
+* Qual resultado você espera obter?
+* Existe processo em andamento?
+* Existem documentos relacionados?
+
+---
+
+## Etapa 6 — Upload de Documentos
+
+Pergunta:
+
+Você possui documentos relacionados ao caso?
+
+Botões:
+
+* Sim
+* Não
+
+Caso Sim:
+
+Permitir envio de:
+
+* PDF
+* JPG
+* PNG
+* DOCX
+
+---
+
+## Etapa 7 — Geração de Resumo
+
+O Hermes deverá gerar automaticamente:
+
+* Resumo executivo
+* Classificação do caso
+* Dados coletados
+* Informações complementares
+
+---
+
+## Etapa 8 — Encerramento
+
+Mensagem:
+
+"Recebemos suas informações com sucesso.
+
+Seu atendimento foi registrado e encaminhado para nossa equipe jurídica.
+
+Em breve entraremos em contato através dos canais informados.
+
+Todas as informações fornecidas são tratadas com confidencialidade e em conformidade com a LGPD."
+
+Exibir:
+
+* Número do protocolo
+
+---
+
+# 7. Banco de Dados
+
+## Tabela clientes
+
+Armazena dados cadastrais.
+
+---
+
+## Tabela atendimentos
+
+Armazena o caso.
+
+Campos:
+
+* id
+* protocolo
+* cliente_id
+* area
+* subarea
+* resumo
+* status
+* data_abertura
+
+---
+
+## Tabela mensagens
+
+Armazena todo o histórico.
+
+Campos:
+
+* id
+* atendimento_id
+* remetente
+* mensagem
+* timestamp
+
+---
+
+## Tabela documentos
+
+Campos:
+
+* id
+* atendimento_id
+* nome
+* url
+* tipo
+* data_upload
+
+---
+
+## Tabela sessoes
+
+Campos:
+
+* id
+* session_id
+* estado_atual
+* data_inicio
+* ultima_interacao
+
+---
+
+# 8. Armazenamento de Arquivos
+
+Não armazenar arquivos no PostgreSQL.
+
+Utilizar:
+
+* MinIO
+  ou
+* Storage local persistente
+
+Estrutura:
+
+/storage/documentos/
+
+---
+
+# 9. Integração com Kinbox
+
+Após finalização:
+
+Enviar:
+
+* Nome
+* Telefone
+* E-mail
+* Área
+* Subárea
+* Resumo
+* Protocolo
+
+Criar atendimento automaticamente.
+
+---
+
+# 10. Integração com E-mail
+
+Enviar para equipe jurídica:
+
+Assunto:
+
+Novo Atendimento Recebido
+
+Conteúdo:
+
+* Dados do cliente
+* Área
+* Subárea
+* Resumo
+* Protocolo
+
+---
+
+# 11. LGPD
+
+O sistema deverá:
+
+* Informar finalidade da coleta.
+* Informar armazenamento dos dados.
+* Informar confidencialidade.
+* Permitir futura exclusão de dados.
+* Registrar consentimento.
+
+---
+
+# 12. Roadmap
+
+## V1
+
+* Chat Widget
+* API
+* N8N
+* Hermes
+* PostgreSQL
+* Upload de documentos
+* Kinbox
+* E-mail
+
+## V2
+
+* OCR de documentos
+* Classificação automática
+* Dashboard administrativo
+
+## V3
+
+* CRM Jurídico próprio
+* WhatsApp integrado
+* Follow-up automático
+* Agendamento automático
+
+## V4
+
+* Análise jurídica assistida por IA
+* Sugestão de estratégias processuais
+* Base de conhecimento jurídica
+* RAG jurídico

@@ -1,0 +1,532 @@
+# DEC-001 — Registro de Decisões Técnicas
+
+Projeto: Assistente Jurídico Inteligente
+
+Versão: 1.0
+
+Status: Aprovado
+
+---
+
+# Objetivo
+
+Registrar as principais decisões arquiteturais do projeto.
+
+Cada decisão deve conter:
+
+* Contexto
+* Problema
+* Alternativas avaliadas
+* Decisão tomada
+* Justificativa
+* Impactos
+
+---
+
+# DEC-001
+
+## Controle de Fluxo via N8N
+
+### Contexto
+
+O sistema possui múltiplas etapas:
+
+* Identificação
+* Área Jurídica
+* Subárea
+* Qualificação
+* Upload
+* Resumo
+* Encerramento
+
+Era necessário definir quem controlaria o fluxo.
+
+---
+
+### Alternativas
+
+#### Opção 1
+
+Hermes controla tudo.
+
+#### Opção 2
+
+N8N controla estados e Hermes apenas interpreta.
+
+---
+
+### Decisão
+
+Utilizar o N8N como controlador da máquina de estados.
+
+---
+
+### Justificativa
+
+A IA pode cometer erros de contexto.
+
+O N8N oferece:
+
+* previsibilidade
+* rastreabilidade
+* estabilidade
+* auditoria
+
+---
+
+### Impacto
+
+Fluxos mais confiáveis.
+
+Menor risco de quebra do atendimento.
+
+---
+
+# DEC-002
+
+## Utilização de Máquina de Estados
+
+### Contexto
+
+Era necessário garantir que o usuário percorresse todas as etapas obrigatórias.
+
+---
+
+### Alternativas
+
+Fluxo livre via IA.
+
+Máquina de estados persistida.
+
+---
+
+### Decisão
+
+Utilizar State Machine persistida no PostgreSQL.
+
+---
+
+### Justificativa
+
+Permite:
+
+* recuperação de sessão
+* retomada de atendimento
+* validações obrigatórias
+
+---
+
+### Impacto
+
+Maior robustez operacional.
+
+---
+
+# DEC-003
+
+## Utilização de PostgreSQL
+
+### Contexto
+
+Necessidade de persistência.
+
+---
+
+### Alternativas
+
+MySQL
+
+MongoDB
+
+PostgreSQL
+
+---
+
+### Decisão
+
+PostgreSQL
+
+---
+
+### Justificativa
+
+* excelente suporte JSON
+* estabilidade
+* maturidade
+* integração simples com N8N
+
+---
+
+### Impacto
+
+Banco relacional principal do projeto.
+
+---
+
+# DEC-004
+
+## Utilização de MinIO para Documentos
+
+### Contexto
+
+Necessidade de armazenar arquivos enviados pelos clientes.
+
+---
+
+### Alternativas
+
+Salvar arquivos no PostgreSQL.
+
+Salvar em disco local.
+
+Utilizar MinIO.
+
+---
+
+### Decisão
+
+Utilizar MinIO.
+
+---
+
+### Justificativa
+
+Separação entre:
+
+* dados
+* documentos
+
+Maior escalabilidade.
+
+Compatibilidade S3.
+
+---
+
+### Impacto
+
+Arquivos não ficam armazenados no banco.
+
+---
+
+# DEC-005
+
+## API Node.js
+
+### Contexto
+
+Necessidade de camada intermediária entre Widget e N8N.
+
+---
+
+### Alternativas
+
+FastAPI
+
+NestJS
+
+Node + Express
+
+---
+
+### Decisão
+
+Node.js + Express + TypeScript
+
+---
+
+### Justificativa
+
+Compatibilidade com stack atual.
+
+Facilidade de manutenção.
+
+Equipe familiarizada.
+
+---
+
+### Impacto
+
+Padronização tecnológica.
+
+---
+
+# DEC-006
+
+## Chat Widget Próprio
+
+### Contexto
+
+Necessidade de total controle sobre o fluxo.
+
+---
+
+### Alternativas
+
+Tawk
+
+Crisp
+
+Chatwoot
+
+Widget próprio
+
+---
+
+### Decisão
+
+Widget próprio.
+
+---
+
+### Justificativa
+
+Controle completo.
+
+Integração nativa.
+
+Personalização total.
+
+---
+
+### Impacto
+
+Maior esforço inicial.
+
+Maior flexibilidade futura.
+
+---
+
+# DEC-007
+
+## Upload Durante Atendimento
+
+### Contexto
+
+Escritórios jurídicos frequentemente dependem de documentos.
+
+---
+
+### Decisão
+
+Permitir upload durante a triagem inicial.
+
+---
+
+### Justificativa
+
+Aumenta a qualidade da análise.
+
+Reduz retrabalho.
+
+Melhora a velocidade do atendimento.
+
+---
+
+### Impacto
+
+Necessidade de MinIO e validações extras.
+
+---
+
+# DEC-008
+
+## Integração Kinbox
+
+### Contexto
+
+O escritório já utiliza Kinbox.
+
+---
+
+### Decisão
+
+Manter Kinbox como ferramenta principal de atendimento humano.
+
+---
+
+### Justificativa
+
+Evita mudança de processo interno.
+
+Reduz curva de aprendizado.
+
+---
+
+### Impacto
+
+Necessidade de integração via API.
+
+---
+
+# DEC-009
+
+## Persistência de Sessão
+
+### Contexto
+
+Usuários podem abandonar o atendimento.
+
+---
+
+### Decisão
+
+Persistir estado da conversa.
+
+---
+
+### Justificativa
+
+Permitir retomada.
+
+Melhorar experiência.
+
+Evitar perda de informações.
+
+---
+
+### Impacto
+
+Necessidade de tabela de sessões.
+
+---
+
+# DEC-010
+
+## Hospedagem em VPS Hostinger
+
+### Contexto
+
+Necessidade de controle total da infraestrutura.
+
+---
+
+### Alternativas
+
+Vercel
+
+Railway
+
+AWS
+
+Hostinger VPS
+
+---
+
+### Decisão
+
+Hostinger VPS
+
+---
+
+### Justificativa
+
+Baixo custo.
+
+Controle total.
+
+Compatibilidade com Docker.
+
+Hospedagem centralizada.
+
+---
+
+### Impacto
+
+Responsabilidade de manutenção da infraestrutura.
+
+---
+
+# DEC-011
+
+## Arquitetura Containerizada
+
+### Contexto
+
+Necessidade de isolamento dos serviços.
+
+---
+
+### Decisão
+
+Utilizar Docker Compose.
+
+---
+
+### Justificativa
+
+Facilidade de deploy.
+
+Portabilidade.
+
+Padronização.
+
+Backup simplificado.
+
+---
+
+### Impacto
+
+Todos os componentes devem possuir containers dedicados.
+
+---
+
+# DEC-012
+
+## LGPD Como Requisito Obrigatório
+
+### Contexto
+
+O sistema manipula dados jurídicos e pessoais.
+
+---
+
+### Decisão
+
+LGPD será requisito obrigatório desde a V1.
+
+---
+
+### Justificativa
+
+Natureza sensível das informações.
+
+Conformidade legal.
+
+Redução de riscos.
+
+---
+
+### Impacto
+
+Consentimento obrigatório.
+
+Logs obrigatórios.
+
+Políticas de retenção obrigatórias.
+
+---
+
+# Processo de Novas Decisões
+
+Toda decisão futura deverá:
+
+1. Possuir identificador.
+2. Possuir justificativa.
+3. Possuir impacto registrado.
+4. Ser aprovada antes da implementação.
+
+Exemplo:
+
+DEC-013
+
+DEC-014
+
+DEC-015
+
+...
+
+---
+
+# Status Atual das Decisões
+
+Todas as decisões deste documento encontram-se aprovadas para a versão MVP do Assistente Jurídico Inteligente.

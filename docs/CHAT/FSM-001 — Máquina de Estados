@@ -1,0 +1,159 @@
+# FSM-001 — Máquina de Estados
+
+## Objetivo
+
+Controlar o fluxo do atendimento sem depender da memória da IA.
+
+---
+
+# Fluxo Principal
+
+START
+
+↓
+
+BOAS_VINDAS
+
+↓
+
+COLETAR_NOME
+
+↓
+
+COLETAR_TELEFONE
+
+↓
+
+COLETAR_EMAIL
+
+↓
+
+COLETAR_CIDADE
+
+↓
+
+COLETAR_ESTADO
+
+↓
+
+ESCOLHER_AREA
+
+↓
+
+ESCOLHER_SUBAREA
+
+↓
+
+DESCREVER_CASO
+
+↓
+
+PERGUNTAR_PROCESSO_EXISTENTE
+
+↓
+
+PERGUNTAR_DOCUMENTOS
+
+↓
+
+UPLOAD_DOCUMENTOS
+
+↓
+
+GERAR_RESUMO
+
+↓
+
+GERAR_PROTOCOLO
+
+↓
+
+ENCAMINHAR_KINBOX
+
+↓
+
+ENVIAR_EMAIL
+
+↓
+
+FINALIZAR
+
+↓
+
+ENCERRADO
+
+---
+
+# Estados Especiais
+
+ERRO_UPLOAD
+
+ERRO_PROCESSAMENTO
+
+ATENDIMENTO_ABANDONADO
+
+ATENDIMENTO_REABERTO
+
+---
+
+# Regras
+
+## ESCOLHER_AREA
+
+Aceita apenas:
+
+* previdenciario
+* trabalhista
+* tributario
+* civel
+
+---
+
+## ESCOLHER_SUBAREA
+
+Lista depende da área escolhida.
+
+---
+
+## UPLOAD_DOCUMENTOS
+
+Formatos permitidos:
+
+* pdf
+* jpg
+* jpeg
+* png
+* docx
+
+Tamanho máximo:
+
+20 MB
+
+---
+
+## ENCERRADO
+
+Após encerramento:
+
+* salvar histórico
+* atualizar status
+* enviar protocolo
+* liberar sessão
+
+---
+
+# Recuperação de Sessão
+
+Ao retornar ao site:
+
+Consultar session_id
+
+Se existir:
+
+Retornar ao estado anterior.
+
+Exemplo:
+
+estado_atual = COLETAR_EMAIL
+
+O usuário continua exatamente daquele ponto.

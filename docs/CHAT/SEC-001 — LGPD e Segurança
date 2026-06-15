@@ -1,0 +1,284 @@
+# SEC-001 — LGPD e Segurança
+
+## Objetivo
+
+Garantir conformidade com a LGPD e proteger as informações dos clientes do escritório.
+
+---
+
+# Classificação dos Dados
+
+O sistema armazenará:
+
+* Nome
+* Telefone
+* E-mail
+* Cidade
+* Estado
+* Informações jurídicas
+* Documentos enviados
+* Histórico de conversa
+
+Todos os dados devem ser considerados confidenciais.
+
+---
+
+# Consentimento
+
+Antes do início do atendimento:
+
+Exibir mensagem:
+
+"Ao prosseguir, você concorda com a coleta e tratamento dos dados fornecidos para fins de atendimento jurídico, nos termos da Lei Geral de Proteção de Dados (LGPD)."
+
+O consentimento deve ser registrado.
+
+Campos:
+
+* data
+* hora
+* ip
+* session_id
+
+---
+
+# Princípio da Minimização
+
+Coletar apenas informações necessárias para:
+
+* Qualificação
+* Atendimento
+* Contato
+
+Não solicitar informações irrelevantes.
+
+---
+
+# Armazenamento
+
+Banco:
+
+PostgreSQL
+
+Arquivos:
+
+MinIO
+
+Todo armazenamento deverá permanecer em ambiente controlado pelo escritório.
+
+---
+
+# Criptografia
+
+## Em trânsito
+
+Obrigatório:
+
+HTTPS
+
+TLS 1.2+
+
+---
+
+## Em repouso
+
+Recomendado:
+
+Criptografia dos backups.
+
+---
+
+# Controle de Acesso
+
+Perfis:
+
+Administrador
+
+Atendimento
+
+Advogado
+
+Gestor
+
+Cada perfil acessa apenas o necessário.
+
+---
+
+# Senhas
+
+Obrigatório:
+
+* Mínimo 12 caracteres
+* Complexidade alta
+
+Proibido:
+
+* Senhas padrão
+* Compartilhamento de credenciais
+
+---
+
+# Upload de Arquivos
+
+Permitidos:
+
+* PDF
+* JPG
+* JPEG
+* PNG
+* DOCX
+
+Tamanho máximo:
+
+20 MB
+
+---
+
+# Validação de Upload
+
+Verificar:
+
+* Extensão
+* MIME Type
+* Tamanho
+
+Bloquear:
+
+* EXE
+* BAT
+* CMD
+* JS
+* MSI
+* APK
+
+---
+
+# Logs de Auditoria
+
+Registrar:
+
+* Login
+* Logout
+* Alteração de dados
+* Exclusão
+* Download de documentos
+
+Campos:
+
+* usuário
+* ação
+* data
+* hora
+* ip
+
+---
+
+# Exclusão de Dados
+
+O sistema deverá permitir:
+
+* Exclusão manual
+* Anonimização
+
+Mediante solicitação do titular.
+
+---
+
+# Retenção
+
+Atendimentos:
+
+5 anos
+
+Logs:
+
+1 ano
+
+Sessões abandonadas:
+
+90 dias
+
+---
+
+# Política de Backup
+
+Backups criptografados.
+
+Periodicidade:
+
+Diária.
+
+Retenção:
+
+30 dias.
+
+---
+
+# Incidentes de Segurança
+
+Fluxo:
+
+Detectar
+
+↓
+
+Registrar
+
+↓
+
+Conter
+
+↓
+
+Investigar
+
+↓
+
+Corrigir
+
+↓
+
+Documentar
+
+↓
+
+Prevenir recorrência
+
+---
+
+# Boas Práticas Obrigatórias
+
+* HTTPS obrigatório
+* Firewall ativo
+* Docker atualizado
+* Ubuntu atualizado
+* Senhas fortes
+* Backups automáticos
+* MFA para administradores
+* Segregação de acessos
+
+---
+
+# Roadmap de Segurança
+
+V1
+
+* HTTPS
+* Backups
+* Logs
+* Controle de acesso
+
+V2
+
+* MFA
+* Auditoria avançada
+
+V3
+
+* SIEM
+* Alertas automáticos
+
+V4
+
+* Pentest anual
+* Certificação de conformidade

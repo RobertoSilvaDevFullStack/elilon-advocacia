@@ -1,0 +1,551 @@
+# SPR-001 — Plano de Execução do Projeto
+
+Projeto: Assistente Jurídico Inteligente
+
+Versão: 1.0
+
+Status: Planejamento
+
+---
+
+# Objetivo
+
+Transformar a documentação arquitetural em entregas práticas e organizadas.
+
+O desenvolvimento será dividido em sprints.
+
+Cada sprint possui:
+
+* Objetivo
+* Entregáveis
+* Critério de conclusão
+* Dependências
+
+---
+
+# Sprint 1 — Infraestrutura Base
+
+## Objetivo
+
+Preparar o ambiente de desenvolvimento e produção.
+
+---
+
+## Entregáveis
+
+Criar estrutura:
+
+/opt/juridico
+
+├── frontend/
+
+├── api/
+
+├── n8n/
+
+├── postgres/
+
+├── minio/
+
+├── hermes/
+
+├── backups/
+
+└── logs/
+
+---
+
+Criar:
+
+docker-compose.yml
+
+---
+
+Configurar:
+
+* Docker
+* Docker Compose
+* Traefik
+* SSL
+* Rede Docker
+
+---
+
+Containers:
+
+* traefik
+* postgres
+* minio
+* n8n
+
+---
+
+## Critério de Conclusão
+
+Todos os containers operacionais.
+
+HTTPS funcionando.
+
+Volumes persistentes funcionando.
+
+---
+
+# Sprint 2 — Banco de Dados
+
+## Objetivo
+
+Implementar estrutura PostgreSQL.
+
+---
+
+## Entregáveis
+
+Criar tabelas:
+
+* clientes
+* atendimentos
+* mensagens
+* documentos
+* sessoes
+
+---
+
+Criar:
+
+* índices
+* constraints
+* foreign keys
+
+---
+
+Criar migrations.
+
+---
+
+## Critério de Conclusão
+
+Banco funcional.
+
+Migrations executando corretamente.
+
+---
+
+# Sprint 3 — API Atendimento
+
+## Objetivo
+
+Criar camada central de comunicação.
+
+---
+
+## Stack
+
+Node.js
+
+Express
+
+TypeScript
+
+---
+
+## Entregáveis
+
+Endpoints:
+
+POST /chat/start
+
+POST /chat/message
+
+POST /chat/button
+
+POST /chat/upload
+
+GET /chat/status
+
+GET /chat/history
+
+POST /chat/finalize
+
+---
+
+Middleware:
+
+* Logs
+* Erros
+* Autenticação interna
+
+---
+
+## Critério de Conclusão
+
+API respondendo.
+
+Integração PostgreSQL funcional.
+
+---
+
+# Sprint 4 — Chat Widget
+
+## Objetivo
+
+Criar interface de atendimento.
+
+---
+
+## Entregáveis
+
+Componentes:
+
+ChatWidget
+
+Header
+
+MessageList
+
+MessageBubble
+
+ButtonOptions
+
+UploadArea
+
+InputArea
+
+TypingIndicator
+
+---
+
+Funcionalidades:
+
+* Sessão
+* Histórico
+* Upload
+* Botões
+* Responsividade
+
+---
+
+## Critério de Conclusão
+
+Widget funcionando localmente.
+
+Integração API funcionando.
+
+---
+
+# Sprint 5 — Máquina de Estados
+
+## Objetivo
+
+Implementar controle do atendimento.
+
+---
+
+## Entregáveis
+
+Estados:
+
+BOAS_VINDAS
+
+COLETAR_NOME
+
+COLETAR_TELEFONE
+
+COLETAR_EMAIL
+
+COLETAR_CIDADE
+
+COLETAR_ESTADO
+
+ESCOLHER_AREA
+
+ESCOLHER_SUBAREA
+
+DESCREVER_CASO
+
+PROCESSO_EXISTENTE
+
+POSSUI_DOCUMENTOS
+
+UPLOAD_DOCUMENTOS
+
+GERAR_RESUMO
+
+FINALIZAR
+
+ENCERRADO
+
+---
+
+## Critério de Conclusão
+
+Fluxo navegável do início ao fim.
+
+Sem dependência da IA para controle.
+
+---
+
+# Sprint 6 — Integração Hermes
+
+## Objetivo
+
+Adicionar inteligência ao atendimento.
+
+---
+
+## Entregáveis
+
+Criação do Agente Jurídico.
+
+---
+
+Capacidades:
+
+* Interpretação
+* Classificação
+* Extração
+* Resumos
+
+---
+
+Prompts estruturados.
+
+---
+
+## Critério de Conclusão
+
+Hermes respondendo corretamente.
+
+Resumos sendo gerados.
+
+---
+
+# Sprint 7 — Upload de Documentos
+
+## Objetivo
+
+Permitir envio de documentos.
+
+---
+
+## Entregáveis
+
+Integração MinIO.
+
+---
+
+Upload:
+
+* PDF
+* JPG
+* PNG
+* DOCX
+
+---
+
+Validações:
+
+* Extensão
+* MIME Type
+* Tamanho
+
+---
+
+## Critério de Conclusão
+
+Upload funcional.
+
+Arquivos persistidos.
+
+---
+
+# Sprint 8 — Integração Kinbox
+
+## Objetivo
+
+Encaminhar atendimento ao escritório.
+
+---
+
+## Entregáveis
+
+Criar integração API Kinbox.
+
+---
+
+Enviar:
+
+* Nome
+* Telefone
+* E-mail
+* Área
+* Subárea
+* Resumo
+* Protocolo
+
+---
+
+## Critério de Conclusão
+
+Atendimento criado automaticamente.
+
+---
+
+# Sprint 9 — Integração E-mail
+
+## Objetivo
+
+Notificar equipe jurídica.
+
+---
+
+## Entregáveis
+
+Envio automático.
+
+---
+
+Conteúdo:
+
+* Dados do cliente
+* Área
+* Subárea
+* Resumo
+* Protocolo
+
+---
+
+## Critério de Conclusão
+
+E-mails enviados corretamente.
+
+---
+
+# Sprint 10 — Segurança e LGPD
+
+## Objetivo
+
+Garantir conformidade.
+
+---
+
+## Entregáveis
+
+Consentimento LGPD.
+
+Logs.
+
+Controle de acesso.
+
+Política de retenção.
+
+---
+
+## Critério de Conclusão
+
+Fluxo compatível com LGPD.
+
+---
+
+# Sprint 11 — Homologação
+
+## Objetivo
+
+Validar todo o sistema.
+
+---
+
+## Testes
+
+Novo atendimento.
+
+Retorno de sessão.
+
+Upload.
+
+Kinbox.
+
+E-mail.
+
+Hermes.
+
+Estados.
+
+---
+
+## Critério de Conclusão
+
+Sem falhas críticas.
+
+---
+
+# Sprint 12 — Produção
+
+## Objetivo
+
+Publicação oficial.
+
+---
+
+## Entregáveis
+
+Deploy VPS Hostinger.
+
+Configuração DNS.
+
+SSL.
+
+Backups.
+
+Monitoramento.
+
+---
+
+## Critério de Conclusão
+
+Sistema disponível para clientes.
+
+---
+
+# MVP
+
+A primeira versão considerada pronta deverá possuir:
+
+✅ Chat Widget
+
+✅ API
+
+✅ PostgreSQL
+
+✅ N8N
+
+✅ Hermes
+
+✅ MinIO
+
+✅ Upload de Documentos
+
+✅ Protocolo
+
+✅ Integração Kinbox
+
+✅ Integração E-mail
+
+✅ LGPD
+
+---
+
+# Fora do Escopo Inicial
+
+❌ CRM Jurídico
+
+❌ WhatsApp
+
+❌ OCR
+
+❌ Dashboard Administrativo
+
+❌ Multiagentes
+
+❌ RAG Jurídico
+
+Esses itens serão tratados nas próximas versões.

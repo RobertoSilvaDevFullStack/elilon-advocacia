@@ -1,0 +1,122 @@
+# WIDGET-001 — Chat Widget
+
+## Objetivo
+
+Criar componente de atendimento incorporável ao site.
+
+---
+
+# Tecnologias
+
+* React
+* Next.js
+* TypeScript
+* Tailwind CSS
+
+---
+
+# Estrutura
+
+ChatWidget
+
+├── Header
+
+├── MessageList
+
+├── MessageBubble
+
+├── ButtonOptions
+
+├── UploadArea
+
+├── InputArea
+
+└── TypingIndicator
+
+---
+
+# Funcionalidades
+
+## Sessão
+
+Gerar:
+
+session_id
+
+Salvar:
+
+Cookie local
+
+---
+
+## Mensagens
+
+Suporte:
+
+* Texto
+* Botões
+* Links
+* Protocolos
+
+---
+
+## Upload
+
+Suporte:
+
+* PDF
+* JPG
+* PNG
+* DOCX
+
+---
+
+## Responsividade
+
+Desktop
+
+Tablet
+
+Mobile
+
+---
+
+# Estados Visuais
+
+LOADING
+
+TYPING
+
+CONNECTED
+
+DISCONNECTED
+
+ERROR
+
+---
+
+# Eventos
+
+onStart
+
+onMessage
+
+onButtonClick
+
+onUpload
+
+onReconnect
+
+onFinish
+
+---
+
+# Mensagem Inicial
+
+Olá.
+
+Seja bem-vindo ao Escritório Elilon.
+
+Sou a assistente virtual responsável pelo atendimento inicial.
+
+Vamos iniciar seu atendimento.

@@ -50,10 +50,12 @@ app.use(express.json());
 
 const authRoutes = require("./routes/authRoutes");
 const apiRoutes = require("./routes/apiRoutes");
+const chatRoutes = require("./src/modules/chat/chat.routes");
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", apiRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
