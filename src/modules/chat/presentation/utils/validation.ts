@@ -183,9 +183,35 @@ export function getValidationErrorMessage(field: DataField): string {
     email: "E-mail inválido. Use o formato: exemplo@email.com",
     city: "Cidade inválida. Digite o nome completo da cidade.",
     state: "Estado inválido. Use a sigla com 2 letras (ex: SP, RJ, MG).",
+    caseDescription: "Descrição inválida. Use entre 20 e 3000 caracteres para descrever seu caso.",
   };
 
   return messages[field];
+}
+
+/**
+ * Valida a descrição do caso jurídico
+ * Sprint 3.1: Coleta de descrição do caso
+ */
+export function validateCaseDescription(description: string): ValidationResult {
+  const trimmed = description.trim();
+
+  if (!trimmed) {
+    return { valid: false, error: "Por favor, descreva brevemente sua situação jurídica." };
+  }
+
+  if (trimmed.length < 20) {
+    return { valid: false, error: "Por favor, descreva um pouco mais sobre sua situação para que possamos compreender seu caso." };
+  }
+
+  if (trimmed.length > 3000) {
+    return { valid: false, error: "A descrição é muito longa. Use no máximo 3000 caracteres." };
+  }
+
+  // Normaliza: remove espaços múltiplos, mantém quebras de linha
+  const normalized = trimmed.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n");
+
+  return { valid: true, normalizedValue: normalized };
 }
 
 /**
@@ -212,6 +238,12 @@ export function getFieldPromptMessage(field: DataField, isRetry: boolean = false
     state: {
       initial: "Qual é o seu estado? (sigla de 2 letras, ex: SP)",
       retry: "Vamos corrigir. Qual é o seu estado? (ex: SP, RJ, MG)",
+    },
+    caseDescription: {
+      initial: `Perfeito! Agora conte brevemente o que aconteceu no seu caso.
+
+Quanto mais detalhes você fornecer, melhor poderemos direcionar seu atendimento.`,
+      retry: "Vamos tentar novamente. Por favor, descreva sua situação com mais detalhes.",
     },
   };
 

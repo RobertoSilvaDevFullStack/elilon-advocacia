@@ -72,7 +72,12 @@ const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
 
 // Components
 import MetaPixel from "./components/MetaPixel";
-import { ChatWidget } from "./src/modules/chat";
+
+// Feature Flag: Chat Widget (desabilitado em produção por padrão)
+const ENABLE_CHAT = import.meta.env.VITE_ENABLE_CHAT === 'true';
+const ChatWidget = ENABLE_CHAT 
+  ? React.lazy(() => import("./src/modules/chat").then(m => ({ default: m.ChatWidget })))
+  : null;
 
 // Default exports
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
@@ -129,7 +134,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <MetaPixel />
-          <ChatWidget />
+          {ENABLE_CHAT && ChatWidget && <ChatWidget />}
         </Suspense>
       </Router>
     </HelmetProvider>

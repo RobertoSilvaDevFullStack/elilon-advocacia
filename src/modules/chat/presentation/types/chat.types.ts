@@ -25,6 +25,8 @@ export type ChatState =
   | "CITY_COLLECTED"                 // Cidade coletada
   | "AWAITING_STATE"                 // Aguardando estado
   | "STATE_COLLECTED"                // Estado coletado
+  | "AWAITING_CASE_DESCRIPTION"      // Aguardando descrição do caso
+  | "CASE_DESCRIPTION_COLLECTED"     // Descrição coletada
   | "QUALIFICATION_COMPLETE"         // Qualificação completa
   // Estados legados (mantidos para compatibilidade)
   | "COLLECTING_NAME"
@@ -111,7 +113,10 @@ export interface FSMContext {
     telefone?: string;
     cidade?: string;
     estado?: string;
+    descricaoCaso?: string;
   };
+  // Preparação para Hermes (análise da descrição)
+  caseAnalysis?: CaseDescriptionData;
   // Extensível para novos campos
   [key: string]: any;
 }
@@ -125,6 +130,7 @@ export type FSMEvent =
   | { type: "SUBMIT_EMAIL"; email: string }
   | { type: "SUBMIT_CITY"; city: string }
   | { type: "SUBMIT_STATE"; state: string }
+  | { type: "SUBMIT_CASE_DESCRIPTION"; description: string }
   | { type: "VALIDATION_ERROR"; field: string; error: string }
   | { type: "CORRECT_FIELD"; field: string }
   | { type: "SUBMIT_DATA"; field: string; value: string }
@@ -133,7 +139,7 @@ export type FSMEvent =
   | { type: "RESTART" };
 
 // Campos de coleta de dados
-export type DataField = "name" | "phone" | "email" | "city" | "state";
+export type DataField = "name" | "phone" | "email" | "city" | "state" | "caseDescription";
 
 // Resultado de validação
 export interface ValidationResult {
@@ -151,8 +157,28 @@ export interface QualificationSummary {
   email: string;
   city: string;
   state: string;
+  caseDescription?: string;
   protocolo?: string;
   timestamp: string;
+}
+
+// Interface para dados de descrição do caso (preparação para Hermes)
+export interface CaseDescriptionData {
+  area: AreaJuridica;
+  subarea: SubareaJuridica;
+  descricaoCaso: string;
+  // Campos opcionais para futura análise da IA
+  extractedEntities?: {
+    dates?: string[];
+    values?: string[];
+    organizations?: string[];
+    people?: string[];
+  };
+  classification?: {
+    urgency?: "low" | "medium" | "high" | "urgent";
+    complexity?: "simple" | "moderate" | "complex";
+  };
+  sentiment?: "negative" | "neutral" | "positive";
 }
 
 // Interface preparada para persistência PostgreSQL
@@ -165,6 +191,7 @@ export interface ClientDataDTO {
   email: string;
   city: string;
   state: string;
+  caseDescription?: string;  // Nova campo Sprint 3.1
   createdAt: string;
   updatedAt: string;
   isComplete: boolean;

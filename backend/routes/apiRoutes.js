@@ -2,11 +2,25 @@ const express = require("express");
 const router = express.Router();
 const mainController = require("../controllers/mainController");
 const contentController = require("../controllers/contentController");
+const chatLeadController = require("../controllers/ChatLeadController");
+const preAtendimentoAdminController = require("../controllers/PreAtendimentoAdminController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // Public Routes (Tracking & Lead Capture)
 router.post("/track", mainController.trackVisit);
 router.post("/leads", mainController.createLead); // Form submission from public site
+
+// Sprint 3.2: Chat Pré-Atendimento (Public - NO AUTH REQUIRED)
+router.post("/chat/pre-atendimento", chatLeadController.create);
+router.get("/chat/pre-atendimento/:protocolo", chatLeadController.findByProtocolo);
+
+// Sprint 3.3: Painel Administrativo de Pré-Atendimentos (Protected - Admin Only)
+router.get("/admin/chat/pre-atendimentos", authMiddleware.verifyToken, preAtendimentoAdminController.list);
+router.get("/admin/chat/pre-atendimentos/stats", authMiddleware.verifyToken, preAtendimentoAdminController.getStats);
+router.get("/admin/chat/pre-atendimentos/areas", authMiddleware.verifyToken, preAtendimentoAdminController.getAreas);
+router.get("/admin/chat/pre-atendimentos/subareas", authMiddleware.verifyToken, preAtendimentoAdminController.getSubareas);
+router.get("/admin/chat/pre-atendimentos/:id", authMiddleware.verifyToken, preAtendimentoAdminController.getById);
+router.put("/admin/chat/pre-atendimentos/:id/status", authMiddleware.verifyToken, preAtendimentoAdminController.updateStatus);
 
 // Public Content Routes (Read-only)
 router.get("/posts", contentController.getPosts);

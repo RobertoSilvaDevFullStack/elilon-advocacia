@@ -241,6 +241,37 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     id: 3,
+    title: "Aposentadoria por Idade: Como se Planejar",
+    summary: "Dicas essenciais para garantir seu benefício previdenciário.",
+    date: "12 Out 2023",
+    category: "Previdenciário",
+    slug: "aposentadoria-planejamento",
+    image: "/images/previdenciario.webp",
+    author: "Dra. Clara Marinho",
+    content: `
+      <p>O <strong>planejamento previdenciário</strong> é fundamental para garantir uma aposentadoria tranquila e sem surpresas. Muitos segurados do INSS deixam para se preocupar com isso apenas quando estão próximos da idade, perdendo oportunidades de maximizar seu benefício.</p>
+
+      <h3>Requisitos Básicos</h3>
+      <p>Para a aposentadoria por idade, o segurado precisa comprovar:</p>
+      <ul>
+        <li><strong>Tempo de Contribuição:</strong> 15 anos de trabalho com carteira assinada ou recolhimento como contribuinte individual.</li>
+        <li><strong>Idade:</strong> 65 anos para homens e 62 anos para mulheres.</li>
+      </ul>
+
+      <h3>Como Maximizar seu Benefício?</h3>
+      <p>O valor da aposentadoria é calculado com base na média de todos os salários de contribuição desde julho de 1994. Para obter o melhor benefício possível:</p>
+      <ol>
+        <li>Verifique se todas as suas contribuições estão corretamente registradas;</li>
+        <li>Considera fazer o recolhimento em atraso de períodos não computados;</li>
+        <li>Avalie a possibilidade de descontar períodos de baixa remuneração;</li>
+        <li>Planeje a data exata do requerimento.</li>
+      </ol>
+
+      <p>A assessoria de um advogado previdenciário pode fazer diferença significativa no valor do seu benefício. Entre em contato para uma análise personalizada.</p>
+    `,
+  },
+  {
+    id: 4,
     title: "LGPD no Agronegócio",
     summary: "Desafios e soluções para a proteção de dados no campo.",
     date: "10 Out 2023",

@@ -14,6 +14,16 @@ import {
   BarChart2,
   Settings,
   Shield,
+  Headphones,
+  Filter,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Phone,
+  MapPin,
+  Calendar,
+  FileSearch,
 } from "lucide-react";
 import { Button } from "../components/Components";
 import ReactQuill from "react-quill";
@@ -28,7 +38,8 @@ type ViewState =
   | "blog"
   | "professionals"
   | "users"
-  | "settings";
+  | "settings"
+  | "preAtendimentos"; // Sprint 3.3
 
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
@@ -46,6 +57,24 @@ export const Admin: React.FC = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]); // Load from API
   const [users, setUsers] = useState<any[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
+
+  // Sprint 3.3: Pre-Atendimentos States
+  const [preAtendimentos, setPreAtendimentos] = useState<any[]>([]);
+  const [preAtendimentosStats, setPreAtendimentosStats] = useState<any>(null);
+  const [preAtendimentoSearch, setPreAtendimentoSearch] = useState("");
+  const [preAtendimentoFilters, setPreAtendimentoFilters] = useState({
+    status: "",
+    area: "",
+    subarea: "",
+    dataInicio: "",
+    dataFim: "",
+  });
+  const [areasList, setAreasList] = useState<string[]>([]);
+  const [subareasList, setSubareasList] = useState<string[]>([]);
+  const [selectedPreAtendimento, setSelectedPreAtendimento] = useState<any>(null);
+  const [showPreAtendimentoModal, setShowPreAtendimentoModal] = useState(false);
+  const [preAtendimentoPage, setPreAtendimentoPage] = useState(1);
+  const [preAtendimentoTotalPages, setPreAtendimentoTotalPages] = useState(1);
 
   // Loading States
   const [loading, setLoading] = useState(false);
@@ -788,6 +817,7 @@ export const Admin: React.FC = () => {
           <NavButton view="leads" icon={MessageSquare} label="Leads" />
           <NavButton view="blog" icon={FileText} label="Blog" />
           <NavButton view="professionals" icon={Users} label="Profissionais" />
+          <NavButton view="preAtendimentos" icon={Headphones} label="Pré-Atendimentos" />
 
           <div className="my-4 border-t border-neutral-800"></div>
 
@@ -841,32 +871,88 @@ export const Admin: React.FC = () => {
                   está rodando)
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-accent-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Leads Totais
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.leads}
-                    </p>
+                <>
+                  {/* Cards Principais */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-accent-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Leads Totais
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.leads}
+                      </p>
+                    </div>
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-blue-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Artigos Publicados
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.posts}
+                      </p>
+                    </div>
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-green-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Profissionais
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.professionals}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-blue-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Artigos Publicados
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.posts}
-                    </p>
-                  </div>
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-green-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Profissionais
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.professionals}
-                    </p>
-                  </div>
-                </div>
+
+                  {/* Sprint 3.3: Cards de Pré-Atendimentos */}
+                  <h3 className="text-xl font-bold text-neutral-800 mb-4">
+                    Pré-Atendimentos Chat Jurídico
+                  </h3>
+                  {!preAtendimentosStats ? (
+                    <div className="text-neutral-500 mb-8">
+                      Carregando estatísticas de pré-atendimentos...
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-purple-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Hoje
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.hoje || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-indigo-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Mês
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.mes || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Novos
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.novos || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-orange-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Em Análise
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.em_analise || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-teal-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Convertidos
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.convertidos || 0}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -1590,6 +1676,7 @@ export const Admin: React.FC = () => {
                       <option value="">Selecione...</option>
                       <option value="TRABALHISTA">Trabalhista</option>
                       <option value="TRIBUTÁRIO">Tributário</option>
+                      <option value="PREVIDENCIÁRIO">Previdenciário</option>
                       <option value="AGRONEGÓCIO">Agronegócio</option>
                     </select>
                   </div>

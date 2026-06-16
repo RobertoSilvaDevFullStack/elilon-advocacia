@@ -9,6 +9,7 @@ export {
   validateCity,
   validateState,
   validateField,
+  validateCaseDescription,
   getValidationErrorMessage,
   getFieldPromptMessage,
 } from "./validation";
