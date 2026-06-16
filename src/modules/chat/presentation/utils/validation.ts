@@ -3,7 +3,20 @@
  * Sprint 3: Validação de email e telefone brasileiro
  */
 
-import type { ValidationResult, DataField } from "../types/chat.types";
+import type { ValidationResult, DataField, UploadedDocument, AllowedDocumentType } from "../types/chat.types";
+
+// Sprint 3.4: Configurações de upload de documentos
+export const DOCUMENT_CONFIG = {
+  maxFileSize: 10 * 1024 * 1024, // 10 MB
+  maxFiles: 10,
+  allowedExtensions: ["PDF", "JPG", "JPEG", "PNG", "DOCX"] as AllowedDocumentType[],
+  allowedMimeTypes: [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+} as const;
 
 // Regex para validação de email
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -248,4 +261,127 @@ Quanto mais detalhes você fornecer, melhor poderemos direcionar seu atendimento
   };
 
   return isRetry ? messages[field].retry : messages[field].initial;
+}
+
+// Sprint 3.4: Validação de documentos
+
+/**
+ * Extrai a extensão de um arquivo e converte para maiúsculas
+ */
+function getFileExtension(filename: string): string {
+  const ext = filename.split(".").pop();
+  return ext ? ext.toUpperCase() : "";
+}
+
+/**
+ * Valida um arquivo individual
+ * Retorna resultado da validação e mensagem de erro se houver
+ */
+export function validateDocument(file: File): { valid: boolean; error?: string } {
+  const extension = getFileExtension(file.name) as AllowedDocumentType;
+
+  // Verifica se extensão é permitida
+  if (!DOCUMENT_CONFIG.allowedExtensions.includes(extension)) {
+    return {
+      valid: false,
+      error: `Formato não suportado: .${extension}. Use: PDF, JPG, JPEG, PNG ou DOCX.`,
+    };
+  }
+
+  // Verifica tamanho máximo
+  if (file.size > DOCUMENT_CONFIG.maxFileSize) {
+    const maxSizeMB = DOCUMENT_CONFIG.maxFileSize / (1024 * 1024);
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+    return {
+      valid: false,
+      error: `Arquivo muito grande (${fileSizeMB} MB). Limite: ${maxSizeMB} MB.`,
+    };
+  }
+
+  // Verifica se arquivo está vazio
+  if (file.size === 0) {
+    return {
+      valid: false,
+      error: "O arquivo está vazio. Selecione um arquivo válido.",
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
+ * Valida uma lista de documentos
+ * Verifica quantidade máxima e valida cada arquivo
+ */
+export function validateDocuments(
+  files: File[]
+): { valid: boolean; errors: string[]; validFiles: File[] } {
+  const errors: string[] = [];
+  const validFiles: File[] = [];
+
+  // Verifica quantidade máxima
+  if (files.length > DOCUMENT_CONFIG.maxFiles) {
+    errors.push(`Limite de ${DOCUMENT_CONFIG.maxFiles} arquivos excedido. Você selecionou ${files.length}.`);
+    return { valid: false, errors, validFiles: [] };
+  }
+
+  // Valida cada arquivo
+  for (const file of files) {
+    const result = validateDocument(file);
+    if (result.valid) {
+      validFiles.push(file);
+    } else {
+      errors.push(`${file.name}: ${result.error}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    validFiles,
+  };
+}
+
+/**
+ * Formata tamanho de arquivo para exibição
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+/**
+ * Gera mensagem de orientação sobre documentos aceitos
+ */
+export function getDocumentUploadGuidance(): string {
+  return `Você pode anexar documentos que ajudem nossa equipe a compreender melhor sua situação.
+
+**Exemplos:**
+• RG
+• CPF
+• CNIS
+• Laudos
+• Contratos
+• Holerites
+• Comprovantes
+
+**Formatos aceitos:** PDF, JPG, JPEG, PNG, DOCX
+**Tamanho máximo:** 10 MB por arquivo
+**Limite:** até 10 arquivos
+
+Todos os documentos serão tratados com sigilo conforme a LGPD.`;
+}
+
+/**
+ * Gera mensagem de confirmação de upload
+ */
+export function getDocumentUploadConfirmation(count: number, totalSize: number): string {
+  if (count === 0) {
+    return "Nenhum documento foi enviado. Você poderá enviá-los posteriormente.";
+  }
+  const sizeFormatted = formatFileSize(totalSize);
+  return `✅ **${count} documento${count > 1 ? "s" : ""} recebido${count > 1 ? "s" : ""}** (${sizeFormatted})\n\nSeus documentos foram registrados e serão analisados pela equipe jurídica.`;
 }

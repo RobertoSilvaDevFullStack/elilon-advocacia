@@ -24,6 +24,11 @@ import {
   MapPin,
   Calendar,
   FileSearch,
+  Download,
+  FileType,
+  Paperclip,
+  Loader2,
+  X,
 } from "lucide-react";
 import { Button } from "../components/Components";
 import ReactQuill from "react-quill";
@@ -75,6 +80,10 @@ export const Admin: React.FC = () => {
   const [showPreAtendimentoModal, setShowPreAtendimentoModal] = useState(false);
   const [preAtendimentoPage, setPreAtendimentoPage] = useState(1);
   const [preAtendimentoTotalPages, setPreAtendimentoTotalPages] = useState(1);
+
+  // Sprint 3.4.1: Estados para documentos
+  const [preAtendimentoDocumentos, setPreAtendimentoDocumentos] = useState<any[]>([]);
+  const [loadingDocumentos, setLoadingDocumentos] = useState(false);
 
   // Loading States
   const [loading, setLoading] = useState(false);
@@ -353,6 +362,50 @@ export const Admin: React.FC = () => {
     }
   };
 
+  // Sprint 3.4.1: Buscar documentos do pré-atendimento
+  const fetchDocumentos = async (preAtendimentoId: string) => {
+    setLoadingDocumentos(true);
+    console.log("📋 Buscando documentos para pré-atendimento:", preAtendimentoId);
+    
+    try {
+      const response = await fetch(
+        `${API_URL}/chat/documents/${preAtendimentoId}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setPreAtendimentoDocumentos(data.data.documents);
+        console.log(`✅ ${data.data.documents.length} documento(s) encontrado(s)`);
+      } else {
+        setPreAtendimentoDocumentos([]);
+        console.log("⚠️ Nenhum documento encontrado");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao buscar documentos:", error);
+      setPreAtendimentoDocumentos([]);
+    } finally {
+      setLoadingDocumentos(false);
+    }
+  };
+
+  // Helper para formatar tamanho de arquivo
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Helper para obter ícone por tipo de arquivo
+  const getFileIcon = (extension: string) => {
+    const ext = extension?.toUpperCase();
+    if (ext === "PDF") return <FileText className="w-5 h-5 text-red-500" />;
+    if (["JPG", "JPEG", "PNG"].includes(ext)) return <FileType className="w-5 h-5 text-blue-500" />;
+    if (ext === "DOCX") return <FileType className="w-5 h-5 text-blue-700" />;
+    return <Paperclip className="w-5 h-5 text-gray-500" />;
+  };
+
   // FETCH DATA
   const fetchDashboardData = async () => {
     const token = localStorage.getItem("token");
@@ -502,6 +555,14 @@ export const Admin: React.FC = () => {
   useEffect(() => {
     if (isLoggedIn) fetchDashboardData();
   }, [isLoggedIn]);
+
+  // Sprint 3.4.1: Carregar documentos quando o modal abrir
+  useEffect(() => {
+    if (showPreAtendimentoModal && selectedPreAtendimento?.id) {
+      console.log("📂 Modal de pré-atendimento aberto:", selectedPreAtendimento.protocolo);
+      fetchDocumentos(selectedPreAtendimento.id);
+    }
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
 
   // Show loading while checking authentication (prevents login screen flash)
   if (isCheckingAuth) {
@@ -1630,6 +1691,122 @@ export const Admin: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* PRE-ATENDIMENTOS VIEW */}
+          {currentView === "preAtendimentos" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">
+                    Pré-Atendimentos Chat Jurídico
+                  </h2>
+                  <p className="text-neutral-500 text-sm">
+                    {preAtendimentos?.length || 0} pré-atendimentos registrados.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabela de Pré-Atendimentos */}
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-neutral-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Protocolo
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Data
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Nome
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Área / Subárea
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {preAtendimentos?.map((pa: any) => (
+                        <tr key={pa.id} className="hover:bg-neutral-50">
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-sm font-medium text-accent-600">
+                              {pa.protocolo}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {new Date(pa.created_at).toLocaleDateString("pt-BR")}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-neutral-800">
+                              {pa.nome}
+                            </div>
+                            <div className="text-xs text-neutral-500">
+                              {pa.email}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {pa.area} / {pa.subarea}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              pa.status === "novo" ? "bg-yellow-100 text-yellow-800" :
+                              pa.status === "em_analise" ? "bg-blue-100 text-blue-800" :
+                              pa.status === "convertido" ? "bg-green-100 text-green-800" :
+                              "bg-gray-100 text-gray-800"
+                            }`}>
+                              {pa.status?.replace("_", " ")}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => {
+                                setSelectedPreAtendimento(pa);
+                                setShowPreAtendimentoModal(true);
+                                console.log("📋 Modal aberto para pré-atendimento:", pa.protocolo);
+                              }}
+                              className="text-xs bg-accent-600 text-white px-3 py-1 rounded hover:bg-accent-700 transition"
+                            >
+                              Ver Detalhes
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginação */}
+                {preAtendimentoTotalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 p-4 border-t">
+                    <button
+                      onClick={() => setPreAtendimentoPage(p => Math.max(1, p - 1))}
+                      disabled={preAtendimentoPage === 1}
+                      className="px-3 py-1 rounded border disabled:opacity-50"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-sm text-neutral-600">
+                      Página {preAtendimentoPage} de {preAtendimentoTotalPages}
+                    </span>
+                    <button
+                      onClick={() => setPreAtendimentoPage(p => Math.min(preAtendimentoTotalPages, p + 1))}
+                      disabled={preAtendimentoPage === preAtendimentoTotalPages}
+                      className="px-3 py-1 rounded border disabled:opacity-50"
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* POST FORM MODAL */}
@@ -2331,6 +2508,234 @@ export const Admin: React.FC = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sprint 3.4.1: Modal de Detalhes do Pré-Atendimento */}
+        {showPreAtendimentoModal && selectedPreAtendimento && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-accent-600 to-accent-700 px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h3 className="text-white font-bold text-lg">
+                    Pré-Atendimento {selectedPreAtendimento.protocolo}
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    {new Date(selectedPreAtendimento.created_at).toLocaleString("pt-BR")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    console.log("❌ Modal fechado");
+                    setShowPreAtendimentoModal(false);
+                    setPreAtendimentoDocumentos([]);
+                  }}
+                  className="text-white/80 hover:text-white transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto flex-1">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Coluna 1: Informações do Cliente */}
+                  <div className="space-y-6">
+                    {/* Dados Pessoais */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Users size={18} className="text-accent-600" />
+                        Dados do Cliente
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-neutral-500">Nome:</span>
+                          <span className="ml-2 font-medium">{selectedPreAtendimento.nome}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Email:</span>
+                          <span className="ml-2">{selectedPreAtendimento.email}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Telefone:</span>
+                          <span className="ml-2">{selectedPreAtendimento.telefone}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Cidade/UF:</span>
+                          <span className="ml-2">{selectedPreAtendimento.cidade}, {selectedPreAtendimento.estado}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Área e Subárea */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Shield size={18} className="text-accent-600" />
+                        Classificação
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-neutral-500">Área:</span>
+                          <span className="ml-2 font-medium">{selectedPreAtendimento.area}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Subárea:</span>
+                          <span className="ml-2">{selectedPreAtendimento.subarea}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Status:</span>
+                          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                            selectedPreAtendimento.status === "novo" ? "bg-yellow-100 text-yellow-800" :
+                            selectedPreAtendimento.status === "em_analise" ? "bg-blue-100 text-blue-800" :
+                            selectedPreAtendimento.status === "convertido" ? "bg-green-100 text-green-800" :
+                            "bg-gray-100 text-gray-800"
+                          }`}>
+                            {selectedPreAtendimento.status?.replace("_", " ")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Descrição do Caso */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <FileText size={18} className="text-accent-600" />
+                        Descrição do Caso
+                      </h4>
+                      <div className="text-sm text-neutral-700 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                        {selectedPreAtendimento.descricao_caso}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coluna 2: Documentos e Hermes */}
+                  <div className="space-y-6">
+                    {/* Documentos Anexados */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Paperclip size={18} className="text-accent-600" />
+                        📎 Documentos Anexados
+                        {preAtendimentoDocumentos.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-accent-100 text-accent-700 rounded-full text-xs">
+                            {preAtendimentoDocumentos.length}
+                          </span>
+                        )}
+                      </h4>
+
+                      {/* Loading */}
+                      {loadingDocumentos && (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin text-accent-600" />
+                          <span className="ml-2 text-sm text-neutral-500">Carregando documentos...</span>
+                        </div>
+                      )}
+
+                      {/* Empty State */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length === 0 && (
+                        <div className="text-center py-8 text-neutral-500">
+                          <Paperclip className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p className="text-sm">Nenhum documento anexado.</p>
+                        </div>
+                      )}
+
+                      {/* Lista de Documentos */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length > 0 && (
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {preAtendimentoDocumentos.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className="flex items-center justify-between p-3 bg-white rounded-lg border hover:border-accent-300 transition group"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                {getFileIcon(doc.extension)}
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-neutral-800 truncate">
+                                    {doc.original_name}
+                                  </p>
+                                  <p className="text-xs text-neutral-500">
+                                    {doc.extension} • {formatFileSize(doc.size_bytes)} • {new Date(doc.uploaded_at).toLocaleDateString("pt-BR")}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                {/* Visualizar */}
+                                <button
+                                  onClick={() => {
+                                    console.log("👁 Visualizando documento:", doc.id);
+                                    const url = `${API_URL}/chat/documents/download/${doc.id}`;
+                                    window.open(url, "_blank");
+                                  }}
+                                  className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                                  title="Visualizar"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                {/* Download */}
+                                <a
+                                  href={`${API_URL}/chat/documents/download/${doc.id}`}
+                                  download={doc.original_name}
+                                  onClick={() => console.log("⬇ Download documento:", doc.id)}
+                                  className="p-1.5 text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition"
+                                  title="Download"
+                                >
+                                  <Download size={16} />
+                                </a>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Metadados */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length > 0 && (
+                        <div className="mt-3 pt-3 border-t text-xs text-neutral-500">
+                          <p>Total: {preAtendimentoDocumentos.length} documento(s)</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hermes - Análise de Documentos (Placeholder) */}
+                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Shield size={18} className="text-purple-600" />
+                        🤖 Análise de Documentos
+                      </h4>
+                      <div className="text-sm text-neutral-600">
+                        <p className="italic">
+                          "A análise automática de documentos ainda não foi processada."
+                        </p>
+                        <div className="mt-3 p-2 bg-white/50 rounded text-xs text-neutral-500">
+                          <p>Hermes (IA) analisará:</p>
+                          <ul className="list-disc list-inside mt-1 space-y-0.5">
+                            <li>Validade de documentos</li>
+                            <li>Extracão de informações</li>
+                            <li>Classificação automática</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 bg-neutral-50 border-t flex justify-between items-center">
+                <div className="text-xs text-neutral-500">
+                  ID: {selectedPreAtendimento.id}
+                </div>
+                <button
+                  onClick={() => {
+                    console.log("❌ Modal fechado");
+                    setShowPreAtendimentoModal(false);
+                    setPreAtendimentoDocumentos([]);
+                  }}
+                  className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition"
+                >
+                  Fechar
+                </button>
               </div>
             </div>
           </div>

@@ -29,4 +29,6 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+// Suporta ambos: authMiddleware (função direta) e authMiddleware.verifyToken (propriedade)
+verifyToken.verifyToken = verifyToken;
 module.exports = verifyToken;

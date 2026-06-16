@@ -23,6 +23,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onSelectSubarea,
   showAreaButtons,
   showSubareaButtons,
+  // Sprint 3.4: Props para upload de documentos
+  showDocumentOption,
+  showDocumentUploader,
+  documentErrors,
+  onSelectDocumentOption,
+  onDocumentUpload,
+  onSkipDocumentUpload,
 }) => {
   if (!isOpen) return null;
 
@@ -114,6 +121,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         onSelectSubarea={onSelectSubarea}
         showAreaButtons={showAreaButtons}
         showSubareaButtons={showSubareaButtons}
+        showDocumentOption={showDocumentOption}
+        showDocumentUploader={showDocumentUploader}
+        documentErrors={documentErrors}
+        onSelectDocumentOption={onSelectDocumentOption}
+        onDocumentUpload={onDocumentUpload}
+        onSkipDocumentUpload={onSkipDocumentUpload}
       />
 
       {/* Input (desabilitado se sessão fechada) */}

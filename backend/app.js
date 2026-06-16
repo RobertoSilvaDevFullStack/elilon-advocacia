@@ -12,6 +12,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     "https://elilonlopesadvogados.com.br",
     "http://localhost:3000",
+    "http://localhost:3005",
     "http://localhost:5173",
   ];
 
@@ -39,6 +40,7 @@ const corsOptions = {
   origin: [
     "https://elilonlopesadvogados.com.br",
     "http://localhost:3000",
+    "http://localhost:3005",
     "http://localhost:5173",
   ],
   credentials: true,
@@ -51,11 +53,16 @@ app.use(express.json());
 const authRoutes = require("./routes/authRoutes");
 const apiRoutes = require("./routes/apiRoutes");
 const chatRoutes = require("./src/modules/chat/chat.routes");
+const healthController = require("./controllers/healthController");
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api", apiRoutes);
 app.use("/api/chat", chatRoutes);
+
+// Sprint 3.4.3: Health Check Endpoints
+app.get("/health", healthController.check);
+app.get("/health/simple", healthController.simpleCheck);
 
 // Test Route
 app.get("/", (req, res) => {

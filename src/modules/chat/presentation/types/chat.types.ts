@@ -27,6 +27,11 @@ export type ChatState =
   | "STATE_COLLECTED"                // Estado coletado
   | "AWAITING_CASE_DESCRIPTION"      // Aguardando descrição do caso
   | "CASE_DESCRIPTION_COLLECTED"     // Descrição coletada
+  // Estados de upload de documentos (Sprint 3.4)
+  | "AWAITING_DOCUMENT_UPLOAD_OPTION"  // Aguardando escolha sobre upload
+  | "DOCUMENT_UPLOAD_OPTION_SELECTED"  // Opção de upload selecionada
+  | "UPLOADING_DOCUMENTS"              // Processando upload
+  | "DOCUMENTS_UPLOADED"               // Documentos enviados
   | "QUALIFICATION_COMPLETE"         // Qualificação completa
   // Estados legados (mantidos para compatibilidade)
   | "COLLECTING_NAME"
@@ -115,6 +120,8 @@ export interface FSMContext {
     estado?: string;
     descricaoCaso?: string;
   };
+  // Sprint 3.4: Documentos enviados
+  documentos?: DocumentUploadData;
   // Preparação para Hermes (análise da descrição)
   caseAnalysis?: CaseDescriptionData;
   // Extensível para novos campos
@@ -131,6 +138,9 @@ export type FSMEvent =
   | { type: "SUBMIT_CITY"; city: string }
   | { type: "SUBMIT_STATE"; state: string }
   | { type: "SUBMIT_CASE_DESCRIPTION"; description: string }
+  | { type: "SELECT_DOCUMENT_UPLOAD_OPTION"; option: "UPLOAD_NOW" | "UPLOAD_LATER" }
+  | { type: "UPLOAD_DOCUMENTS"; files: UploadedDocument[] }
+  | { type: "DOCUMENTS_UPLOAD_COMPLETE"; documents: UploadedDocument[] }
   | { type: "VALIDATION_ERROR"; field: string; error: string }
   | { type: "CORRECT_FIELD"; field: string }
   | { type: "SUBMIT_DATA"; field: string; value: string }
@@ -140,6 +150,40 @@ export type FSMEvent =
 
 // Campos de coleta de dados
 export type DataField = "name" | "phone" | "email" | "city" | "state" | "caseDescription";
+
+// Sprint 3.4: Tipos de documento aceitos
+export type AllowedDocumentType = "PDF" | "JPG" | "JPEG" | "PNG" | "DOCX";
+
+// Sprint 3.4: Interface para metadados do documento
+export interface DocumentMetadata {
+  originalName: string;
+  fileName: string;
+  extension: AllowedDocumentType;
+  size: number; // em bytes
+  mimeType: string;
+  uploadedAt: string;
+  // Preparação para futura integração MinIO
+  storagePath?: string;
+  bucket?: string;
+  url?: string;
+}
+
+// Sprint 3.4: Interface para documento enviado
+export interface UploadedDocument {
+  id: string;
+  file: File;
+  metadata: DocumentMetadata;
+  status: "pending" | "uploading" | "success" | "error";
+  errorMessage?: string;
+}
+
+// Sprint 3.4: Interface para dados de upload
+export interface DocumentUploadData {
+  documents: UploadedDocument[];
+  totalSize: number;
+  count: number;
+  skipped: boolean; // true se usuário escolheu "Enviar depois"
+}
 
 // Resultado de validação
 export interface ValidationResult {
@@ -160,6 +204,8 @@ export interface QualificationSummary {
   caseDescription?: string;
   protocolo?: string;
   timestamp: string;
+  // Sprint 3.4: Documentos no resumo
+  documents?: DocumentUploadData;
 }
 
 // Interface para dados de descrição do caso (preparação para Hermes)
@@ -192,6 +238,8 @@ export interface ClientDataDTO {
   city: string;
   state: string;
   caseDescription?: string;  // Nova campo Sprint 3.1
+  // Sprint 3.4: Documentos (preparação para futura persistência)
+  documents?: DocumentUploadData;
   createdAt: string;
   updatedAt: string;
   isComplete: boolean;
@@ -305,6 +353,13 @@ export interface ChatWindowProps {
   onSelectSubarea?: (subarea: SubareaJuridica) => void;  // Callback seleção de subárea
   showAreaButtons?: boolean;                     // Mostrar botões de área
   showSubareaButtons?: boolean;                  // Mostrar botões de subárea
+  // Sprint 3.4: Props para upload de documentos
+  showDocumentOption?: boolean;                  // Mostrar botões de opção de upload
+  showDocumentUploader?: boolean;                // Mostrar interface de upload
+  documentErrors?: string[];                       // Erros de validação de documentos
+  onSelectDocumentOption?: (option: "UPLOAD_NOW" | "UPLOAD_LATER") => void;
+  onDocumentUpload?: (files: FileList | null) => void;
+  onSkipDocumentUpload?: () => void;
 }
 
 export interface MessageListProps {
@@ -317,6 +372,13 @@ export interface MessageListProps {
   onSelectSubarea?: (subarea: SubareaJuridica) => void;  // Callback seleção de subárea
   showAreaButtons?: boolean;                     // Controlar exibição dos botões de área
   showSubareaButtons?: boolean;                  // Controlar exibição dos botões de subárea
+  // Sprint 3.4: Props para upload de documentos
+  showDocumentOption?: boolean;                  // Mostrar botões de opção de upload
+  showDocumentUploader?: boolean;                // Mostrar interface de upload
+  documentErrors?: string[];                       // Erros de validação de documentos
+  onSelectDocumentOption?: (option: "UPLOAD_NOW" | "UPLOAD_LATER") => void;
+  onDocumentUpload?: (files: FileList | null) => void;
+  onSkipDocumentUpload?: () => void;
 }
 
 // Props para componente de seleção de área

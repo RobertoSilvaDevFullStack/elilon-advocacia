@@ -14,8 +14,23 @@ import type {
   SubareaJuridica,
   FSMContext,
   DataField,
+  UploadedDocument,
+  DocumentUploadData,
 } from "../../types/chat.types";
-import { validateField, validateCaseDescription, getFieldPromptMessage } from "../../utils/validation";
+import {
+  validateField,
+  validateCaseDescription,
+  getFieldPromptMessage,
+  getDocumentUploadGuidance,
+  getDocumentUploadConfirmation,
+  validateDocuments,
+  DOCUMENT_CONFIG,
+} from "../../utils/validation";
+import {
+  uploadDocuments,
+  extractFilesFromDocuments,
+  formatFileSize,
+} from "../../services/documentService";
 
 // Chaves para localStorage
 const CTA_CLOSED_KEY = "chat_cta_closed_at";
@@ -63,6 +78,14 @@ Por favor, tente novamente ou entre em contato pelo WhatsApp.`;
 // Mensagem de agradecimento pela descrição
 const MENSAGEM_AGRADECIMENTO_DESCRICAO = "Obrigado pelas informações.\n\nEstamos organizando os dados do seu pré-atendimento.";
 
+// Sprint 3.4: Pergunta sobre upload de documentos
+const MENSAGEM_PERGUNTA_DOCUMENTOS = `**Você possui documentos relacionados ao seu caso?**
+
+Os documentos ajudam nossa equipe a compreender melhor sua situação.`;
+
+// Sprint 3.4: Mensagem de orientação para upload
+const MENSAGEM_ORIENTACAO_DOCUMENTOS = getDocumentUploadGuidance;
+
 export const ChatWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCta, setShowCta] = useState(false);
@@ -84,6 +107,12 @@ export const ChatWidget: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [protocolo, setProtocolo] = useState<string | null>(null);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+
+  // Sprint 3.4: Estado para upload de documentos
+  const [showDocumentUploadOption, setShowDocumentUploadOption] = useState(false);
+  const [showDocumentUploader, setShowDocumentUploader] = useState(false);
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+  const [documentErrors, setDocumentErrors] = useState<string[]>([]);
 
   const hasInitialized = useRef(false);
 
@@ -133,7 +162,7 @@ export const ChatWidget: React.FC = () => {
 
   // Adicionar mensagem do bot (sobrecarga com typingDuration)
   const addBotMessage = useCallback(
-    async (content: string, options?: { showAreaButtons?: boolean; typingDuration?: number; showSubareaButtons?: boolean }) => {
+    async (content: string, options?: { showAreaButtons?: boolean; typingDuration?: number; showSubareaButtons?: boolean; showDocumentOption?: boolean }) => {
       const typingDuration = options?.typingDuration ?? 800;
       await simulateTyping(typingDuration);
 
@@ -157,6 +186,11 @@ export const ChatWidget: React.FC = () => {
 
       if (options?.showSubareaButtons) {
         setTimeout(() => setShowSubareaButtons(true), 300);
+      }
+
+      // Sprint 3.4: Mostrar botões de opção de documentos
+      if (options?.showDocumentOption) {
+        setTimeout(() => setShowDocumentUploadOption(true), 300);
       }
     },
     [currentState, sessionId, simulateTyping]
@@ -237,18 +271,24 @@ export const ChatWidget: React.FC = () => {
       // Transição para estado coletado
       setCurrentState(nextStateConfig.collected);
 
-      // Se for o último campo (descrição), mostrar mensagem de agradecimento e depois resumo
+      // Se for o último campo (descrição), mostrar mensagem de agradecimento e perguntar sobre documentos
       if (field === "caseDescription") {
         // Transição para estado coletado
         setCurrentState("CASE_DESCRIPTION_COLLECTED");
 
-        // Mensagem de agradecimento (com digitação de 1 segundo)
-        await simulateTyping(1000);
+        // Sprint 3.4: Perguntar sobre upload de documentos
+        await simulateTyping(800);
         await addBotMessage(MENSAGEM_AGRADECIMENTO_DESCRICAO, { typingDuration: 600 });
 
-        // Pequeno delay antes do resumo
-        await simulateTyping(800);
-        await showQualificationSummary();
+        // Pequeno delay antes da pergunta sobre documentos
+        await simulateTyping(600);
+
+        // Perguntar sobre documentos
+        setCurrentState("AWAITING_DOCUMENT_UPLOAD_OPTION");
+        await addBotMessage(MENSAGEM_PERGUNTA_DOCUMENTOS, {
+          showDocumentOption: true,
+          typingDuration: 800,
+        });
       } else if (field === "state") {
         // Após estado, solicitar descrição do caso
         const nextField = fieldSequence[fieldSequence.indexOf(field) + 1];
@@ -298,9 +338,13 @@ export const ChatWidget: React.FC = () => {
         throw new Error(data.message || "Erro ao registrar pré-atendimento");
       }
 
-      // Sucesso - salvar protocolo
+      // Sucesso - salvar protocolo e ID
       setProtocolo(data.data.protocolo);
-      return { success: true, protocolo: data.data.protocolo };
+      return { 
+        success: true, 
+        protocolo: data.data.protocolo,
+        preAtendimentoId: data.data.id // Sprint 3.4: Retornar ID para upload de documentos
+      };
     } catch (error) {
       console.error("❌ Erro ao enviar pré-atendimento:", error);
       setSubmissionError(error instanceof Error ? error.message : "Erro desconhecido");
@@ -313,6 +357,20 @@ export const ChatWidget: React.FC = () => {
   // Mostrar resumo da qualificação e enviar para API
   const showQualificationSummary = useCallback(async () => {
     const dados = context.dadosColetados || {};
+    const documentos = context.documentos;
+
+    // Sprint 3.4: Formatar informações de documentos
+    let documentosTexto = "**Documentos:** Nenhum documento enviado";
+    if (documentos) {
+      if (documentos.skipped) {
+        documentosTexto = "**Documentos:** Serão enviados posteriormente";
+      } else if (documentos.count > 0) {
+        const listaDocs = documentos.documents
+          .map((doc) => `✓ ${doc.metadata.originalName}`)
+          .join("\n");
+        documentosTexto = `**Documentos enviados (${documentos.count}):**\n${listaDocs}`;
+      }
+    }
 
     // Exibir resumo primeiro
     const resumo = `📋 **Resumo do Pré-Atendimento**
@@ -325,6 +383,8 @@ export const ChatWidget: React.FC = () => {
 **Cidade:** ${dados.cidade || "-"}
 **Estado:** ${dados.estado || "-"}
 **Descrição do Caso:** ${dados.descricaoCaso || "-"}
+
+${documentosTexto}
 
 _Enviando dados..._`;
 
@@ -350,6 +410,32 @@ _Enviando dados..._`;
     const result = await submitPreAtendimento();
 
     if (result.success && result.protocolo) {
+      // Sprint 3.4: Enviar documentos se houver
+      const documentos = context.documentos;
+      if (documentos && !documentos.skipped && documentos.count > 0) {
+        try {
+          // Extrair arquivos File dos documentos
+          const files = extractFilesFromDocuments(documentos.documents);
+          
+          if (files.length > 0) {
+            // Obter ID do pré-atendimento (se disponível no resultado)
+            const preAtendimentoId = result.preAtendimentoId || "temp";
+            
+            // Enviar documentos
+            const uploadResult = await uploadDocuments(
+              files,
+              preAtendimentoId,
+              result.protocolo
+            );
+            
+            console.log(`✅ ${uploadResult.message}`);
+          }
+        } catch (uploadError) {
+          console.error("❌ Erro ao enviar documentos:", uploadError);
+          // Não falhar o fluxo completo - apenas logar o erro
+        }
+      }
+      
       // Sucesso - mostrar protocolo
       await simulateTyping(600);
       await addBotMessage(MENSAGEM_CONCLUSAO_COM_PROTOCOLO(result.protocolo), { typingDuration: 600 });
@@ -467,6 +553,148 @@ _Enviando dados..._`;
     },
     [addUserMessage, currentArea, sessionId, simulateTyping, startDataCollection]
   );
+
+  // Sprint 3.4: Handler para seleção de opção de upload
+  const handleDocumentUploadOption = useCallback(
+    async (option: "UPLOAD_NOW" | "UPLOAD_LATER") => {
+      // Ocultar botões de opção
+      setShowDocumentUploadOption(false);
+
+      // Adicionar mensagem do usuário
+      const optionText = option === "UPLOAD_NOW" ? "Sim, quero enviar documentos" : "Não, enviar depois";
+      addUserMessage(optionText, { type: "document_upload_option", option });
+
+      // Transição de estado
+      setCurrentState("DOCUMENT_UPLOAD_OPTION_SELECTED");
+
+      if (option === "UPLOAD_NOW") {
+        // Simular digitação
+        await simulateTyping(600);
+
+        // Mostrar orientação sobre documentos
+        await addBotMessage(getDocumentUploadGuidance(), { typingDuration: 1200 });
+
+        // Transição para estado de upload
+        setCurrentState("UPLOADING_DOCUMENTS");
+        setShowDocumentUploader(true);
+      } else {
+        // Usuário optou por não enviar documentos
+        // Marcar como skipped e ir para resumo
+        setContext((prev) => ({
+          ...prev,
+          documentos: {
+            documents: [],
+            totalSize: 0,
+            count: 0,
+            skipped: true,
+          },
+        }));
+
+        // Pequeno delay antes do resumo
+        await simulateTyping(600);
+        await showQualificationSummary();
+      }
+    },
+    [addUserMessage, simulateTyping, addBotMessage, showQualificationSummary]
+  );
+
+  // Sprint 3.4: Handler para upload de documentos
+  const handleDocumentUpload = useCallback(
+    async (files: FileList | null) => {
+      if (!files || files.length === 0) {
+        setDocumentErrors(["Nenhum arquivo selecionado."]);
+        return;
+      }
+
+      // Converter FileList para array
+      const fileArray = Array.from(files);
+
+      // Validar documentos
+      const validation = validateDocuments(fileArray);
+
+      if (!validation.valid) {
+        setDocumentErrors(validation.errors);
+        return;
+      }
+
+      // Limpar erros anteriores
+      setDocumentErrors([]);
+
+      // Criar objetos UploadedDocument
+      const newDocuments: UploadedDocument[] = validation.validFiles.map((file) => ({
+        id: generateId(),
+        file,
+        metadata: {
+          originalName: file.name,
+          fileName: `${generateId()}_${file.name}`,
+          extension: file.name.split(".").pop()?.toUpperCase() as any,
+          size: file.size,
+          mimeType: file.type,
+          uploadedAt: new Date().toISOString(),
+        },
+        status: "success",
+      }));
+
+      // Atualizar estado
+      setUploadedDocuments(newDocuments);
+      setShowDocumentUploader(false);
+
+      // Calcular tamanho total
+      const totalSize = newDocuments.reduce((sum, doc) => sum + doc.metadata.size, 0);
+
+      // Salvar no contexto
+      setContext((prev) => ({
+        ...prev,
+        documentos: {
+          documents: newDocuments,
+          totalSize,
+          count: newDocuments.length,
+          skipped: false,
+        },
+      }));
+
+      // Transição de estado
+      setCurrentState("DOCUMENTS_UPLOADED");
+
+      // Mensagem de confirmação
+      await addBotMessage(getDocumentUploadConfirmation(newDocuments.length, totalSize), {
+        typingDuration: 600,
+      });
+
+      // Pequeno delay antes do resumo
+      await simulateTyping(800);
+      await showQualificationSummary();
+    },
+    [addBotMessage, showQualificationSummary]
+  );
+
+  // Sprint 3.4: Handler para pular upload sem documentos
+  const handleSkipDocumentUpload = useCallback(async () => {
+    setShowDocumentUploader(false);
+
+    // Marcar como skipped
+    setContext((prev) => ({
+      ...prev,
+      documentos: {
+        documents: [],
+        totalSize: 0,
+        count: 0,
+        skipped: true,
+      },
+    }));
+
+    // Transição de estado
+    setCurrentState("DOCUMENTS_UPLOADED");
+
+    // Mensagem informativa
+    await addBotMessage("Você optou por não enviar documentos neste momento.\n\nPoderá enviá-los posteriormente pelo WhatsApp ou e-mail.", {
+      typingDuration: 600,
+    });
+
+    // Ir para resumo
+    await simulateTyping(600);
+    await showQualificationSummary();
+  }, [addBotMessage, showQualificationSummary]);
 
   // Enviar mensagem manual (input de texto)
   const handleSendMessage = useCallback(
@@ -605,6 +833,13 @@ _Enviando dados..._`;
         onSelectSubarea={handleSelectSubarea}
         showAreaButtons={showAreaButtons}
         showSubareaButtons={showSubareaButtons}
+        // Sprint 3.4: Props para upload de documentos
+        showDocumentOption={showDocumentUploadOption}
+        showDocumentUploader={showDocumentUploader}
+        documentErrors={documentErrors}
+        onSelectDocumentOption={handleDocumentUploadOption}
+        onDocumentUpload={handleDocumentUpload}
+        onSkipDocumentUpload={handleSkipDocumentUpload}
       />
     </>
   );
