@@ -18,8 +18,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   loading,
   isTyping,
   currentState,
+  currentArea,
   onSelectArea,
+  onSelectSubarea,
   showAreaButtons,
+  showSubareaButtons,
 }) => {
   if (!isOpen) return null;
 
@@ -106,8 +109,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         loading={loading}
         isTyping={isTyping}
         currentState={currentState}
+        currentArea={currentArea}
         onSelectArea={onSelectArea}
+        onSelectSubarea={onSelectSubarea}
         showAreaButtons={showAreaButtons}
+        showSubareaButtons={showSubareaButtons}
       />
 
       {/* Input (desabilitado se sessão fechada) */}

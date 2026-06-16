@@ -10,8 +10,23 @@ export type SenderType = "USER" | "BOT" | "SYSTEM";
 // Preparado para integração futura com N8N
 export type ChatState =
   | "START"
-  | "AWAITING_AREA_SELECTION"    // Novo: Aguardando seleção de área
-  | "AREA_SELECTED"              // Novo: Área foi selecionada
+  | "AWAITING_AREA_SELECTION"        // Aguardando seleção de área
+  | "AREA_SELECTED"                  // Área foi selecionada
+  | "AWAITING_SUBAREA_SELECTION"     // Aguardando seleção de subárea
+  | "SUBAREA_SELECTED"               // Subárea foi selecionada
+  // Estados de coleta de dados do cliente
+  | "AWAITING_NAME"                  // Aguardando nome
+  | "NAME_COLLECTED"                 // Nome coletado
+  | "AWAITING_PHONE"                 // Aguardando telefone
+  | "PHONE_COLLECTED"                // Telefone coletado
+  | "AWAITING_EMAIL"                 // Aguardando email
+  | "EMAIL_COLLECTED"                // Email coletado
+  | "AWAITING_CITY"                  // Aguardando cidade
+  | "CITY_COLLECTED"                 // Cidade coletada
+  | "AWAITING_STATE"                 // Aguardando estado
+  | "STATE_COLLECTED"                // Estado coletado
+  | "QUALIFICATION_COMPLETE"         // Qualificação completa
+  // Estados legados (mantidos para compatibilidade)
   | "COLLECTING_NAME"
   | "COLLECTING_EMAIL"
   | "COLLECTING_PHONE"
@@ -24,12 +39,27 @@ export type ChatState =
 // Áreas jurídicas disponíveis
 export type AreaJuridica = "Previdenciário" | "Trabalhista" | "Tributário" | "Cível";
 
+// Subáreas jurídicas por área
+export type SubareaPrevidenciario = "BPC/LOAS" | "Aposentadoria" | "Auxílio-doença" | "Pensão" | "Revisão";
+export type SubareaTrabalhista = "Rescisão" | "FGTS" | "Horas Extras" | "Assédio" | "Acidente de Trabalho";
+export type SubareaTributario = "Impostos" | "Planejamento Tributário" | "Restituição" | "Execução Fiscal";
+export type SubareaCivel = "Contratos" | "Consumidor" | "Família" | "Indenização";
+
+export type SubareaJuridica = SubareaPrevidenciario | SubareaTrabalhista | SubareaTributario | SubareaCivel;
+
 // Configuração de cada área para os botões
 export interface AreaOption {
   id: AreaJuridica;
   label: string;
   emoji: string;
   description?: string;
+}
+
+// Configuração de cada subárea
+export interface SubareaOption {
+  id: SubareaJuridica;
+  label: string;
+  area: AreaJuridica;
 }
 
 // Áreas disponíveis para seleção
@@ -40,9 +70,40 @@ export const AREAS_JURIDICAS: AreaOption[] = [
   { id: "Cível", label: "Cível", emoji: "📋" },
 ];
 
+// Subáreas organizadas por área
+export const SUBAREAS_JURIDICAS: Record<AreaJuridica, SubareaOption[]> = {
+  "Previdenciário": [
+    { id: "BPC/LOAS", label: "BPC/LOAS", area: "Previdenciário" },
+    { id: "Aposentadoria", label: "Aposentadoria", area: "Previdenciário" },
+    { id: "Auxílio-doença", label: "Auxílio-doença", area: "Previdenciário" },
+    { id: "Pensão", label: "Pensão", area: "Previdenciário" },
+    { id: "Revisão", label: "Revisão", area: "Previdenciário" },
+  ],
+  "Trabalhista": [
+    { id: "Rescisão", label: "Rescisão", area: "Trabalhista" },
+    { id: "FGTS", label: "FGTS", area: "Trabalhista" },
+    { id: "Horas Extras", label: "Horas Extras", area: "Trabalhista" },
+    { id: "Assédio", label: "Assédio", area: "Trabalhista" },
+    { id: "Acidente de Trabalho", label: "Acidente de Trabalho", area: "Trabalhista" },
+  ],
+  "Tributário": [
+    { id: "Impostos", label: "Impostos", area: "Tributário" },
+    { id: "Planejamento Tributário", label: "Planejamento Tributário", area: "Tributário" },
+    { id: "Restituição", label: "Restituição", area: "Tributário" },
+    { id: "Execução Fiscal", label: "Execução Fiscal", area: "Tributário" },
+  ],
+  "Cível": [
+    { id: "Contratos", label: "Contratos", area: "Cível" },
+    { id: "Consumidor", label: "Consumidor", area: "Cível" },
+    { id: "Família", label: "Família", area: "Cível" },
+    { id: "Indenização", label: "Indenização", area: "Cível" },
+  ],
+};
+
 // Contexto da FSM - preparado para expansão futura
 export interface FSMContext {
   areaSelecionada?: AreaJuridica;
+  subareaSelecionada?: SubareaJuridica;
   qualificacaoCompleta?: boolean;
   dadosColetados?: {
     nome?: string;
@@ -58,10 +119,56 @@ export interface FSMContext {
 // Eventos da FSM (para integração futura com N8N)
 export type FSMEvent =
   | { type: "SELECT_AREA"; area: AreaJuridica }
+  | { type: "SELECT_SUBAREA"; subarea: SubareaJuridica; area: AreaJuridica }
+  | { type: "SUBMIT_NAME"; name: string }
+  | { type: "SUBMIT_PHONE"; phone: string }
+  | { type: "SUBMIT_EMAIL"; email: string }
+  | { type: "SUBMIT_CITY"; city: string }
+  | { type: "SUBMIT_STATE"; state: string }
+  | { type: "VALIDATION_ERROR"; field: string; error: string }
+  | { type: "CORRECT_FIELD"; field: string }
   | { type: "SUBMIT_DATA"; field: string; value: string }
   | { type: "NEXT_STEP" }
   | { type: "CLOSE_CHAT" }
   | { type: "RESTART" };
+
+// Campos de coleta de dados
+export type DataField = "name" | "phone" | "email" | "city" | "state";
+
+// Resultado de validação
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+  normalizedValue?: string;
+}
+
+// Interface para resumo de qualificação
+export interface QualificationSummary {
+  area: AreaJuridica;
+  subarea: SubareaJuridica;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  protocolo?: string;
+  timestamp: string;
+}
+
+// Interface preparada para persistência PostgreSQL
+export interface ClientDataDTO {
+  sessionId: string;
+  area: AreaJuridica;
+  subarea: SubareaJuridica;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  createdAt: string;
+  updatedAt: string;
+  isComplete: boolean;
+}
 
 // Interface de Mensagem
 export interface ChatMessage {
@@ -164,24 +271,37 @@ export interface ChatWindowProps {
   messages: ChatMessage[];
   onSendMessage: (content: string) => void;
   loading: boolean;
-  isTyping?: boolean;                    // Indicador de digitação
-  currentState?: ChatState;              // Estado atual da FSM
-  onSelectArea?: (area: AreaJuridica) => void;  // Callback seleção de área
-  showAreaButtons?: boolean;             // Mostrar botões de área
+  isTyping?: boolean;                            // Indicador de digitação
+  currentState?: ChatState;                      // Estado atual da FSM
+  currentArea?: AreaJuridica | null;             // Área atualmente selecionada
+  onSelectArea?: (area: AreaJuridica) => void;   // Callback seleção de área
+  onSelectSubarea?: (subarea: SubareaJuridica) => void;  // Callback seleção de subárea
+  showAreaButtons?: boolean;                     // Mostrar botões de área
+  showSubareaButtons?: boolean;                  // Mostrar botões de subárea
 }
 
 export interface MessageListProps {
   messages: ChatMessage[];
   loading: boolean;
-  isTyping?: boolean;                    // Indicador de "digitando..."
-  currentState?: ChatState;              // Para decisões de UI
-  onSelectArea?: (area: AreaJuridica) => void;  // Callback para seleção
-  showAreaButtons?: boolean;             // Controlar exibição dos botões
+  isTyping?: boolean;                            // Indicador de "digitando..."
+  currentState?: ChatState;                      // Para decisões de UI
+  currentArea?: AreaJuridica | null;             // Área atual para filtrar subáreas
+  onSelectArea?: (area: AreaJuridica) => void;   // Callback para seleção de área
+  onSelectSubarea?: (subarea: SubareaJuridica) => void;  // Callback seleção de subárea
+  showAreaButtons?: boolean;                     // Controlar exibição dos botões de área
+  showSubareaButtons?: boolean;                  // Controlar exibição dos botões de subárea
 }
 
 // Props para componente de seleção de área
 export interface AreaSelectorProps {
   onSelect: (area: AreaJuridica) => void;
+  disabled?: boolean;
+}
+
+// Props para componente de seleção de subárea
+export interface SubareaSelectorProps {
+  area: AreaJuridica;
+  onSelect: (subarea: SubareaJuridica) => void;
   disabled?: boolean;
 }
 

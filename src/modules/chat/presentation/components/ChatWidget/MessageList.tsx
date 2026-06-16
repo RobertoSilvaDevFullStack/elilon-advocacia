@@ -1,21 +1,25 @@
 /**
  * MessageList - Lista de mensagens com scroll
- * Atualizado: Sem tela vazia, indicador de digitação, botões de área
+ * Atualizado: Sem tela vazia, indicador de digitação, botões de área e subárea
  */
 
 import React, { useRef, useEffect } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { AreaSelector } from "./AreaSelector";
+import { SubareaSelector } from "./SubareaSelector";
 import { Loader2 } from "lucide-react";
-import type { MessageListProps, AreaJuridica } from "../../types/chat.types";
+import type { MessageListProps, AreaJuridica, SubareaJuridica } from "../../types/chat.types";
 
 export const MessageList: React.FC<MessageListProps> = ({
   messages,
   loading,
   isTyping = false,
   currentState,
+  currentArea,
   onSelectArea,
+  onSelectSubarea,
   showAreaButtons = false,
+  showSubareaButtons = false,
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,6 +34,11 @@ export const MessageList: React.FC<MessageListProps> = ({
   // Handler para seleção de área
   const handleAreaSelect = (area: AreaJuridica) => {
     onSelectArea?.(area);
+  };
+
+  // Handler para seleção de subárea
+  const handleSubareaSelect = (subarea: SubareaJuridica) => {
+    onSelectSubarea?.(subarea);
   };
 
   return (
@@ -106,6 +115,28 @@ export const MessageList: React.FC<MessageListProps> = ({
           {/* Botões */}
           <AreaSelector
             onSelect={handleAreaSelect}
+            disabled={loading}
+          />
+        </div>
+      )}
+
+      {/* Botões de seleção de subárea - exibidos após seleção de área */}
+      {showSubareaButtons && !isTyping && onSelectSubarea && currentArea && (
+        <div className="flex items-start gap-2 mb-4">
+          {/* Avatar do bot */}
+          <div
+            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center invisible"
+            style={{
+              background: "linear-gradient(135deg, #A1333E 0%, #812932 100%)",
+            }}
+          >
+            <span className="text-white text-xs font-bold">E</span>
+          </div>
+
+          {/* Botões de subárea */}
+          <SubareaSelector
+            area={currentArea}
+            onSelect={handleSubareaSelect}
             disabled={loading}
           />
         </div>
