@@ -69,8 +69,11 @@ function initializeTables() {
       interest TEXT,
       message TEXT,
       status TEXT DEFAULT 'Novo',
+      source TEXT DEFAULT 'site',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+  // Sprint 3.7: garantir coluna source em bancos existentes
+  sqliteDb.run(`ALTER TABLE leads ADD COLUMN source TEXT DEFAULT 'site'`, () => {});
 
   // 5. Settings / Integration
   sqliteDb.run(`CREATE TABLE IF NOT EXISTS settings (

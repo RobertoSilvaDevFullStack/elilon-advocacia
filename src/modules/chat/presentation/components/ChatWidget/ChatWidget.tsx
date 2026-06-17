@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useCallback, useState, useRef } from "react";
+import { trackChatLead } from "../../../../../../utils/tracking";
 import { ChatButton } from "./ChatButton";
 import { ChatWindow } from "./ChatWindow";
 import type {
@@ -410,6 +411,12 @@ _Enviando dados..._`;
     const result = await submitPreAtendimento();
 
     if (result.success && result.protocolo) {
+      // Sprint 3.8: dispara Lead apenas após protocolo gerado com sucesso
+      trackChatLead({
+        area: context.areaSelecionada ?? "",
+        subarea: context.subareaSelecionada ?? "",
+      });
+
       // Sprint 3.4: Enviar documentos se houver
       const documentos = context.documentos;
       if (documentos && !documentos.skipped && documentos.count > 0) {

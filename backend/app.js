@@ -6,43 +6,38 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// Manual CORS headers - aggressive approach
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true; // Postman, curl, server-to-server
+  if (origin === "https://elilonlopesadvogados.com.br") return true;
+  if (origin === "https://www.elilonlopesadvogados.com.br") return true;
+  // localhost/127.0.0.1 nunca é origem em produção real (Railway), só em dev local
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+};
+
+// Manual CORS headers
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    "https://elilonlopesadvogados.com.br",
-    "http://localhost:3000",
-    "http://localhost:3005",
-    "http://localhost:5173",
-  ];
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  if (isAllowedOrigin(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
   }
-
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
-
-  // Handle preflight
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
+  if (req.method === "OPTIONS") return res.status(200).end();
   next();
 });
 
-// CORS configuration - allow frontend domains
+// CORS via cors package
 const corsOptions = {
-  origin: [
-    "https://elilonlopesadvogados.com.br",
-    "http://localhost:3000",
-    "http://localhost:3005",
-    "http://localhost:5173",
-  ],
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`⚠️ CORS bloqueado: ${origin}`);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };

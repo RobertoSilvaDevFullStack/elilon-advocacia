@@ -14,6 +14,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Profissionais", path: "/profissionais" },
   { label: "Áreas de Atuação", path: "/areas" },
   { label: "Blog", path: "/blog" },
+  { label: "Diagnóstico Tributário", path: "/diagnostico-reforma-tributaria", highlight: true },
 ];
 
 export const AREAS: AreaOfPractice[] = [

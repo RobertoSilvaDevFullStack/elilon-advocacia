@@ -5,9 +5,83 @@ import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify";
 import { getApiBaseUrl } from "../utils/api";
+import { trackNewsletter } from "../utils/tracking";
 
 const API_URL = getApiBaseUrl();
 
+// ─── Newsletter Widget ────────────────────────────────────────────────────────
+const NewsletterWidget: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus("loading");
+    try {
+      await fetch(`${API_URL}/leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: email.split("@")[0],
+          email: email.trim(),
+          phone: "",
+          city: "",
+          interest: "blog_newsletter",
+          message: "",
+          source: "blog_newsletter",
+        }),
+      });
+      // Sprint 3.8: dispara CompleteRegistration após persistência confirmada
+      trackNewsletter();
+      setStatus("ok");
+      setEmail("");
+    } catch (_) {
+      setStatus("error");
+    }
+  };
+
+  if (status === "ok") {
+    return (
+      <div className="bg-neutral-900 text-white p-8 rounded-sm text-center">
+        <h3 className="font-headline text-xl font-bold mb-2 text-accent-500">Newsletter</h3>
+        <p className="text-green-400 font-bold text-sm mt-4">✓ Inscrição confirmada!</p>
+        <p className="text-neutral-400 text-sm mt-1">Você receberá nossos conteúdos em breve.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-neutral-900 text-white p-8 rounded-sm text-center">
+      <h3 className="font-headline text-xl font-bold mb-4 text-accent-500">Newsletter</h3>
+      <p className="text-sm text-neutral-400 mb-6">
+        Receba conteúdos exclusivos como este diretamente no seu e-mail.
+      </p>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="email"
+          placeholder="Seu e-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 mb-4 focus:outline-none focus:border-accent-500 text-sm"
+        />
+        {status === "error" && (
+          <p className="text-red-400 text-xs mb-3">Erro ao inscrever. Tente novamente.</p>
+        )}
+        <button
+          type="submit"
+          disabled={status === "loading"}
+          className="w-full bg-accent-600 hover:bg-accent-500 text-white font-bold uppercase text-xs tracking-widest py-3 transition-colors disabled:opacity-60"
+        >
+          {status === "loading" ? "Inscrevendo..." : "Inscrever-se"}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface BlogPost {
   id: number;
   title: string;
@@ -176,22 +250,7 @@ export const BlogPostDetail: React.FC = () => {
           {/* Sidebar */}
           <aside className="lg:w-1/3 space-y-12">
             {/* Newsletter Widget */}
-            <div className="bg-neutral-900 text-white p-8 rounded-sm text-center">
-              <h3 className="font-headline text-xl font-bold mb-4 text-accent-500">
-                Newsletter
-              </h3>
-              <p className="text-sm text-neutral-400 mb-6">
-                Receba conteúdos exclusivos como este diretamente no seu e-mail.
-              </p>
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                className="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 mb-4 focus:outline-none focus:border-accent-500 text-sm"
-              />
-              <button className="w-full bg-accent-600 hover:bg-accent-500 text-white font-bold uppercase text-xs tracking-widest py-3 transition-colors">
-                Inscrever-se
-              </button>
-            </div>
+            <NewsletterWidget />
 
             {/* Read More */}
             <div>

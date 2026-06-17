@@ -69,9 +69,13 @@ const TermsOfUse = React.lazy(() =>
 // Landing Pages
 const BPCLandingPage = React.lazy(() => import("./pages/BPCLandingPage"));
 const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
+const DiagnosticoTributario = React.lazy(() =>
+  import("./pages/DiagnosticoTributario").then((m) => ({ default: m.DiagnosticoTributario })),
+);
 
 // Components
 import MetaPixel from "./components/MetaPixel";
+import DiagnosticoPopup from "./components/DiagnosticoPopup";
 
 // Feature Flag: Chat Widget (desabilitado em produção por padrão)
 const ENABLE_CHAT = import.meta.env.VITE_ENABLE_CHAT === 'true';
@@ -112,6 +116,7 @@ const App: React.FC = () => {
             {/* Landing Pages */}
             <Route path="/bpc" element={<BPCLandingPage />} />
             <Route path="/isencao-ir" element={<IRLandingPage />} />
+            <Route path="/diagnostico-reforma-tributaria" element={<DiagnosticoTributario />} />
 
             {/* About Routes */}
             <Route path="/sobre" element={<About />} />
@@ -134,6 +139,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <MetaPixel />
+          <DiagnosticoPopup />
           {ENABLE_CHAT && ChatWidget && <ChatWidget />}
         </Suspense>
       </Router>

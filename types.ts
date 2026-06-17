@@ -55,4 +55,5 @@ export interface NavItem {
   label: string;
   path: string;
   subItems?: { label: string; path: string }[];
+  highlight?: boolean;
 }

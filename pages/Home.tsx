@@ -4,7 +4,7 @@ import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { SEO } from "../components/SEO";
 import { AREAS, BLOG_POSTS } from "../constants";
-import { MapPin, ArrowUpRight, ArrowRight } from "lucide-react";
+import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lucide-react";
 import { BrazilMap } from "../components/BrazilMap";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { LazyYouTube } from "../components/LazyYouTube";
@@ -143,6 +143,106 @@ export const Home: React.FC = () => {
                 Conheça Nossas Áreas
               </Button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Diagnóstico Tributário Highlight ──────────────────────────────── */}
+      <section className="relative py-16 md:py-20 bg-gradient-to-br from-[#200A0C] via-[#1A1A1A] to-[#0d0d0d] overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-amber-400/5 rounded-full blur-3xl translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-vinho-500/10 rounded-full blur-2xl -translate-x-1/2 translate-y-1/2" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjAzKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-40" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+            {/* Left: Text content */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-400/10 border border-amber-400/30 text-amber-400 text-xs font-bold uppercase tracking-widest rounded-full mb-6">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Reforma Tributária 2026 — Não deixe para depois
+              </div>
+
+              <h2 className="text-3xl md:text-4xl xl:text-5xl font-headline font-bold text-white mb-4 leading-tight">
+                Diagnóstico Gratuito da
+                <br />
+                <span className="text-amber-400">Reforma Tributária</span>
+              </h2>
+
+              <p className="text-neutral-300 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
+                Descubra em menos de 3 minutos se sua empresa pode ser impactada
+                pela Reforma Tributária e se vale a pena avaliar o Regime Híbrido.
+              </p>
+
+              {/* Benefits list */}
+              <ul className="flex flex-col gap-3 mb-8 text-sm text-neutral-200 max-w-sm mx-auto lg:mx-0">
+                {[
+                  "Resultado imediato",
+                  "Diagnóstico gratuito",
+                  "Identificação de riscos tributários",
+                  "Avaliação preliminar sobre o Regime Híbrido",
+                  "Análise voltada para empresas do Simples Nacional",
+                ].map((b) => (
+                  <li key={b} className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                to="/diagnostico-reforma-tributaria"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-amber-400 text-[#1A1A1A] font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-amber-300 hover:shadow-xl hover:shadow-amber-400/30 transition-all duration-300 hover:scale-105 group"
+              >
+                Fazer Diagnóstico Gratuito
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
+
+            {/* Right: Visual card */}
+            <div className="flex-1 w-full max-w-md lg:max-w-none">
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6 pb-5 border-b border-white/10">
+                  <div className="w-10 h-10 rounded-xl bg-amber-400/10 flex items-center justify-center">
+                    <AlertTriangle className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm">Análise de Risco Tributário</p>
+                    <p className="text-neutral-400 text-xs">Simples Nacional · Reforma 2026</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 mb-6">
+                  {[
+                    { label: "Impacto no IBS/CBS", level: 75, color: "bg-red-400" },
+                    { label: "Exposição ao Regime de Transição", level: 60, color: "bg-amber-400" },
+                    { label: "Oportunidade no Regime Híbrido", level: 45, color: "bg-green-400" },
+                  ].map((item) => (
+                    <div key={item.label}>
+                      <div className="flex justify-between text-xs text-neutral-400 mb-1.5">
+                        <span>{item.label}</span>
+                        <span className="text-white font-medium">{item.level}%</span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${item.color} rounded-full`}
+                          style={{ width: `${item.level}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-xs text-neutral-400 leading-relaxed">
+                    <span className="text-amber-400 font-semibold">⚡ Diagnóstico em 3 min.</span>{" "}
+                    Empresas do Simples Nacional com faturamento acima de R$ 360 mil ao ano merecem atenção especial com a Reforma Tributária.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

@@ -46,18 +46,18 @@ exports.trackVisit = async (req, res) => {
 
 // LEADS & INTEGRATION
 exports.createLead = async (req, res) => {
-  const { name, email, phone, city, interest, message } = req.body;
+  const { name, email, phone, city, interest, message, source } = req.body;
 
   try {
-    // 1. Save to Local DB with RETURNING
+    // 1. Save to Local DB — include source field
     const result = await db.query(
-      `INSERT INTO leads (name, email, phone, city, interest, message, status) 
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [name, email, phone, city, interest, message, "Novo"]
+      `INSERT INTO leads (name, email, phone, city, interest, message, status, source) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [name, email, phone, city, interest, message, "Novo", source || "site"]
     );
 
     const lead = result.rows[0];
-    console.log("✅ Lead salvo no banco:", lead.id);
+    console.log(`✅ Lead salvo no banco: id=${lead.id} source=${lead.source}`);
 
     // 2. Update Daily Stats
     const today = new Date().toISOString().split("T")[0];
@@ -73,7 +73,6 @@ exports.createLead = async (req, res) => {
       .then((result) => {
         if (result.success) {
           console.log("✅ Lead enviado para Exact Sales:", lead.id);
-          // Update status in DB
           db.query("UPDATE leads SET status = $1 WHERE id = $2", [
             "Enviado para Exact Sales",
             lead.id,
@@ -90,16 +89,32 @@ exports.createLead = async (req, res) => {
         console.error("❌ Erro crítico ao enviar para Exact Sales:", err);
       });
 
-    // 4. Legacy Webhook (keep for compatibility)
+    // 4. Universal Webhook — Sprint 3.7: envelope padronizado {evento, canal, timestamp, lead}
     const settingsResult = await db.query(
       "SELECT value FROM settings WHERE key = 'webhook_url'"
     );
 
     if (settingsResult.rows.length > 0 && settingsResult.rows[0].value) {
+      const webhookPayload = {
+        evento: "lead_capturado",
+        canal: lead.source || "site",
+        timestamp: new Date().toISOString(),
+        lead: {
+          id: lead.id,
+          nome: lead.name,
+          email: lead.email,
+          telefone: lead.phone,
+          cidade: lead.city,
+          interesse: lead.interest,
+          mensagem: lead.message,
+          source: lead.source,
+          created_at: lead.created_at,
+        },
+      };
       axios
-        .post(settingsResult.rows[0].value, req.body)
-        .then(() => console.log("Webhook triggered successfully"))
-        .catch((err) => console.error("Webhook failed", err.message));
+        .post(settingsResult.rows[0].value, webhookPayload)
+        .then(() => console.log(`✅ Webhook universal enviado: canal=${lead.source}`))
+        .catch((err) => console.error("❌ Webhook falhou:", err.message));
     }
 
     // 5. Respond immediately to user

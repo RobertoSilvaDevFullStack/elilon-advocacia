@@ -44,7 +44,7 @@ const Navbar: React.FC = () => {
 
         {/* Desktop Menu */}
         <div className="hidden lg:flex lg:space-x-4 xl:space-x-8 items-center">
-          {NAV_ITEMS.map((item) => (
+          {NAV_ITEMS.filter((item) => !item.highlight).map((item) => (
             <div key={item.path} className="relative group">
               <NavLink
                 to={item.path}
@@ -78,6 +78,18 @@ const Navbar: React.FC = () => {
               )}
             </div>
           ))}
+          {/* Highlighted CTA — Diagnóstico Tributário */}
+          {NAV_ITEMS.filter((item) => item.highlight).map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className="relative inline-flex items-center gap-1.5 px-4 py-2 bg-amber-400 text-[#1A1A1A] text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-all duration-200 hover:shadow-lg hover:shadow-amber-400/40 hover:scale-105 whitespace-nowrap animate-pulse-subtle"
+              style={{ animationDuration: "3s" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] opacity-70"></span>
+              {item.label}
+            </Link>
+          ))}
           <Link
             to="/contato"
             className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-5 py-2 text-sm uppercase tracking-wider font-semibold hover:shadow-lg hover:shadow-red-500/50 transition-all transform hover:scale-105"
@@ -104,7 +116,7 @@ const Navbar: React.FC = () => {
       >
         <div className="mt-4 py-4 border-t border-neutral-700">
           <div className="container mx-auto px-4 flex flex-col gap-1">
-            {NAV_ITEMS.map((item) => (
+            {NAV_ITEMS.filter((item) => !item.highlight).map((item) => (
               <div key={item.path}>
                 <Link
                   to={item.path}
@@ -128,6 +140,18 @@ const Navbar: React.FC = () => {
                   </div>
                 )}
               </div>
+            ))}
+            {/* Highlighted item — Diagnóstico Tributário */}
+            {NAV_ITEMS.filter((item) => item.highlight).map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setIsOpen(false)}
+                className="bg-amber-400 text-[#1A1A1A] px-5 py-3 text-sm uppercase tracking-wider font-bold transition-all text-center mt-1 min-h-[44px] flex items-center justify-center gap-2 hover:bg-amber-300"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] opacity-70"></span>
+                {item.label}
+              </Link>
             ))}
             <Link
               to="/contato"

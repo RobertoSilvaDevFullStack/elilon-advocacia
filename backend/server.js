@@ -6,23 +6,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// CORS configuration - allow frontend domains
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (origin === "https://elilonlopesadvogados.com.br") return true;
+  if (origin === "https://www.elilonlopesadvogados.com.br") return true;
+  // localhost/127.0.0.1 nunca é origem em produção real (Railway), só em dev local
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+};
+
+// CORS configuration
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      "https://elilonlopesadvogados.com.br",
-      "https://www.elilonlopesadvogados.com.br",
-      "http://localhost:3000",
-      "http://localhost:5173",
-    ];
-
-    // Permitir requests sem origin (Postman, curl, etc)
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
     } else {
-      console.log(`⚠️ Origin não permitido: ${origin}`);
+      console.log(`⚠️ CORS bloqueado: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },

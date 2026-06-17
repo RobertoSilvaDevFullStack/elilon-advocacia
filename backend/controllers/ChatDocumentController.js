@@ -15,6 +15,7 @@ const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const ChatDocumentRepository = require("../repositories/ChatDocumentRepository");
 const PreAtendimentoRepository = require("../repositories/PreAtendimentoRepository");
+const chatWebhookService = require("../services/ChatWebhookService");
 
 // Configurações de upload
 const UPLOADS_DIR = process.env.CHAT_UPLOADS_DIR || path.join(__dirname, "..", "uploads", "chat-documents");
@@ -165,6 +166,15 @@ class ChatDocumentController {
           details: errors
         });
       }
+
+      // Sprint 3.9: Re-disparar webhook com documentos vinculados (async, não bloqueia)
+      chatWebhookService.dispatch(preAtendimento.id, {
+        atendimento: preAtendimento,
+        documentos: uploadedDocuments,
+        hermes: null,
+      }).catch((err) =>
+        console.error("[ChatWebhook] Falha no re-dispatch pós-upload:", err.message)
+      );
 
       return res.status(201).json({
         success: true,

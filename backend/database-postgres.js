@@ -104,10 +104,15 @@ async function initializeDatabase() {
         interest VARCHAR(255),
         message TEXT,
         status VARCHAR(50) DEFAULT 'Novo',
+        source VARCHAR(100) DEFAULT 'site',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log("✅ Tabela 'leads' criada");
+    // Sprint 3.7: garantir coluna source em bancos existentes (idempotente)
+    await client.query(`
+      ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(100) DEFAULT 'site'
+    `);
+    console.log("✅ Tabela 'leads' criada/atualizada com coluna source");
 
     // 5. Tabela de Configurações
     await client.query(`
@@ -127,6 +132,43 @@ async function initializeDatabase() {
       )
     `);
     console.log("✅ Tabela 'daily_stats' criada");
+
+    // 7. Tabela de Leads do Diagnóstico Tributário
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS diagnostico_tributario_leads (
+        id SERIAL PRIMARY KEY,
+        nome VARCHAR(255) NOT NULL,
+        empresa VARCHAR(255),
+        email VARCHAR(255),
+        whatsapp VARCHAR(50),
+        respostas JSONB NOT NULL DEFAULT '{}',
+        score INTEGER NOT NULL DEFAULT 0,
+        nivel_risco VARCHAR(10) NOT NULL CHECK (nivel_risco IN ('alto','medio','baixo')),
+        origem VARCHAR(100) DEFAULT 'site',
+        utm_source VARCHAR(100),
+        utm_medium VARCHAR(100),
+        utm_campaign VARCHAR(100),
+        status VARCHAR(50) DEFAULT 'novo',
+        responsavel VARCHAR(255),
+        notas TEXT,
+        webhook_enviado BOOLEAN DEFAULT FALSE,
+        webhook_enviado_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log("✅ Tabela 'diagnostico_tributario_leads' criada");
+
+    // Índices para performance de consultas frequentes
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_diag_nivel_risco ON diagnostico_tributario_leads (nivel_risco)
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_diag_created_at ON diagnostico_tributario_leads (created_at)
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_diag_status ON diagnostico_tributario_leads (status)
+    `);
 
     // Criar usuário admin padrão
     await createDefaultAdmin(client);

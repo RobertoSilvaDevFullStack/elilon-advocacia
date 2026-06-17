@@ -31,6 +31,8 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "../components/Components";
+import AIAnalysisPanel from "../components/AIAnalysisPanel";
+import DiagnosticoAdminView from "../components/DiagnosticoAdminView";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { getApiBaseUrl } from "../utils/api";
@@ -44,7 +46,8 @@ type ViewState =
   | "professionals"
   | "users"
   | "settings"
-  | "preAtendimentos"; // Sprint 3.3
+  | "preAtendimentos" // Sprint 3.3
+  | "diagnosticoLeads"; // Sprint 3.6
 
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
@@ -62,6 +65,9 @@ export const Admin: React.FC = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]); // Load from API
   const [users, setUsers] = useState<any[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
+
+  // Sprint 3.7: Leads source filter
+  const [leadsSourceFilter, setLeadsSourceFilter] = useState("");
 
   // Sprint 3.3: Pre-Atendimentos States
   const [preAtendimentos, setPreAtendimentos] = useState<any[]>([]);
@@ -84,6 +90,15 @@ export const Admin: React.FC = () => {
   // Sprint 3.4.1: Estados para documentos
   const [preAtendimentoDocumentos, setPreAtendimentoDocumentos] = useState<any[]>([]);
   const [loadingDocumentos, setLoadingDocumentos] = useState(false);
+
+  // Sprint 3.9: Estados para logs de webhook
+  const [webhookLogs, setWebhookLogs] = useState<{ pre_atendimento: any; logs: any[] } | null>(null);
+  const [loadingWebhookLogs, setLoadingWebhookLogs] = useState(false);
+
+  // Sprint 3.10: Estados para logs de webhook Hermes
+  const [hermesWebhookLogs, setHermesWebhookLogs] = useState<{ analysis: any; logs: any[] } | null>(null);
+  const [loadingHermesWebhookLogs, setLoadingHermesWebhookLogs] = useState(false);
+  const [hermesActionLoading, setHermesActionLoading] = useState<"reprocess" | "reenviar" | null>(null);
 
   // Loading States
   const [loading, setLoading] = useState(false);
@@ -564,6 +579,75 @@ export const Admin: React.FC = () => {
     }
   }, [showPreAtendimentoModal, selectedPreAtendimento]);
 
+  // Sprint 3.9: Carregar logs de webhook quando o modal abrir
+  useEffect(() => {
+    if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
+    setLoadingWebhookLogs(true);
+    fetch(`${API_URL}/admin/chat/webhook-logs/${selectedPreAtendimento.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setWebhookLogs(d.data); })
+      .catch(() => {})
+      .finally(() => setLoadingWebhookLogs(false));
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
+
+  // Sprint 3.10: Carregar logs de webhook Hermes quando o modal abrir
+  useEffect(() => {
+    if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
+    setLoadingHermesWebhookLogs(true);
+    fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setHermesWebhookLogs(d.data); })
+      .catch(() => {})
+      .finally(() => setLoadingHermesWebhookLogs(false));
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
+
+  // Sprint 3.10: Reprocessar Hermes
+  const handleHermesReprocess = async () => {
+    if (!selectedPreAtendimento?.id) return;
+    setHermesActionLoading("reprocess");
+    try {
+      const r = await fetch(
+        `${API_URL}/admin/chat/analysis/${selectedPreAtendimento.id}/reprocess`,
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` } }
+      );
+      const d = await r.json();
+      alert(d.success ? "Hermes reprocessado com sucesso!" : `Erro: ${d.error}`);
+      if (d.success) {
+        setHermesWebhookLogs(null);
+        setLoadingHermesWebhookLogs(true);
+        fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
+      }
+    } catch { alert("Erro ao reprocessar."); }
+    finally { setHermesActionLoading(null); }
+  };
+
+  // Sprint 3.10: Reenviar Evento Hermes
+  const handleHermesReenviar = async () => {
+    if (!selectedPreAtendimento?.id) return;
+    setHermesActionLoading("reenviar");
+    try {
+      const r = await fetch(
+        `${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}/reenviar`,
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` } }
+      );
+      const d = await r.json();
+      alert(d.success ? "Evento Hermes reenviado!" : `Erro: ${d.error}`);
+      if (d.success) {
+        setLoadingHermesWebhookLogs(true);
+        fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+        }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
+      }
+    } catch { alert("Erro ao reenviar."); }
+    finally { setHermesActionLoading(null); }
+  };
+
   // Show loading while checking authentication (prevents login screen flash)
   if (isCheckingAuth) {
     return (
@@ -879,6 +963,7 @@ export const Admin: React.FC = () => {
           <NavButton view="blog" icon={FileText} label="Blog" />
           <NavButton view="professionals" icon={Users} label="Profissionais" />
           <NavButton view="preAtendimentos" icon={Headphones} label="Pré-Atendimentos" />
+          <NavButton view="diagnosticoLeads" icon={BarChart2} label="Diagnóstico Trib." />
 
           <div className="my-4 border-t border-neutral-800"></div>
 
@@ -1017,6 +1102,9 @@ export const Admin: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* DIAGNÓSTICO TRIBUTÁRIO VIEW — Sprint 3.6 */}
+          {currentView === "diagnosticoLeads" && <DiagnosticoAdminView />}
 
           {/* SETTINGS VIEW */}
           {currentView === "settings" && (
@@ -1277,9 +1365,19 @@ export const Admin: React.FC = () => {
           )}
 
           {/* LEADS VIEW */}
-          {currentView === "leads" && (
+          {currentView === "leads" && (() => {
+            const filteredLeads = leadsSourceFilter
+              ? leads.filter((l: any) => (l.source || "site") === leadsSourceFilter)
+              : leads;
+            const sourceLabel: Record<string, string> = {
+              site: "Site (geral)",
+              landing_bpc: "Landing BPC",
+              landing_ir: "Landing IR",
+              blog_newsletter: "Newsletter Blog",
+            };
+            return (
             <div>
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-neutral-800">
                     Leads Recebidos
@@ -1288,58 +1386,55 @@ export const Admin: React.FC = () => {
                     Gerencie os contatos recebidos pelo site.
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  className="text-xs"
-                  onClick={() => {
-                    // CSV Header
-                    const headers = [
-                      "Nome",
-                      "Email",
-                      "Telefone",
-                      "Cidade",
-                      "Área de Interesse",
-                      "Mensagem",
-                      "Status",
-                      "Data",
-                    ];
-
-                    // CSV Rows
-                    const rows = leads.map((lead) => [
-                      lead.name || "",
-                      lead.email || "",
-                      lead.phone || "",
-                      lead.city || "",
-                      lead.interest || "",
-                      lead.message
-                        ? `"${lead.message.replace(/"/g, '""')}"`
-                        : "",
-                      lead.status || "Novo",
-                      lead.created_at
-                        ? new Date(lead.created_at).toLocaleDateString("pt-BR")
-                        : "",
-                    ]);
-
-                    // Build CSV
-                    const csv = [headers, ...rows]
-                      .map((row) => row.join(","))
-                      .join("\n");
-
-                    // Download
-                    const blob = new Blob(["\uFEFF" + csv], {
-                      type: "text/csv;charset=utf-8;",
-                    });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `leads_${
-                      new Date().toISOString().split("T")[0]
-                    }.csv`;
-                    link.click();
-                  }}
-                >
-                  Exportar CSV
-                </Button>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Filtro por canal — Sprint 3.7 */}
+                  <select
+                    value={leadsSourceFilter}
+                    onChange={(e) => setLeadsSourceFilter(e.target.value)}
+                    className="border border-neutral-200 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-accent-400"
+                  >
+                    <option value="">Todos os canais</option>
+                    <option value="site">Site (geral)</option>
+                    <option value="landing_bpc">Landing BPC</option>
+                    <option value="landing_ir">Landing IR</option>
+                    <option value="blog_newsletter">Newsletter Blog</option>
+                  </select>
+                  <Button
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => {
+                      const headers = ["Nome","Email","Telefone","Cidade","Área de Interesse","Mensagem","Canal","Status","Data"];
+                      const rows = filteredLeads.map((lead: any) => [
+                        lead.name || "",
+                        lead.email || "",
+                        lead.phone || "",
+                        lead.city || "",
+                        lead.interest || "",
+                        lead.message ? `"${lead.message.replace(/"/g, '""')}"` : "",
+                        sourceLabel[lead.source] || lead.source || "site",
+                        lead.status || "Novo",
+                        lead.created_at ? new Date(lead.created_at).toLocaleDateString("pt-BR") : "",
+                      ]);
+                      const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+                      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `leads_${leadsSourceFilter || "todos"}_${new Date().toISOString().split("T")[0]}.csv`;
+                      link.click();
+                    }}
+                  >
+                    Exportar CSV
+                  </Button>
+                </div>
               </div>
+
+              {leadsSourceFilter && (
+                <div className="mb-4 flex items-center gap-2 text-sm text-accent-700 bg-accent-50 border border-accent-200 px-4 py-2 rounded">
+                  <Filter size={14} />
+                  Filtrado por: <strong>{sourceLabel[leadsSourceFilter] || leadsSourceFilter}</strong>
+                  <span className="ml-2 text-neutral-500">({filteredLeads.length} leads)</span>
+                </div>
+              )}
 
               <div className="bg-white rounded shadow overflow-hidden">
                 <table className="w-full text-left border-collapse">
@@ -1347,18 +1442,15 @@ export const Admin: React.FC = () => {
                     <tr className="bg-neutral-100 text-neutral-600 text-sm uppercase tracking-wider">
                       <th className="p-4 border-b">Nome</th>
                       <th className="p-4 border-b">Contato</th>
-                      <th className="p-4 border-b hidden md:table-cell">
-                        Interesse
-                      </th>
+                      <th className="p-4 border-b hidden md:table-cell">Canal</th>
+                      <th className="p-4 border-b hidden md:table-cell">Interesse</th>
                       <th className="p-4 border-b">Status</th>
-                      <th className="p-4 border-b hidden md:table-cell">
-                        Data
-                      </th>
+                      <th className="p-4 border-b hidden md:table-cell">Data</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm text-neutral-700">
-                    {leads.length > 0 ? (
-                      leads.map((lead) => (
+                    {filteredLeads.length > 0 ? (
+                      filteredLeads.map((lead: any) => (
                         <tr
                           key={lead.id}
                           className="border-b last:border-0 hover:bg-neutral-50"
@@ -1367,21 +1459,24 @@ export const Admin: React.FC = () => {
                           <td className="p-4">
                             <div className="text-xs">
                               <div>{lead.email}</div>
-                              <div className="text-neutral-500">
-                                {lead.phone}
-                              </div>
+                              <div className="text-neutral-500">{lead.phone}</div>
                             </div>
                           </td>
                           <td className="p-4 hidden md:table-cell">
+                            <span className={`px-2 py-1 text-xs rounded font-bold ${
+                              lead.source === "landing_bpc" ? "bg-blue-100 text-blue-800" :
+                              lead.source === "landing_ir" ? "bg-purple-100 text-purple-800" :
+                              lead.source === "blog_newsletter" ? "bg-green-100 text-green-800" :
+                              "bg-neutral-100 text-neutral-600"
+                            }`}>
+                              {sourceLabel[lead.source] || lead.source || "site"}
+                            </span>
+                          </td>
+                          <td className="p-4 hidden md:table-cell">
                             <div className="text-xs">
-                              <div className="font-semibold">
-                                {lead.interest || "Não especificado"}
-                              </div>
+                              <div className="font-semibold">{lead.interest || "Não especificado"}</div>
                               {lead.message && (
-                                <div
-                                  className="text-neutral-500 mt-1 truncate max-w-xs"
-                                  title={lead.message}
-                                >
+                                <div className="text-neutral-500 mt-1 truncate max-w-xs" title={lead.message}>
                                   {lead.message}
                                 </div>
                               )}
@@ -1393,19 +1488,14 @@ export const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="p-4 hidden md:table-cell text-xs text-neutral-500">
-                            {new Date(lead.created_at).toLocaleDateString(
-                              "pt-BR",
-                            )}
+                            {new Date(lead.created_at).toLocaleDateString("pt-BR")}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td
-                          colSpan={5}
-                          className="p-8 text-center text-neutral-500"
-                        >
-                          Nenhum lead cadastrado ainda.
+                        <td colSpan={6} className="p-8 text-center text-neutral-500">
+                          {leadsSourceFilter ? `Nenhum lead do canal “${sourceLabel[leadsSourceFilter]}”.` : "Nenhum lead cadastrado ainda."}
                         </td>
                       </tr>
                     )}
@@ -1413,7 +1503,8 @@ export const Admin: React.FC = () => {
                 </table>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* BLOG VIEW */}
           {currentView === "blog" && (
@@ -2532,6 +2623,9 @@ export const Admin: React.FC = () => {
                     console.log("❌ Modal fechado");
                     setShowPreAtendimentoModal(false);
                     setPreAtendimentoDocumentos([]);
+                    setWebhookLogs(null);
+                    setHermesWebhookLogs(null);
+                    setHermesActionLoading(null);
                   }}
                   className="text-white/80 hover:text-white transition"
                 >
@@ -2697,25 +2791,127 @@ export const Admin: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Hermes - Análise de Documentos (Placeholder) */}
-                    <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-purple-100">
+                    {/* Sprint 3.5: Hermes Analysis Engine */}
+                    <AIAnalysisPanel preAtendimentoId={selectedPreAtendimento.id} />
+
+                    {/* Sprint 3.10: Ações e Status Hermes Webhook */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
                       <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
-                        <Shield size={18} className="text-purple-600" />
-                        🤖 Análise de Documentos
+                        <span className="text-base">🤖</span>
+                        Hermes — Ações
                       </h4>
-                      <div className="text-sm text-neutral-600">
-                        <p className="italic">
-                          "A análise automática de documentos ainda não foi processada."
-                        </p>
-                        <div className="mt-3 p-2 bg-white/50 rounded text-xs text-neutral-500">
-                          <p>Hermes (IA) analisará:</p>
-                          <ul className="list-disc list-inside mt-1 space-y-0.5">
-                            <li>Validade de documentos</li>
-                            <li>Extracão de informações</li>
-                            <li>Classificação automática</li>
-                          </ul>
-                        </div>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <button
+                          onClick={handleHermesReprocess}
+                          disabled={hermesActionLoading !== null}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition"
+                        >
+                          {hermesActionLoading === "reprocess" ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <span>🔄</span>
+                          )}
+                          Reprocessar Hermes
+                        </button>
+                        <button
+                          onClick={handleHermesReenviar}
+                          disabled={hermesActionLoading !== null}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 transition"
+                        >
+                          {hermesActionLoading === "reenviar" ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <span>📤</span>
+                          )}
+                          Reenviar Evento Hermes
+                        </button>
                       </div>
+                      {loadingHermesWebhookLogs && (
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Carregando status...
+                        </div>
+                      )}
+                      {!loadingHermesWebhookLogs && hermesWebhookLogs && (() => {
+                        const hs = hermesWebhookLogs.analysis?.hermes_webhook_status ?? "pendente";
+                        const sentAt = hermesWebhookLogs.analysis?.hermes_webhook_sent_at;
+                        const lastLog = hermesWebhookLogs.logs[0];
+                        const badge =
+                          hs === "enviado" ? "🟢 Enviado" :
+                          hs === "falhou"  ? "🔴 Falhou"  :
+                                            "🟡 Pendente";
+                        const badgeClass =
+                          hs === "enviado" ? "bg-green-100 text-green-800" :
+                          hs === "falhou"  ? "bg-red-100 text-red-800"    :
+                                            "bg-yellow-100 text-yellow-800";
+                        return (
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>{badge}</span>
+                              <span className="text-neutral-400 text-xs">{hermesWebhookLogs.logs.length} log(s)</span>
+                            </div>
+                            {sentAt && (
+                              <div className="text-xs text-neutral-500">Enviado em: {new Date(sentAt).toLocaleString("pt-BR")}</div>
+                            )}
+                            {lastLog && (
+                              <div className="text-xs text-neutral-500">
+                                Última tentativa: {new Date(lastLog.created_at).toLocaleString("pt-BR")}
+                                {lastLog.status_code && ` — HTTP ${lastLog.status_code}`}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Sprint 3.9: Webhook Status */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <span className="text-base">🔗</span>
+                        Webhook Status
+                      </h4>
+                      {loadingWebhookLogs && (
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
+                        </div>
+                      )}
+                      {!loadingWebhookLogs && webhookLogs && (() => {
+                        const ws = webhookLogs.pre_atendimento?.webhook_status ?? "pendente";
+                        const sentAt = webhookLogs.pre_atendimento?.webhook_sent_at;
+                        const attempts = webhookLogs.pre_atendimento?.webhook_attempts ?? 0;
+                        const lastLog = webhookLogs.logs[0];
+                        const badge =
+                          ws === "enviado" ? "🟢 Enviado" :
+                          ws === "falhou"  ? "🔴 Falhou"  :
+                                            "🟡 Pendente";
+                        const badgeClass =
+                          ws === "enviado" ? "bg-green-100 text-green-800" :
+                          ws === "falhou"  ? "bg-red-100 text-red-800"    :
+                                            "bg-yellow-100 text-yellow-800";
+                        return (
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
+                                {badge}
+                              </span>
+                              <span className="text-neutral-500 text-xs">{attempts} tentativa(s)</span>
+                            </div>
+                            {sentAt && (
+                              <div className="text-xs text-neutral-500">
+                                Enviado em: {new Date(sentAt).toLocaleString("pt-BR")}
+                              </div>
+                            )}
+                            {lastLog && (
+                              <div className="text-xs text-neutral-500">
+                                Última tentativa: {new Date(lastLog.created_at).toLocaleString("pt-BR")}
+                                {lastLog.status_code && ` — HTTP ${lastLog.status_code}`}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      {!loadingWebhookLogs && !webhookLogs && (
+                        <p className="text-xs text-neutral-400">Nenhum dado de webhook disponível.</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2731,6 +2927,9 @@ export const Admin: React.FC = () => {
                     console.log("❌ Modal fechado");
                     setShowPreAtendimentoModal(false);
                     setPreAtendimentoDocumentos([]);
+                    setWebhookLogs(null);
+                    setHermesWebhookLogs(null);
+                    setHermesActionLoading(null);
                   }}
                   className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition"
                 >

@@ -9,6 +9,10 @@
  */
 
 const CreatePreAtendimentoService = require("../services/CreatePreAtendimentoService");
+const hermesService = require("../services/HermesAnalysisService");
+const chatWebhookService = require("../services/ChatWebhookService");
+const PreAtendimentoRepository = require("../repositories/PreAtendimentoRepository");
+const { logger } = require("../config/logger");
 
 class ChatLeadController {
   /**
@@ -60,7 +64,41 @@ class ChatLeadController {
         descricaoCaso
       });
 
-      // Retornar sucesso com protocolo
+      // Sprint 3.9: Disparar webhook universal (não bloqueia a resposta)
+      if (result && result.atendimentoId) {
+        const atendimentoRecord = await PreAtendimentoRepository.findById(result.atendimentoId);
+        chatWebhookService.dispatch(result.atendimentoId, {
+          atendimento: atendimentoRecord,
+          documentos: [],
+          hermes: null,
+        }).catch((err) =>
+          logger.error("[ChatWebhook] Falha no dispatch inicial", { error: err.message })
+        );
+      }
+
+      // Sprint 3.5: Disparar análise Hermes (não bloqueia a resposta)
+      if (result && result.atendimentoId) {
+        logger.info('[Hermes] Enfileirando análise', { preAtendimentoId: result.atendimentoId });
+        
+        // Disparar análise em background (não aguardar)
+        hermesService.analyzePreAtendimento(result.atendimentoId, {
+          area,
+          subarea,
+          nome,
+          telefone,
+          email,
+          cidade,
+          estado,
+          descricao: descricaoCaso
+        }).catch(error => {
+          logger.error('[Hermes] Falha em análise em background', {
+            preAtendimentoId: result.id,
+            error: error.message
+          });
+        });
+      }
+
+      // Retornar sucesso com protocolo (sem aguardar análise)
       return res.status(201).json({
         success: true,
         message: "Pré-atendimento registrado com sucesso",

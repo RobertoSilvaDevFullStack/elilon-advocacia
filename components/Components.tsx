@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AREAS } from "../constants";
 import { getApiBaseUrl } from "../utils/api";
+import { trackLead } from "../utils/tracking";
 
 const API_URL = getApiBaseUrl();
 
@@ -84,6 +85,7 @@ export const ContactForm: React.FC<{ source?: string }> = ({
     setError("");
 
     const formData = new FormData(e.currentTarget);
+    const params = new URLSearchParams(window.location.search);
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
@@ -92,6 +94,9 @@ export const ContactForm: React.FC<{ source?: string }> = ({
       interest: formData.get("area"),
       message: formData.get("message"),
       source,
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
     };
 
     try {
@@ -107,6 +112,8 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         throw new Error("Erro ao enviar mensagem");
       }
 
+      // Sprint 3.8: dispara Lead apenas após persistência confirmada
+      trackLead(source);
       setSubmitted(true);
     } catch {
       setError("Erro ao enviar mensagem. Por favor, tente novamente.");

@@ -8,6 +8,10 @@ const chatLeadController = require("../controllers/ChatLeadController");
 const preAtendimentoAdminController = require("../controllers/PreAtendimentoAdminController");
 const chatDocumentController = require("../controllers/ChatDocumentController");
 const authMiddleware = require("../middleware/authMiddleware");
+const diagnosticoLeadController = require("../controllers/DiagnosticoLeadController");
+
+// Sprint 3.5: Hermes Analysis Engine
+const aiAnalysisController = require("../controllers/AIAnalysisController");
 
 // Sprint 3.4.3: Rate Limiting e File Validation
 const { preAtendimentoLimiter, uploadLimiter } = require("../middleware/rateLimiter");
@@ -55,6 +59,9 @@ const upload = multer({
 router.post("/track", mainController.trackVisit);
 router.post("/leads", mainController.createLead); // Form submission from public site
 
+// Sprint 3.6: Diagnóstico Tributário — Public (no auth required)
+router.post("/diagnostico", diagnosticoLeadController.create);
+
 // Sprint 3.2: Chat Pré-Atendimento (Public - NO AUTH REQUIRED)
 // Sprint 3.4.3: Rate limiting
 router.post("/chat/pre-atendimento", preAtendimentoLimiter, chatLeadController.create);
@@ -83,6 +90,26 @@ router.put("/admin/chat/pre-atendimentos/:id/status", authMiddleware.verifyToken
 router.get("/admin/chat/documents", authMiddleware.verifyToken, chatDocumentController.getStats);
 router.get("/admin/chat/documents/:id", authMiddleware.verifyToken, chatDocumentController.getById);
 router.delete("/admin/chat/documents/:id", authMiddleware.verifyToken, chatDocumentController.delete);
+
+// Sprint 3.6: Diagnóstico Tributário — Admin Routes (protected)
+router.get("/admin/diagnostico", authMiddleware.verifyToken, diagnosticoLeadController.list);
+router.get("/admin/diagnostico/stats", authMiddleware.verifyToken, diagnosticoLeadController.getStats);
+router.get("/admin/diagnostico/:id", authMiddleware.verifyToken, diagnosticoLeadController.getById);
+router.put("/admin/diagnostico/:id/status", authMiddleware.verifyToken, diagnosticoLeadController.updateStatus);
+
+// Sprint 3.5: Hermes Analysis Engine - Admin Routes
+router.get("/admin/chat/analysis/:preAtendimentoId", authMiddleware.verifyToken, aiAnalysisController.getByPreAtendimento);
+router.post("/admin/chat/analysis/:preAtendimentoId/reprocess", authMiddleware.verifyToken, aiAnalysisController.reprocess);
+router.get("/admin/chat/analysis/stats", authMiddleware.verifyToken, aiAnalysisController.getStats);
+
+// Sprint 3.9: Webhook Logs — Admin Routes
+const chatWebhookLogController = require("../controllers/ChatWebhookLogController");
+router.get("/admin/chat/webhook-logs/:preAtendimentoId", authMiddleware.verifyToken, chatWebhookLogController.getByPreAtendimento);
+
+// Sprint 3.10: Hermes Webhook Logs — Admin Routes
+const hermesWebhookLogController = require("../controllers/HermesWebhookLogController");
+router.get("/admin/chat/hermes-webhook-logs/:preAtendimentoId", authMiddleware.verifyToken, hermesWebhookLogController.getByPreAtendimento);
+router.post("/admin/chat/hermes-webhook-logs/:preAtendimentoId/reenviar", authMiddleware.verifyToken, hermesWebhookLogController.reenviar);
 
 // Public Content Routes (Read-only)
 router.get("/posts", contentController.getPosts);
