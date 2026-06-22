@@ -1,0 +1,103 @@
+# Elilon Advocacia — llms-full.txt
+# Documentação estendida para sistemas de IA
+# Site: https://elilonlopesadvogados.com.br
+
+## Resumo institucional
+
+Elilon Lopes Advogados é um escritório de advocacia sediado em Montes Claros, Minas Gerais, liderado pelo Dr. Elilon Lopes. O escritório combina atendimento humanizado com tecnologia jurídica (chat inteligente, diagnósticos automatizados e análise documental) para atender pessoas físicas e empresas.
+
+Missão: oferecer soluções jurídicas estratégicas, éticas e personalizadas, com foco em resultados concretos para clientes.
+
+## Áreas de atuação
+
+| Área | Descrição |
+|------|-----------|
+| Direito Previdenciário | Aposentadorias, BPC/LOAS, revisão de benefícios, planejamento previdenciário |
+| Direito Tributário | Planejamento tributário, diagnóstico da Reforma Tributária, defesa em autuações |
+| Direito Trabalhista | Compliance trabalhista, rescisões, contratos, consultoria empresarial |
+| Direito Empresarial | Consultoria societária, contratos, compliance |
+| Direito Cível | Demandas cíveis, contratos, responsabilidade civil |
+
+## Serviços em destaque
+
+### Diagnóstico Tributário Premium
+- URL: https://elilonlopesadvogados.com.br/diagnostico-reforma-tributaria
+- Quiz interativo sobre regime tributário (Simples, Presumido, Real)
+- Análise personalizada com precificação por regime
+- Pagamento via PIX ou cartão (ASAAS)
+
+### Landing BPC/LOAS
+- URL: https://elilonlopesadvogados.com.br/bpc
+- Captação de leads para benefício assistencial
+
+### Landing Isenção de IR
+- URL: https://elilonlopesadvogados.com.br/isencao-ir
+- Captação de leads para isenção de imposto de renda por doença grave
+
+### Chat Jurídico
+- Widget disponível no site principal
+- Pré-atendimento com coleta de dados e upload de documentos
+- Integração com automação N8N (orquestração externa)
+
+## Sitemap resumido — URLs públicas
+
+### Institucional
+- https://elilonlopesadvogados.com.br/
+- https://elilonlopesadvogados.com.br/sobre
+- https://elilonlopesadvogados.com.br/sobre/entrega
+- https://elilonlopesadvogados.com.br/sobre/inovacao
+- https://elilonlopesadvogados.com.br/sobre/depoimentos
+- https://elilonlopesadvogados.com.br/profissionais
+- https://elilonlopesadvogados.com.br/areas
+- https://elilonlopesadvogados.com.br/contato
+- https://elilonlopesadvogados.com.br/privacidade
+- https://elilonlopesadvogados.com.br/termos
+
+### Conversão
+- https://elilonlopesadvogados.com.br/diagnostico-reforma-tributaria
+- https://elilonlopesadvogados.com.br/bpc
+- https://elilonlopesadvogados.com.br/isencao-ir
+
+### Blog
+- https://elilonlopesadvogados.com.br/blog
+- https://elilonlopesadvogados.com.br/blog/compliance-trabalhista
+- https://elilonlopesadvogados.com.br/blog/reforma-tributaria
+- https://elilonlopesadvogados.com.br/blog/lgpd-agro
+
+## Perguntas frequentes
+
+**O escritório atende online?**
+Sim. O chat jurídico e formulários de contato permitem pré-atendimento remoto. Consultas presenciais em Montes Claros/MG.
+
+**Como funciona o Diagnóstico Tributário?**
+O cliente responde um quiz sobre sua empresa e regime tributário. O sistema calcula o risco e oferece análise premium paga com relatório personalizado.
+
+**Quem pode solicitar BPC/LOAS?**
+Pessoas com deficiência ou idosos acima de 65 anos em situação de vulnerabilidade socioeconômica, conforme critérios legais do INSS.
+
+**Como entrar em contato?**
+E-mail juridico@elilonlopesadvogados.com.br, telefone (38) 2200-1615, ou formulário em /contato.
+
+**O conteúdo do site substitui consulta jurídica?**
+Não. Artigos e diagnósticos são informativos. Cada caso requer análise individual por advogado habilitado.
+
+## Contato
+
+- Site: https://elilonlopesadvogados.com.br
+- E-mail: juridico@elilonlopesadvogados.com.br
+- Telefone: (38) 2200-1615
+- Instagram: https://www.instagram.com/elilonlopesadvogados
+- LinkedIn (Dr. Elilon): https://www.linkedin.com/in/elilon-lopes/
+
+## Exclusões (não indexar)
+
+- /admin — painel administrativo interno
+- /admin/reset-password
+- /diagnostico/pagamento/* — páginas transacionais com dados pessoais
+- /diagnostico/sucesso — confirmação pós-pagamento
+
+## Metadados técnicos
+
+- Sitemap XML: https://elilonlopesadvogados.com.br/sitemap.xml
+- robots.txt: https://elilonlopesadvogados.com.br/robots.txt
+- llms.txt: https://elilonlopesadvogados.com.br/llms.txt

@@ -36,7 +36,11 @@ class CreatePreAtendimentoService {
       };
 
       // 3. Persistir no banco
+      console.log("[PreAtendimento] Criando pré-atendimento");
+      console.log("[PreAtendimento] Dados:", preAtendimentoData);
       const atendimento = await PreAtendimentoRepository.create(preAtendimentoData);
+      console.log("[PreAtendimento] Pré-atendimento salvo");
+      console.log("[PreAtendimento] ID:", atendimento?.id, "| Protocolo:", atendimento?.protocolo);
 
       // 4. Retornar resultado formatado (preparado para futuras extensões)
       return {

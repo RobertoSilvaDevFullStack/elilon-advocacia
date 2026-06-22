@@ -25,6 +25,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { getApiBaseUrl } from "../utils/api";
+import {
+  RISCO_META,
+  type NivelRisco,
+  parseRespostas,
+  formatQuestionKey,
+} from "../utils/diagnosticoRisk";
 
 const API_URL = getApiBaseUrl();
 
@@ -92,6 +98,42 @@ const RISCO_LABELS: Record<string, { label: string; color: string; icon: React.R
   medio: { label: "Médio", color: "bg-amber-100 text-amber-700", icon: <AlertCircle className="w-3 h-3" /> },
   baixo: { label: "Baixo", color: "bg-green-100 text-green-700", icon: <CheckCircle className="w-3 h-3" /> },
 };
+
+const RISCO_ICONS: Record<NivelRisco, React.ReactNode> = {
+  alto: <AlertTriangle className="w-3 h-3" />,
+  medio: <AlertCircle className="w-3 h-3" />,
+  baixo: <CheckCircle className="w-3 h-3" />,
+};
+
+function RiskBadge({ nivel, size = "sm" }: { nivel: NivelRisco; size?: "sm" | "md" }) {
+  const meta = RISCO_META[nivel];
+  const label = RISCO_LABELS[nivel];
+  const sizeClass = size === "md" ? "px-3 py-1.5 text-sm" : "px-2 py-0.5 text-xs";
+
+  return (
+    <span className="relative inline-flex group/risk">
+      <span
+        className={`inline-flex items-center gap-1 rounded-full font-semibold cursor-help ${sizeClass} ${label.color}`}
+        aria-label={`Risco ${meta.label}: ${meta.summary}`}
+      >
+        {RISCO_ICONS[nivel]} {meta.label}
+      </span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute left-0 top-full z-20 mt-2 w-72 rounded-lg border border-neutral-200 bg-white p-3 text-left text-xs text-neutral-600 opacity-0 shadow-lg transition-opacity group-hover/risk:opacity-100"
+      >
+        <p className="font-bold text-neutral-800">{meta.title}</p>
+        <p className="mt-1 text-neutral-500">{meta.scoreRange}</p>
+        <p className="mt-2">{meta.summary}</p>
+        <ul className="mt-2 list-disc space-y-0.5 pl-4 text-neutral-500">
+          {meta.reasons.slice(0, 2).map((reason) => (
+            <li key={reason}>{reason}</li>
+          ))}
+        </ul>
+      </span>
+    </span>
+  );
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -188,6 +230,7 @@ const DiagnosticoAdminView: React.FC = () => {
     });
     const data = await res.json();
     const full: DiagnosticoLead = data.success ? data.data : lead;
+    full.respostas = parseRespostas(full.respostas);
     setSelectedLead(full);
     setEditStatus(full.status);
     setEditResponsavel(full.responsavel || "");
@@ -289,6 +332,33 @@ const DiagnosticoAdminView: React.FC = () => {
           ))}
         </div>
       ) : null}
+
+      {/* Legenda — Níveis de Risco */}
+      <div className="bg-white rounded shadow p-4 mb-4 border border-neutral-100">
+        <h3 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">
+          Legenda — Níveis de Risco
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {(Object.keys(RISCO_META) as NivelRisco[]).map((nivel) => {
+            const meta = RISCO_META[nivel];
+            return (
+              <div
+                key={nivel}
+                className={`rounded-lg border-l-4 ${meta.legendColor} bg-neutral-50 px-4 py-3`}
+              >
+                <div className="mb-1">
+                  <RiskBadge nivel={nivel} />
+                </div>
+                <p className="text-xs font-medium text-neutral-500">{meta.scoreRange}</p>
+                <p className="text-xs text-neutral-600 mt-1">{meta.summary}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-neutral-400 mt-3">
+          Passe o mouse sobre qualquer tag de risco na tabela para ver o detalhamento.
+        </p>
+      </div>
 
       {/* Search + Filters bar */}
       <div className="bg-white rounded shadow p-4 mb-4">
@@ -447,7 +517,6 @@ const DiagnosticoAdminView: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-neutral-50">
                 {leads.map((lead) => {
-                  const risco = RISCO_LABELS[lead.nivel_risco];
                   const status = STATUS_LABELS[lead.status] ?? { label: lead.status, color: "bg-neutral-100 text-neutral-600" };
                   return (
                     <tr key={lead.id} className="hover:bg-neutral-50 transition-colors">
@@ -458,9 +527,7 @@ const DiagnosticoAdminView: React.FC = () => {
                       </td>
                       <td className="px-4 py-3 text-neutral-600">{lead.empresa || <span className="text-neutral-300">—</span>}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${risco.color}`}>
-                          {risco.icon} {risco.label}
-                        </span>
+                        <RiskBadge nivel={lead.nivel_risco} />
                       </td>
                       <td className="px-4 py-3 font-mono text-neutral-700">{lead.score}</td>
                       <td className="px-4 py-3">
@@ -538,11 +605,13 @@ const DiagnosticoAdminView: React.FC = () => {
             <div className="p-6 space-y-6">
               {/* Risk badge */}
               <div className="flex items-center gap-3 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${RISCO_LABELS[selectedLead.nivel_risco].color}`}>
-                  {RISCO_LABELS[selectedLead.nivel_risco].icon}
-                  Risco {RISCO_LABELS[selectedLead.nivel_risco].label}
+                <RiskBadge nivel={selectedLead.nivel_risco} size="md" />
+                <span className="text-sm text-neutral-500">
+                  Score: <strong>{selectedLead.score}</strong>
+                  <span className="text-neutral-400 ml-1">
+                    ({RISCO_META[selectedLead.nivel_risco].scoreRange})
+                  </span>
                 </span>
-                <span className="text-sm text-neutral-500">Score: <strong>{selectedLead.score}</strong></span>
                 {selectedLead.webhook_enviado && (
                   <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">✓ Webhook enviado</span>
                 )}
@@ -584,19 +653,24 @@ const DiagnosticoAdminView: React.FC = () => {
               </div>
 
               {/* Quiz answers */}
-              {selectedLead.respostas && Object.keys(selectedLead.respostas).length > 0 && (
+              {(() => {
+                const respostas = parseRespostas(selectedLead.respostas);
+                const entries = Object.entries(respostas);
+                if (entries.length === 0) return null;
+                return (
                 <div>
                   <h4 className="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-3">Respostas do Diagnóstico</h4>
                   <div className="space-y-2">
-                    {Object.entries(selectedLead.respostas).map(([key, value]) => (
+                    {entries.map(([key, value]) => (
                       <div key={key} className="bg-neutral-50 rounded-lg px-4 py-3 text-sm">
-                        <span className="text-neutral-400 text-xs font-medium uppercase tracking-wide">{key.replace(/_/g, " ")}</span>
+                        <span className="text-neutral-400 text-xs font-medium uppercase tracking-wide">{formatQuestionKey(key)}</span>
                         <p className="text-neutral-700 mt-0.5">{String(value)}</p>
                       </div>
                     ))}
                   </div>
                 </div>
-              )}
+                );
+              })()}
 
               {/* Status management */}
               <div className="border-t border-neutral-100 pt-5">

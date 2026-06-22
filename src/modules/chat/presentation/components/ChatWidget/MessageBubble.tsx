@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import DOMPurify from "isomorphic-dompurify";
 import type { MessageBubbleProps } from "../../types/chat.types";
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
@@ -52,7 +53,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           {message.contentHtml ? (
             <div
               className="text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: message.contentHtml }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(message.contentHtml) }}
             />
           ) : (
             <p className="text-sm whitespace-pre-wrap">{message.content}</p>

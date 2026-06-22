@@ -29,15 +29,52 @@ import {
   Paperclip,
   Loader2,
   X,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "../components/Components";
 import AIAnalysisPanel from "../components/AIAnalysisPanel";
 import DiagnosticoAdminView from "../components/DiagnosticoAdminView";
+import DiagnosticoPremiumAdminView from "../components/DiagnosticoPremiumAdminView";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { getApiBaseUrl } from "../utils/api";
 
 const API_URL = getApiBaseUrl();
+
+async function downloadAdminDocument(docId: string, fileName: string, mode: "download" | "view" = "download") {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Sessão expirada. Faça login novamente.");
+    return;
+  }
+
+  const response = await fetch(`${API_URL}/admin/chat/documents/download/${docId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    alert(data.error || data.message || "Erro ao baixar documento");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  if (mode === "view") {
+    window.open(url, "_blank");
+    setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
 
 type ViewState =
   | "dashboard"
@@ -47,7 +84,8 @@ type ViewState =
   | "users"
   | "settings"
   | "preAtendimentos" // Sprint 3.3
-  | "diagnosticoLeads"; // Sprint 3.6
+  | "diagnosticoLeads" // Sprint 3.6
+  | "diagnosticoPremium"; // Sprint 3.11
 
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
@@ -426,11 +464,22 @@ export const Admin: React.FC = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    const handleAuthFailure = (status: number) => {
+      if (status === 401 || status === 403) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("lastActivity");
+        setIsLoggedIn(false);
+        return true;
+      }
+      return false;
+    };
+
     try {
       // Dashboard Stats
       const resStats = await fetch(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resStats.status)) return;
       const dataStats = await resStats.json();
       if (dataStats.success) setStats(dataStats.stats);
 
@@ -438,6 +487,7 @@ export const Admin: React.FC = () => {
       const resSettings = await fetch(`${API_URL}/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resSettings.status)) return;
       const dataSettings = await resSettings.json();
       setWebhookUrl(dataSettings.webhook_url || "");
 
@@ -445,6 +495,7 @@ export const Admin: React.FC = () => {
       const resUsers = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resUsers.status)) return;
       const dataUsers = await resUsers.json();
       setUsers(Array.isArray(dataUsers) ? dataUsers : []);
 
@@ -452,6 +503,7 @@ export const Admin: React.FC = () => {
       const resLeads = await fetch(`${API_URL}/leads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resLeads.status)) return;
       const dataLeads = await resLeads.json();
       if (Array.isArray(dataLeads)) {
         setLeads(dataLeads);
@@ -463,6 +515,7 @@ export const Admin: React.FC = () => {
       const resProfessionals = await fetch(`${API_URL}/professionals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resProfessionals.status)) return;
       const dataProfessionals = await resProfessionals.json();
       if (Array.isArray(dataProfessionals)) {
         setProfessionals(dataProfessionals);
@@ -472,6 +525,7 @@ export const Admin: React.FC = () => {
       const resPosts = await fetch(`${API_URL}/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resPosts.status)) return;
       const dataPosts = await resPosts.json();
       if (Array.isArray(dataPosts)) {
         setPosts(dataPosts);
@@ -498,32 +552,50 @@ export const Admin: React.FC = () => {
     }
   };
 
-  // Check for existing token on mount (persistent login)
+  // Check for existing token on mount (validate with backend)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const lastActivity = localStorage.getItem("lastActivity");
+    const validateSession = async () => {
+      const token = localStorage.getItem("token");
+      const lastActivity = localStorage.getItem("lastActivity");
 
-    if (token) {
-      // Check if token is still valid (30 minutes = 1800000ms)
+      if (!token) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
       const now = Date.now();
-      const lastActivityTime = lastActivity ? parseInt(lastActivity) : now;
+      const lastActivityTime = lastActivity ? parseInt(lastActivity, 10) : now;
       const inactiveTime = now - lastActivityTime;
-      const THIRTY_MINUTES = 30 * 60 * 1000; // 30 minutos em ms
+      const THIRTY_MINUTES = 30 * 60 * 1000;
 
-      if (inactiveTime < THIRTY_MINUTES) {
-        // Token válido e dentro do período de inatividade
-        setIsLoggedIn(true);
-        localStorage.setItem("lastActivity", now.toString());
-      } else {
-        // Token expirou por inatividade
+      if (inactiveTime >= THIRTY_MINUTES) {
         localStorage.removeItem("token");
         localStorage.removeItem("lastActivity");
         setIsLoggedIn(false);
+        setIsCheckingAuth(false);
+        return;
       }
-    }
 
-    // Finish checking auth (prevents login screen flash)
-    setIsCheckingAuth(false);
+      try {
+        const res = await fetch(`${API_URL}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          setIsLoggedIn(true);
+          localStorage.setItem("lastActivity", now.toString());
+        } else {
+          localStorage.removeItem("token");
+          localStorage.removeItem("lastActivity");
+          setIsLoggedIn(false);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    validateSession();
   }, []);
 
   // Track user activity and auto-logout after 30 minutes of inactivity
@@ -584,7 +656,7 @@ export const Admin: React.FC = () => {
     if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
     setLoadingWebhookLogs(true);
     fetch(`${API_URL}/admin/chat/webhook-logs/${selectedPreAtendimento.id}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((r) => r.json())
       .then((d) => { if (d.success) setWebhookLogs(d.data); })
@@ -597,7 +669,7 @@ export const Admin: React.FC = () => {
     if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
     setLoadingHermesWebhookLogs(true);
     fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
       .then((r) => r.json())
       .then((d) => { if (d.success) setHermesWebhookLogs(d.data); })
@@ -612,7 +684,7 @@ export const Admin: React.FC = () => {
     try {
       const r = await fetch(
         `${API_URL}/admin/chat/analysis/${selectedPreAtendimento.id}/reprocess`,
-        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` } }
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       const d = await r.json();
       alert(d.success ? "Hermes reprocessado com sucesso!" : `Erro: ${d.error}`);
@@ -620,7 +692,7 @@ export const Admin: React.FC = () => {
         setHermesWebhookLogs(null);
         setLoadingHermesWebhookLogs(true);
         fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
       }
     } catch { alert("Erro ao reprocessar."); }
@@ -634,14 +706,14 @@ export const Admin: React.FC = () => {
     try {
       const r = await fetch(
         `${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}/reenviar`,
-        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` } }
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
       const d = await r.json();
       alert(d.success ? "Evento Hermes reenviado!" : `Erro: ${d.error}`);
       if (d.success) {
         setLoadingHermesWebhookLogs(true);
         fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
       }
     } catch { alert("Erro ao reenviar."); }
@@ -964,6 +1036,7 @@ export const Admin: React.FC = () => {
           <NavButton view="professionals" icon={Users} label="Profissionais" />
           <NavButton view="preAtendimentos" icon={Headphones} label="Pré-Atendimentos" />
           <NavButton view="diagnosticoLeads" icon={BarChart2} label="Diagnóstico Trib." />
+          <NavButton view="diagnosticoPremium" icon={DollarSign} label="Diag. Premium" />
 
           <div className="my-4 border-t border-neutral-800"></div>
 
@@ -1013,8 +1086,7 @@ export const Admin: React.FC = () => {
               </h2>
               {!stats ? (
                 <div className="text-neutral-500">
-                  Carregando estatísticas... (Verifique se o servidor backend
-                  está rodando)
+                  Carregando estatísticas...
                 </div>
               ) : (
                 <>
@@ -1105,6 +1177,7 @@ export const Admin: React.FC = () => {
 
           {/* DIAGNÓSTICO TRIBUTÁRIO VIEW — Sprint 3.6 */}
           {currentView === "diagnosticoLeads" && <DiagnosticoAdminView />}
+          {currentView === "diagnosticoPremium" && <DiagnosticoPremiumAdminView />}
 
           {/* SETTINGS VIEW */}
           {currentView === "settings" && (
@@ -2759,8 +2832,7 @@ export const Admin: React.FC = () => {
                                 <button
                                   onClick={() => {
                                     console.log("👁 Visualizando documento:", doc.id);
-                                    const url = `${API_URL}/chat/documents/download/${doc.id}`;
-                                    window.open(url, "_blank");
+                                    downloadAdminDocument(doc.id, doc.original_name, "view");
                                   }}
                                   className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded transition"
                                   title="Visualizar"
@@ -2768,15 +2840,17 @@ export const Admin: React.FC = () => {
                                   <Eye size={16} />
                                 </button>
                                 {/* Download */}
-                                <a
-                                  href={`${API_URL}/chat/documents/download/${doc.id}`}
-                                  download={doc.original_name}
-                                  onClick={() => console.log("⬇ Download documento:", doc.id)}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    console.log("⬇ Download documento:", doc.id);
+                                    downloadAdminDocument(doc.id, doc.original_name);
+                                  }}
                                   className="p-1.5 text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition"
                                   title="Download"
                                 >
                                   <Download size={16} />
-                                </a>
+                                </button>
                               </div>
                             </div>
                           ))}

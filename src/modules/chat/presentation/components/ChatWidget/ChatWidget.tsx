@@ -32,6 +32,8 @@ import {
   extractFilesFromDocuments,
   formatFileSize,
 } from "../../services/documentService";
+import { n8nChatService } from "../../../../../services/n8nChatService";
+import { shouldUseN8N, isN8NConfigured } from "../../../../../config/n8n";
 
 // Chaves para localStorage
 const CTA_CLOSED_KEY = "chat_cta_closed_at";
@@ -114,6 +116,11 @@ export const ChatWidget: React.FC = () => {
   const [showDocumentUploader, setShowDocumentUploader] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
   const [documentErrors, setDocumentErrors] = useState<string[]>([]);
+
+  // Sprint 4.0.2: Estado N8N — carregamento e confirmação de resumo
+  const [n8nLoading, setN8nLoading] = useState(false);
+  const [showSummaryConfirmation, setShowSummaryConfirmation] = useState(false);
+  const [n8nSummaryData, setN8nSummaryData] = useState<Record<string, any> | null>(null);
 
   const hasInitialized = useRef(false);
 
@@ -272,19 +279,29 @@ export const ChatWidget: React.FC = () => {
       // Transição para estado coletado
       setCurrentState(nextStateConfig.collected);
 
-      // Se for o último campo (descrição), mostrar mensagem de agradecimento e perguntar sobre documentos
+      // Se for o último campo (descrição), acionar IA ou perguntar sobre documentos
       if (field === "caseDescription") {
-        // Transição para estado coletado
         setCurrentState("CASE_DESCRIPTION_COLLECTED");
 
-        // Sprint 3.4: Perguntar sobre upload de documentos
         await simulateTyping(800);
         await addBotMessage(MENSAGEM_AGRADECIMENTO_DESCRICAO, { typingDuration: 600 });
 
-        // Pequeno delay antes da pergunta sobre documentos
-        await simulateTyping(600);
+        // Sprint 4.0.2: Acionar N8N — IA assume a investigação do caso
+        if (shouldUseN8N("CASE_DESCRIPTION_COLLECTED")) {
+          const investigacaoConcluida = await callN8NConversational(normalizedValue, "CASE_DESCRIPTION_COLLECTED");
 
-        // Perguntar sobre documentos
+          // Se IA ainda investigando (qualificacaoSuficiente=false), aguardar loop conversacional
+          // Não avançar para documentos — handleSendMessage vai rotear próximas respostas para o N8N
+          if (!investigacaoConcluida) {
+            return;
+          }
+
+          // IA concluiu investigação → perguntar sobre documentos
+          setCurrentState("AI_INVESTIGATION_COMPLETE");
+        }
+
+        // Fluxo legado (sem N8N) ou pós-investigação: perguntar sobre documentos
+        await simulateTyping(600);
         setCurrentState("AWAITING_DOCUMENT_UPLOAD_OPTION");
         await addBotMessage(MENSAGEM_PERGUNTA_DOCUMENTOS, {
           showDocumentOption: true,
@@ -301,6 +318,74 @@ export const ChatWidget: React.FC = () => {
       }
     },
     [addBotMessage, requestNextField, simulateTyping]
+  );
+
+  // Sprint 4.0.2: Chamar N8N com a mensagem atual
+  // Retorna true se a investigação foi concluída (qualificacaoSuficiente=true)
+  const callN8NConversational = useCallback(
+    async (message: string, state: string): Promise<boolean> => {
+      if (!isN8NConfigured()) return false;
+
+      const dados = context.dadosColetados || {};
+      const sessionIdN8N = protocolo
+        ? `session_${protocolo}`
+        : `session_local_${sessionId}`;
+
+      setN8nLoading(true);
+      try {
+        const response = await n8nChatService.sendMessage({
+          sessionId: sessionIdN8N,
+          currentState: state,
+          area: context.areaSelecionada || "",
+          subarea: context.subareaSelecionada || "",
+          message,
+          dadosColetados: dados,
+          documentos: context.documentos?.documents?.map((d) => ({
+            original_name: d.metadata.originalName,
+            mime_type: d.metadata.mimeType,
+            size_bytes: d.metadata.size,
+          })) || [],
+          protocolo: protocolo ?? null,
+        });
+
+        if (response.sucesso && response.resposta) {
+          // Exibir resposta do agente N8N como mensagem BOT
+          await addBotMessage(response.resposta, { typingDuration: 600 });
+
+          // Se N8N sinalizou encerramento direto (após confirmação)
+          if (response.proximaAcao === "ENCERRAR") {
+            setCurrentState("CLOSED");
+            setShowSummaryConfirmation(false);
+            return true;
+          }
+
+          // Se N8N sinalizou encerramento pós-confirmação → resumo final
+          if (state === "QUALIFICATION_COMPLETE") {
+            setN8nSummaryData(response.resumo_final ?? null);
+            setCurrentState("AWAITING_SUMMARY_CONFIRMATION");
+            setShowSummaryConfirmation(true);
+            return true;
+          }
+
+          // IA concluiu investigação durante loop → avançar para documentos
+          if (response.qualificacaoSuficiente) {
+            setCurrentState("AI_INVESTIGATION_COMPLETE");
+            return true;
+          }
+
+          // IA ainda investigando → aguardar próxima resposta do usuário
+          setCurrentState("AWAITING_AI_QUESTION");
+          return false;
+        }
+
+        // Resposta vazia ou sem sucesso → manter em investigação
+        setCurrentState("AWAITING_AI_QUESTION");
+        return false;
+      } finally {
+        setN8nLoading(false);
+      }
+    },
+    [context, protocolo, sessionId, addBotMessage]
   );
 
   // Sprint 3.2: Enviar dados para API
@@ -404,7 +489,18 @@ _Enviando dados..._`;
       }));
     }
 
-    // Enviar mensagem de resumo
+    // Sprint 4.0.2: Se N8N configurado, delegar resumo executivo ao agente N8N
+    // O agente gera o resumo, o usuário confirma, e só então persiste
+    if (shouldUseN8N("QUALIFICATION_COMPLETE")) {
+      await callN8NConversational(
+        dados.descricaoCaso || "Qualificação completa",
+        "QUALIFICATION_COMPLETE"
+      );
+      // Fluxo de persistência continuará via handleConfirmSummary
+      return;
+    }
+
+    // Fluxo legado (sem N8N): exibir resumo e persistir diretamente
     await addBotMessage(resumo, { typingDuration: 600 });
 
     // Enviar para API
@@ -452,6 +548,32 @@ _Enviando dados..._`;
       await addBotMessage(MENSAGEM_ERRO_PERSISTENCIA, { typingDuration: 600 });
     }
   }, [addBotMessage, context, submitPreAtendimento, simulateTyping]);
+
+  // Sprint 4.0.2: Confirmar resumo gerado pelo N8N → executa persistência
+  const handleConfirmSummary = useCallback(async () => {
+    setShowSummaryConfirmation(false);
+    setCurrentState("SUMMARY_CONFIRMED");
+
+    await addBotMessage(
+      "✅ Informações confirmadas! Estamos finalizando seu atendimento...",
+      { typingDuration: 500 }
+    );
+
+    await showQualificationSummary();
+  }, [addBotMessage, showQualificationSummary]);
+
+  // Sprint 4.0.2: Alterar informações → volta para coleta da descrição
+  const handleAlterSummary = useCallback(async () => {
+    setShowSummaryConfirmation(false);
+    setN8nSummaryData(null);
+    setCurrentState("CASE_DESCRIPTION_COLLECTED");
+
+    await addBotMessage(
+      "Sem problema! Por favor, descreva novamente o que gostaria de ajustar no seu caso.",
+      { typingDuration: 600 }
+    );
+    await requestNextField("caseDescription", false);
+  }, [addBotMessage, requestNextField]);
 
   // Adicionar mensagem do usuário
   const addUserMessage = useCallback(
@@ -724,10 +846,41 @@ _Enviando dados..._`;
         return;
       }
 
+      // Sprint 4.0.2: Loop conversacional da IA — rotear resposta do usuário de volta ao N8N
+      if (currentState === "AWAITING_AI_QUESTION") {
+        addUserMessage(content, { type: "ai_investigation_answer" });
+        const investigacaoConcluida = await callN8NConversational(content, "AWAITING_AI_QUESTION");
+        if (investigacaoConcluida) {
+          // callN8NConversacional retornou true com qualificacaoSuficiente=true
+          // → estado agora é AI_INVESTIGATION_COMPLETE → avançar para documentos
+          await simulateTyping(600);
+          setCurrentState("AWAITING_DOCUMENT_UPLOAD_OPTION");
+          await addBotMessage(MENSAGEM_PERGUNTA_DOCUMENTOS, {
+            showDocumentOption: true,
+            typingDuration: 800,
+          });
+        }
+        return;
+      }
+
+      // Sprint 4.0.2: Aguardando confirmação do resumo N8N — ignorar input de texto
+      if (currentState === "AWAITING_SUMMARY_CONFIRMATION") {
+        return;
+      }
+
       // Se qualificação já está completa, apenas agradecer
-      if (currentState === "QUALIFICATION_COMPLETE") {
+      if (
+        currentState === "QUALIFICATION_COMPLETE" ||
+        currentState === "SUMMARY_CONFIRMED"
+      ) {
         addUserMessage(content);
         await simulateTyping(600);
+
+        // Sprint 4.0.2: Se N8N configurado, encaminhar mensagem pós-qualificação
+        if (shouldUseN8N("QUALIFICATION_COMPLETE")) {
+          await callN8NConversational(content, currentState);
+          return;
+        }
 
         const response: ChatMessage = {
           id: generateId(),
@@ -756,7 +909,7 @@ _Enviando dados..._`;
 
       setMessages((prev) => [...prev, genericResponse]);
     },
-    [addUserMessage, currentState, messages.length, sessionId, simulateTyping, startQualification, processCollectedData]
+    [addUserMessage, callN8NConversational, currentState, messages.length, sessionId, simulateTyping, startQualification, processCollectedData]
   );
 
   // Iniciar qualificação automaticamente ao abrir o chat
@@ -847,7 +1000,68 @@ _Enviando dados..._`;
         onSelectDocumentOption={handleDocumentUploadOption}
         onDocumentUpload={handleDocumentUpload}
         onSkipDocumentUpload={handleSkipDocumentUpload}
+        // Sprint 4.0.2: Estado de carregamento N8N
+        isN8NLoading={n8nLoading}
       />
+
+      {/* Sprint 4.0.2: Botões de confirmação de resumo N8N */}
+      {isOpen && showSummaryConfirmation && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "90px",
+            right: "24px",
+            zIndex: 10001,
+            display: "flex",
+            gap: "8px",
+            flexDirection: "column",
+            alignItems: "flex-end",
+          }}
+        >
+          <p
+            style={{
+              margin: 0,
+              fontSize: "13px",
+              color: "#6b7280",
+              textAlign: "right",
+            }}
+          >
+            As informações estão corretas?
+          </p>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={handleAlterSummary}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: "1px solid #d1d5db",
+                background: "#ffffff",
+                color: "#374151",
+                fontSize: "13px",
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              ✏️ Alterar
+            </button>
+            <button
+              onClick={handleConfirmSummary}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "8px",
+                border: "none",
+                background: "#1d4ed8",
+                color: "#ffffff",
+                fontSize: "13px",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              ✅ Confirmar
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

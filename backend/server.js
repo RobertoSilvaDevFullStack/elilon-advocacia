@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,14 +32,16 @@ const corsOptions = {
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
 };
 
+app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 
 const authRoutes = require("./routes/authRoutes");
 const apiRoutes = require("./routes/apiRoutes");
+const { generalApiLimiter } = require("./middleware/rateLimiter");
 
-// Routes
 app.use("/api/auth", authRoutes);
+app.use("/api", generalApiLimiter);
 app.use("/api", apiRoutes);
 
 // Test Route
@@ -46,6 +49,15 @@ app.get("/", (req, res) => {
   res.send("API Elilon Lopes Advogados is running");
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+server.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`❌ Porta ${PORT} já em uso. Encerre o processo anterior ou altere PORT no .env`);
+  } else {
+    console.error("❌ Erro ao iniciar servidor:", err.message);
+  }
+  process.exit(1);
 });

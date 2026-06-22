@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { getDisplayPrice, formatPriceBRL, type RegimeTributario } from "../utils/diagnosticoPricing";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { getApiBaseUrl } from "../utils/api";
 import { trackDiagnostico } from "../utils/tracking";
 import { Layout } from "../components/Layout";
@@ -16,14 +17,15 @@ import {
   Mail,
   Building2,
   User,
+  FileText,
   TrendingUp,
   AlertCircle,
   CheckCheck,
   XCircle,
+  CreditCard,
+  QrCode,
   Loader2,
 } from "lucide-react";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Question {
   id: string;
@@ -37,6 +39,7 @@ interface LeadForm {
   empresa: string;
   email: string;
   whatsapp: string;
+  cpf_cnpj: string;
 }
 
 type DiagnosisLevel = "alto" | "medio" | "baixo" | null;
@@ -46,12 +49,12 @@ type DiagnosisLevel = "alto" | "medio" | "baixo" | null;
 const QUESTIONS: Question[] = [
   {
     id: "regime",
-    text: "Sua empresa está enquadrada no Simples Nacional?",
-    subtext: "O Simples Nacional é o regime tributário simplificado para MEI, ME e EPP.",
+    text: "Qual é o regime tributário da sua empresa?",
+    subtext: "O regime define como sua empresa calcula e recolhe tributos.",
     options: [
-      { value: "sim", label: "Sim, estou no Simples Nacional", score: 3 },
-      { value: "nao", label: "Não, estou no Lucro Presumido ou Real", score: 1 },
-      { value: "nao_sei", label: "Não sei ao certo", score: 2 },
+      { value: "simples_nacional", label: "Sim, estou no Simples Nacional", score: 3 },
+      { value: "lucro_presumido", label: "Estou no Lucro Presumido", score: 1 },
+      { value: "lucro_real", label: "Estou no Lucro Real", score: 1 },
     ],
   },
   {
@@ -160,18 +163,23 @@ const RESULTS = {
   },
 };
 
-const API_URL = getApiBaseUrl();
+type PaymentMethod = "PIX" | "CREDIT_CARD";
+
+const MAX_SUBMIT_RETRIES = 3;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const DiagnosticoTributario: React.FC = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [answerValues, setAnswerValues] = useState<Record<string, string>>({});
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [diagnosis, setDiagnosis] = useState<DiagnosisLevel>(null);
-  const [lead, setLead] = useState<LeadForm>({ nome: "", empresa: "", email: "", whatsapp: "" });
-  const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [lead, setLead] = useState<LeadForm>({ nome: "", empresa: "", email: "", whatsapp: "", cpf_cnpj: "" });
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("PIX");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
   const { search: queryString } = useLocation();
   // Capture UTMs on mount (store in ref so they don't trigger re-renders)
@@ -180,6 +188,10 @@ export const DiagnosticoTributario: React.FC = () => {
   const totalSteps = QUESTIONS.length;
   const progress = Math.round((currentStep / totalSteps) * 100);
   const isQuizDone = diagnosis !== null;
+  const regimeTributario = answerValues.regime as RegimeTributario | undefined;
+  const analysisPrice = regimeTributario ? getDisplayPrice(regimeTributario) : null;
+
+  const API_URL = getApiBaseUrl();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -195,79 +207,109 @@ export const DiagnosticoTributario: React.FC = () => {
     setSelectedOption(value);
     const q = QUESTIONS[currentStep];
     const newAnswers = { ...answers, [q.id]: score };
+    const newValues = { ...answerValues, [q.id]: value };
 
     setTimeout(() => {
       if (currentStep + 1 < totalSteps) {
         setAnimating(true);
         setTimeout(() => {
           setAnswers(newAnswers);
+          setAnswerValues(newValues);
           setCurrentStep((s) => s + 1);
           setSelectedOption(null);
           setAnimating(false);
         }, 300);
       } else {
         setAnswers(newAnswers);
+        setAnswerValues(newValues);
         setDiagnosis(calculateDiagnosis(newAnswers));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }, 400);
   };
 
+  const submitWithRetry = async (payload: object, attempt = 0): Promise<Response> => {
+    try {
+      const res = await fetch(`${API_URL}/diagnostico/pedido`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok && res.status >= 500 && attempt < MAX_SUBMIT_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        return submitWithRetry(payload, attempt + 1);
+      }
+      return res;
+    } catch {
+      if (attempt < MAX_SUBMIT_RETRIES - 1) {
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        return submitWithRetry(payload, attempt + 1);
+      }
+      throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+    }
+  };
+
   const handleLeadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Build human-readable answers map for storage
     const respostasLegivel: Record<string, string> = {};
     QUESTIONS.forEach((q) => {
-      const score = answers[q.id];
-      if (score !== undefined) {
-        const opt = q.options.find((o) => o.score === score);
-        respostasLegivel[q.id] = opt?.label ?? String(score);
+      const value = answerValues[q.id];
+      if (value) {
+        const opt = q.options.find((o) => o.value === value);
+        respostasLegivel[q.id] = opt?.label ?? value;
       }
     });
 
     const totalScore = (Object.values(answers) as number[]).reduce((s, v) => s + v, 0);
 
     try {
-      const res = await fetch(`${API_URL}/diagnostico`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: lead.nome,
-          empresa: lead.empresa,
-          email: lead.email,
-          whatsapp: lead.whatsapp,
-          respostas: respostasLegivel,
-          score: totalScore,
-          nivel_risco: diagnosis,
-          origem: "diagnostico-reforma-tributaria",
-          ...utmRef.current,
-        }),
+      const res = await submitWithRetry({
+        nome: lead.nome,
+        empresa: lead.empresa,
+        email: lead.email,
+        whatsapp: lead.whatsapp,
+        cpf_cnpj: lead.cpf_cnpj,
+        respostas: respostasLegivel,
+        score: totalScore,
+        nivel_risco: diagnosis,
+        regime_tributario: regimeTributario,
+        payment_method: paymentMethod,
+        origem: "diagnostico-reforma-tributaria",
+        ...utmRef.current,
       });
-      // Sprint 3.8: dispara Lead apenas após persistência confirmada
-      if (res.ok) {
-        trackDiagnostico({
-          source: "diagnostico_tributario",
-          risk_level: diagnosis ?? "",
-          score: totalScore,
-        });
-      }
-    } catch (_) {
-      // Falha silenciosa — UX não é bloqueada por erro de persistência
-      console.error("Falha ao persistir lead do diagnóstico");
-    }
 
-    setIsSubmitting(false);
-    setLeadSubmitted(true);
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Erro ao processar solicitação");
+      }
+
+      trackDiagnostico({
+        source: "diagnostico_tributario_premium",
+        risk_level: diagnosis ?? "",
+        score: totalScore,
+      });
+
+      navigate(`/diagnostico/pagamento/${data.pedidoId}?token=${encodeURIComponent(data.accessToken)}`);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Erro ao enviar solicitação. Tente novamente."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const restartQuiz = () => {
     setCurrentStep(0);
     setAnswers({});
+    setAnswerValues({});
     setSelectedOption(null);
     setDiagnosis(null);
-    setLeadSubmitted(false);
+    setSubmitError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -372,7 +414,7 @@ export const DiagnosticoTributario: React.FC = () => {
                       key={opt.value}
                       onClick={() => handleOptionSelect(opt.value, opt.score)}
                       disabled={selectedOption !== null}
-                      className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all duration-200 flex items-center justify-between group
+                      className={`w-full text-left px-5 py-4 min-h-[44px] rounded-xl border-2 transition-all duration-200 flex items-center justify-between group
                         ${selectedOption === opt.value
                           ? "border-vinho-500 bg-vinho-50 text-vinho-800"
                           : selectedOption !== null
@@ -410,7 +452,7 @@ export const DiagnosticoTributario: React.FC = () => {
           )}
 
           {/* ── Result ───────────────────────────────────────────────────── */}
-          {isQuizDone && result && !leadSubmitted && (
+          {isQuizDone && result && (
             <div className="animate-fade-in">
               {/* Result card */}
               <div className={`bg-white rounded-2xl shadow-sm border-2 ${result.borderColor} p-6 md:p-8 mb-8`}>
@@ -439,11 +481,22 @@ export const DiagnosticoTributario: React.FC = () => {
                   ))}
                 </ul>
 
-                <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-100">
+                <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-100 mb-6">
                   <p className="text-sm text-neutral-600 italic">
                     <strong className="text-neutral-800">⚠️ Importante:</strong> {result.cta}
                   </p>
                 </div>
+
+                {analysisPrice != null && (
+                  <div className="bg-vinho-50 rounded-xl p-5 border border-vinho-100 text-center">
+                    <p className="text-sm text-vinho-700 mb-1">
+                      Valor da análise especializada para sua empresa:
+                    </p>
+                    <p className="text-2xl md:text-3xl font-headline font-bold text-vinho-800">
+                      {formatPriceBRL(analysisPrice)}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Lead capture */}
@@ -451,10 +504,10 @@ export const DiagnosticoTributario: React.FC = () => {
                 <div className="text-center mb-6">
                   <TrendingUp className="w-10 h-10 text-vinho-500 mx-auto mb-3" />
                   <h2 className="text-2xl font-headline font-bold text-neutral-900 mb-2">
-                    Receba uma análise mais detalhada
+                    Contrate sua análise especializada
                   </h2>
                   <p className="text-neutral-500 text-sm">
-                    Nossos especialistas em Direito Tributário vão analisar especificamente o seu caso e entrar em contato.
+                    Preencha seus dados e escolha a forma de pagamento para receber sua análise personalizada.
                   </p>
                 </div>
 
@@ -467,7 +520,7 @@ export const DiagnosticoTributario: React.FC = () => {
                       required
                       value={lead.nome}
                       onChange={(e) => setLead((p) => ({ ...p, nome: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
+                      className="w-full pl-10 pr-4 py-3.5 min-h-[44px] border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
                     />
                   </div>
                   <div className="relative">
@@ -478,7 +531,7 @@ export const DiagnosticoTributario: React.FC = () => {
                       required
                       value={lead.empresa}
                       onChange={(e) => setLead((p) => ({ ...p, empresa: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
+                      className="w-full pl-10 pr-4 py-3.5 min-h-[44px] border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
                     />
                   </div>
                   <div className="relative">
@@ -489,34 +542,83 @@ export const DiagnosticoTributario: React.FC = () => {
                       required
                       value={lead.email}
                       onChange={(e) => setLead((p) => ({ ...p, email: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
+                      className="w-full pl-10 pr-4 py-3.5 min-h-[44px] border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
+                    />
+                  </div>
+                  <div className="relative">
+                    <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <input
+                      type="text"
+                      placeholder="CPF ou CNPJ da empresa *"
+                      required
+                      inputMode="numeric"
+                      value={lead.cpf_cnpj}
+                      onChange={(e) => setLead((p) => ({ ...p, cpf_cnpj: e.target.value }))}
+                      className="w-full pl-10 pr-4 py-3.5 min-h-[44px] border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
                     />
                   </div>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input
                       type="tel"
-                      placeholder="WhatsApp (com DDD) *"
+                      placeholder="WhatsApp com DDD (ex: 38991376138) *"
                       required
                       value={lead.whatsapp}
                       onChange={(e) => setLead((p) => ({ ...p, whatsapp: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
+                      className="w-full pl-10 pr-4 py-3.5 min-h-[44px] border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-vinho-400 focus:ring-2 focus:ring-vinho-100 transition-all"
                     />
                   </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-neutral-700 mb-3">Forma de pagamento *</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("PIX")}
+                        className={`min-h-[44px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                          paymentMethod === "PIX"
+                            ? "border-vinho-500 bg-vinho-50 text-vinho-800"
+                            : "border-neutral-200 hover:border-vinho-300 text-neutral-700"
+                        }`}
+                      >
+                        <QrCode className="w-5 h-5" />
+                        PIX
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod("CREDIT_CARD")}
+                        className={`min-h-[44px] flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                          paymentMethod === "CREDIT_CARD"
+                            ? "border-vinho-500 bg-vinho-50 text-vinho-800"
+                            : "border-neutral-200 hover:border-vinho-300 text-neutral-700"
+                        }`}
+                      >
+                        <CreditCard className="w-5 h-5" />
+                        Cartão de Crédito
+                      </button>
+                    </div>
+                  </div>
+
+                  {submitError && (
+                    <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{submitError}</span>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-4 bg-gradient-to-r from-vinho-600 to-vermelho-600 text-white font-semibold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-vinho-500/30 transition-all duration-300 hover:scale-[1.01] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full min-h-[44px] py-4 bg-gradient-to-r from-vinho-600 to-vermelho-600 text-white font-semibold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-vinho-500/30 transition-all duration-300 hover:scale-[1.01] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Enviando...
+                        Processando pagamento...
                       </>
                     ) : (
                       <>
-                        Solicitar Análise Completa
+                        Continuar para Pagamento
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -539,43 +641,6 @@ export const DiagnosticoTributario: React.FC = () => {
                 >
                   Refazer o diagnóstico
                 </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── Lead Submitted Thank You ─────────────────────────────────── */}
-          {leadSubmitted && (
-            <div className="animate-fade-in text-center bg-white rounded-2xl shadow-sm border border-green-100 p-8 md:p-12">
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <CheckCheck className="w-10 h-10 text-green-500" />
-              </div>
-              <h2 className="text-2xl font-headline font-bold text-neutral-900 mb-3">
-                Solicitação enviada com sucesso!
-              </h2>
-              <p className="text-neutral-500 mb-2 max-w-sm mx-auto">
-                Recebemos seus dados. Nossa equipe tributária entrará em contato em breve para uma análise personalizada.
-              </p>
-              <p className="text-sm text-neutral-400 mb-8">
-                Enquanto isso, você pode nos chamar diretamente pelo WhatsApp.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <a
-                  href="https://wa.me/5538991376138?text=Olá!%20Fiz%20o%20diagnóstico%20tributário%20e%20gostaria%20de%20uma%20análise%20completa."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold text-sm rounded-xl hover:bg-[#20bd5a] transition-all hover:shadow-lg"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
-                  </svg>
-                  Falar no WhatsApp
-                </a>
-                <Link
-                  to="/"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-200 text-neutral-600 font-semibold text-sm rounded-xl hover:bg-neutral-50 transition-all"
-                >
-                  Voltar ao início
-                </Link>
               </div>
             </div>
           )}

@@ -11,6 +11,7 @@
 
 const db = require("../database/index");
 const axios = require("axios");
+const { normalizeDiagnosticoLead } = require("../utils/parseLeadRespostas");
 
 // ─── PUBLIC ──────────────────────────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ exports.list = async (req, res) => {
 
     return res.json({
       success: true,
-      data: dataResult.rows,
+      data: dataResult.rows.map(normalizeDiagnosticoLead),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
@@ -263,7 +264,7 @@ exports.getById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Lead não encontrado" });
     }
 
-    return res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: normalizeDiagnosticoLead(result.rows[0]) });
   } catch (err) {
     console.error("❌ DiagnosticoLeadController.getById:", err);
     return res.status(500).json({ success: false, message: "Erro ao buscar lead" });
@@ -310,7 +311,7 @@ exports.updateStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: "Lead não encontrado" });
     }
 
-    return res.json({ success: true, data: result.rows[0] });
+    return res.json({ success: true, data: normalizeDiagnosticoLead(result.rows[0]) });
   } catch (err) {
     console.error("❌ DiagnosticoLeadController.updateStatus:", err);
     return res.status(500).json({ success: false, message: "Erro ao atualizar" });

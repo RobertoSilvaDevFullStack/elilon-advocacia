@@ -15,6 +15,11 @@ const PreAtendimentoRepository = require("../repositories/PreAtendimentoReposito
 const { logger } = require("../config/logger");
 
 class ChatLeadController {
+  constructor() {
+    this.create = this.create.bind(this);
+    this.findByProtocolo = this.findByProtocolo.bind(this);
+  }
+
   /**
    * POST /api/chat/pre-atendimento
    * Cria um novo pré-atendimento do chat

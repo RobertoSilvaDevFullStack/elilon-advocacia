@@ -30,6 +30,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   onSelectDocumentOption,
   onDocumentUpload,
   onSkipDocumentUpload,
+  // Sprint 4.0.2: Carregamento N8N
+  isN8NLoading,
 }) => {
   if (!isOpen) return null;
 
@@ -73,7 +75,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             <h3 className="text-white font-semibold text-sm">
               Elilon Lopes Advogados
             </h3>
-            <p className="text-gray-400 text-xs">Atendimento Jurídico</p>
+            <p className="text-xs" style={{ color: isN8NLoading ? "#fbbf24" : "#9ca3af" }}>
+              {isN8NLoading ? "⏳ IA processando..." : "Atendimento Jurídico"}
+            </p>
           </div>
         </div>
 

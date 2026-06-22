@@ -367,7 +367,7 @@ class ChatDocumentController {
         data: {
           ...document,
           file_exists: fileExists,
-          download_url: `/api/chat/documents/download/${id}`
+          download_url: `/api/admin/chat/documents/download/${id}`
         }
       });
 

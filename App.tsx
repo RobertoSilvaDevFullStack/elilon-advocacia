@@ -72,15 +72,23 @@ const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
 const DiagnosticoTributario = React.lazy(() =>
   import("./pages/DiagnosticoTributario").then((m) => ({ default: m.DiagnosticoTributario })),
 );
+const DiagnosticoPagamento = React.lazy(() =>
+  import("./pages/DiagnosticoPagamento").then((m) => ({ default: m.DiagnosticoPagamento })),
+);
+const DiagnosticoSucesso = React.lazy(() =>
+  import("./pages/DiagnosticoSucesso").then((m) => ({ default: m.DiagnosticoSucesso })),
+);
 
 // Components
 import MetaPixel from "./components/MetaPixel";
 import DiagnosticoPopup from "./components/DiagnosticoPopup";
+import { isN8NConfigured } from "./src/config/n8n";
 
-// Feature Flag: Chat Widget (desabilitado em produção por padrão)
-const ENABLE_CHAT = import.meta.env.VITE_ENABLE_CHAT === 'true';
-const ChatWidget = ENABLE_CHAT 
-  ? React.lazy(() => import("./src/modules/chat").then(m => ({ default: m.ChatWidget })))
+// Chat Widget — só ativo com flag explícita + webhook N8N configurado
+const ENABLE_CHAT =
+  import.meta.env.VITE_ENABLE_CHAT === "true" && isN8NConfigured();
+const ChatWidget = ENABLE_CHAT
+  ? React.lazy(() => import("./src/modules/chat").then((m) => ({ default: m.ChatWidget })))
   : null;
 
 // Default exports
@@ -104,6 +112,23 @@ const ScrollToTop = () => {
   return null;
 };
 
+/** Widgets públicos (chat, popup) — ocultos no painel admin */
+const PublicWidgets: React.FC = () => {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/admin")) return null;
+
+  return (
+    <>
+      <DiagnosticoPopup />
+      {ENABLE_CHAT && ChatWidget && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
+    </>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <HelmetProvider>
@@ -117,6 +142,8 @@ const App: React.FC = () => {
             <Route path="/bpc" element={<BPCLandingPage />} />
             <Route path="/isencao-ir" element={<IRLandingPage />} />
             <Route path="/diagnostico-reforma-tributaria" element={<DiagnosticoTributario />} />
+            <Route path="/diagnostico/pagamento/:id" element={<DiagnosticoPagamento />} />
+            <Route path="/diagnostico/sucesso" element={<DiagnosticoSucesso />} />
 
             {/* About Routes */}
             <Route path="/sobre" element={<About />} />
@@ -139,8 +166,7 @@ const App: React.FC = () => {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <MetaPixel />
-          <DiagnosticoPopup />
-          {ENABLE_CHAT && ChatWidget && <ChatWidget />}
+          <PublicWidgets />
         </Suspense>
       </Router>
     </HelmetProvider>

@@ -20,6 +20,7 @@ const dynamicRoutes = [
   "/termos",
   "/bpc",
   "/isencao-ir",
+  "/diagnostico-reforma-tributaria",
 ];
 
 export default defineConfig(({ mode }) => {

@@ -1,0 +1,198 @@
+{
+  "timestamp": "2026-06-22T22:56:32.673Z",
+  "summary": {
+    "checksTotal": 21,
+    "passed": 20,
+    "failed": 1,
+    "criticalFail": 0,
+    "highFail": 0
+  },
+  "npmAudit": {
+    "backend": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "frontend": {
+      "info": 0,
+      "low": 0,
+      "moderate": 2,
+      "high": 0,
+      "critical": 0,
+      "total": 2
+    }
+  },
+  "checks": [
+    {
+      "id": "S1",
+      "name": "Registro público duplicado removido",
+      "severity": "CRITICAL",
+      "status": "PASS",
+      "evidence": "Rota pública ausente em apiRoutes.js",
+      "recommendation": "Manter registro apenas em authRoutes com verifyToken"
+    },
+    {
+      "id": "S2",
+      "name": "Webhook ASAAS revalida pagamento na API",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "AsaasWebhookController chama getPayment antes de _markAsPaid",
+      "recommendation": ""
+    },
+    {
+      "id": "S3",
+      "name": "Download de documentos protegido (admin)",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "Download movido para rota admin com JWT",
+      "recommendation": ""
+    },
+    {
+      "id": "S4-helmet",
+      "name": "Helmet configurado",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "helmet() em server.js e app.js",
+      "recommendation": ""
+    },
+    {
+      "id": "S4-auth-limit",
+      "name": "Rate limit no login",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "authLimiter aplicado em authRoutes.js",
+      "recommendation": ""
+    },
+    {
+      "id": "S5",
+      "name": "RBAC requireRole nas rotas admin",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "requireRole + adminOnly em apiRoutes.js",
+      "recommendation": ""
+    },
+    {
+      "id": "S6",
+      "name": "JWT secret centralizado sem fallback hardcoded legado",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "config/jwtSecret.js usado; fallback legado removido",
+      "recommendation": ""
+    },
+    {
+      "id": "S7",
+      "name": "DOMPurify no chat MessageBubble",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "MessageBubble.tsx sanitiza contentHtml",
+      "recommendation": ""
+    },
+    {
+      "id": "S8-query",
+      "name": "Webhook ASAAS sem token via query",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "req.query.token removido do AsaasWebhookController",
+      "recommendation": ""
+    },
+    {
+      "id": "S8-timing",
+      "name": "Comparação timing-safe do token ASAAS",
+      "severity": "LOW",
+      "status": "PASS",
+      "evidence": "AsaasService.validateWebhookToken usa timingSafeEqual",
+      "recommendation": ""
+    },
+    {
+      "id": "S10",
+      "name": "Rate limit POST /api/diagnostico",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "diagnosticoLeadLimiter aplicado",
+      "recommendation": ""
+    },
+    {
+      "id": "S11",
+      "name": "Login com mensagem genérica (anti-enumeração)",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "authController retorna mensagem genérica",
+      "recommendation": ""
+    },
+    {
+      "id": "S12",
+      "name": "bcrypt cost 12",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "bcrypt rounds = 12",
+      "recommendation": ""
+    },
+    {
+      "id": "S13",
+      "name": "Wildcards LIKE escapados",
+      "severity": "LOW",
+      "status": "PASS",
+      "evidence": "escapeLikePattern + ESCAPE em listPedidos",
+      "recommendation": ""
+    },
+    {
+      "id": "S14",
+      "name": "Webhook diagnostico_pago assinado (HMAC)",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "DiagnosticoPagamentoWebhookService assina payload",
+      "recommendation": ""
+    },
+    {
+      "id": "S15",
+      "name": "Admin bootstrap via ADMIN_INITIAL_PASSWORD",
+      "severity": "HIGH",
+      "status": "PASS",
+      "evidence": "database.js usa ADMIN_INITIAL_PASSWORD; admin123 removido",
+      "recommendation": ""
+    },
+    {
+      "id": "S16",
+      "name": "Token de acesso em consulta de pedido",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "HMAC token obrigatório em getPedido",
+      "recommendation": ""
+    },
+    {
+      "id": "R1",
+      "name": "Rate limit global (generalApiLimiter)",
+      "severity": "LOW",
+      "status": "PASS",
+      "evidence": "generalApiLimiter definido mas não aplicado globalmente",
+      "recommendation": "Aplicar app.use('/api', generalApiLimiter) como baseline"
+    },
+    {
+      "id": "R2",
+      "name": "Rate limit POST /api/leads",
+      "severity": "MEDIUM",
+      "status": "PASS",
+      "evidence": "leadsLimiter aplicado em POST /api/leads",
+      "recommendation": "Aplicar leadsLimiter em POST /api/leads"
+    },
+    {
+      "id": "R3",
+      "name": "JWT fallback apenas em dev",
+      "severity": "LOW",
+      "status": "PASS",
+      "evidence": "jwtSecret.js exige secret em produção; dev-only fallback em dev",
+      "recommendation": ""
+    },
+    {
+      "id": "R4",
+      "name": "CORS permite requisições sem Origin",
+      "severity": "MEDIUM",
+      "status": "FAIL",
+      "evidence": "isAllowedOrigin retorna true para origin ausente",
+      "recommendation": "Em produção, rejeitar requests sem Origin (exceto health)"
+    }
+  ]
+}

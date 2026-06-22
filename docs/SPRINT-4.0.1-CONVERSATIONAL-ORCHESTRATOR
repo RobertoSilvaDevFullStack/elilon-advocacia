@@ -1,0 +1,445 @@
+# SPRINT-4.0.1-CONVERSATIONAL-ORCHESTRATOR
+
+## Projeto
+
+Elilon Advocacia — Chat Jurídico Inteligente
+
+## Versão
+
+4.0.1
+
+## Status
+
+Planejado
+
+## Objetivo
+
+Transformar o Chat Jurídico em um sistema de atendimento assistido por IA, mantendo a FSM como responsável pela condução do fluxo e utilizando o N8N como camada de inteligência, contexto, análise e qualificação.
+
+O objetivo não é substituir a FSM.
+
+O objetivo é complementar a FSM com agentes especializados capazes de:
+
+* Interpretar respostas dos usuários
+* Solicitar documentos contextualmente
+* Gerar resumos jurídicos
+* Classificar urgência e complexidade
+* Preparar o caso para atendimento humano
+
+---
+
+# Arquitetura Geral
+
+Cliente
+↓
+Chat Widget (FSM)
+↓
+N8N Conversational Orchestrator
+↓
+Agente Especializado
+↓
+Coleta de Informações
+↓
+Solicitação de Documentos
+↓
+Resumo Executivo
+↓
+Confirmação do Cliente
+↓
+Persistência
+↓
+Hermes Analysis Engine
+↓
+Webhook
+↓
+Kinbox / CRM / Equipe Jurídica
+
+---
+
+# Responsabilidades da FSM
+
+A FSM continua sendo a fonte da verdade.
+
+Ela é responsável por:
+
+* LGPD
+* Fluxo de navegação
+* Controle de estados
+* Área jurídica
+* Subárea jurídica
+* Nome
+* Telefone
+* E-mail
+* Cidade
+* Estado
+* Upload de documentos
+* Encerramento do atendimento
+
+A FSM nunca será substituída pela IA.
+
+---
+
+# Responsabilidades do N8N
+
+O N8N passa a ser responsável por:
+
+* Memória contextual
+* Entendimento jurídico
+* Interpretação de respostas
+* Geração de perguntas inteligentes
+* Solicitação de documentos específicos
+* Resumo executivo
+* Classificação jurídica
+* Encaminhamento
+
+---
+
+# Workflow Principal
+
+## Etapa 1 — Entrada
+
+Webhook:
+
+POST /chat/message
+
+Payload:
+
+{
+"sessionId": "session_123",
+"currentState": "CASE_DESCRIPTION",
+"area": "Previdenciário",
+"subarea": "BPC",
+"message": "Minha mãe possui deficiência e teve o benefício negado."
+}
+
+---
+
+## Etapa 2 — Recuperação de Contexto
+
+O N8N recupera:
+
+* Área
+* Subárea
+* Histórico da conversa
+* Documentos enviados
+* Dados do cliente
+
+Fonte:
+
+* Banco PostgreSQL
+* Redis (futuro)
+
+---
+
+## Etapa 3 — Roteamento Jurídico
+
+Switch por área.
+
+### Previdenciário
+
+Agente Previdenciário
+
+Especialidades:
+
+* BPC
+* LOAS
+* Auxílio-doença
+* Pensão
+* Revisão
+* Aposentadoria
+
+---
+
+### Trabalhista
+
+Agente Trabalhista
+
+Especialidades:
+
+* Rescisão
+* FGTS
+* Horas Extras
+* Assédio
+* Acidente de Trabalho
+
+---
+
+### Tributário
+
+Agente Tributário
+
+Especialidades:
+
+* Execução Fiscal
+* Planejamento Tributário
+* Restituição
+* Reforma Tributária
+
+---
+
+### Cível
+
+Agente Cível
+
+Especialidades:
+
+* Contratos
+* Consumidor
+* Família
+* Indenizações
+
+---
+
+# Etapa 4 — Qualificação Inteligente
+
+O agente recebe:
+
+* Área
+* Subárea
+* Descrição inicial
+
+O agente gera:
+
+* Até 3 perguntas complementares
+* Linguagem simples
+* Linguagem humanizada
+
+Exemplo:
+
+Cliente:
+
+"Meu auxílio foi negado."
+
+Agente:
+
+1. Quando ocorreu a negativa do INSS?
+2. Você possui o laudo médico atualizado?
+3. Já entrou com recurso administrativo?
+
+---
+
+# Etapa 5 — Solicitação Inteligente de Documentos
+
+A solicitação deixa de ser genérica.
+
+Exemplo:
+
+## BPC
+
+Solicitar:
+
+* RG
+* CPF
+* Laudo médico
+* CadÚnico
+
+---
+
+## Auxílio-doença
+
+Solicitar:
+
+* Laudo médico
+* Exames
+* Atestado recente
+* CNIS
+
+---
+
+## Rescisão Trabalhista
+
+Solicitar:
+
+* CTPS
+* Holerites
+* TRCT
+* Extrato FGTS
+
+---
+
+# Etapa 6 — Consolidação
+
+O N8N consolida:
+
+Dados pessoais
++
+Perguntas respondidas
++
+Documentos enviados
++
+Contexto da conversa
+
+---
+
+# Etapa 7 — Resumo Executivo
+
+Exemplo:
+
+## Resumo do Caso
+
+Cliente relata negativa de benefício BPC para pessoa com deficiência.
+
+Possui laudo médico atualizado.
+
+Já realizou requerimento administrativo junto ao INSS.
+
+Possui CadÚnico ativo.
+
+Documentação inicial considerada suficiente para análise jurídica.
+
+---
+
+# Etapa 8 — Confirmação do Cliente
+
+Mensagem exibida:
+
+"Revise as informações abaixo.
+
+Está tudo correto?"
+
+Botões:
+
+[Confirmar Informações]
+
+[Solicitar Alteração]
+
+---
+
+# Etapa 9 — Persistência
+
+Após confirmação:
+
+Salvar:
+
+chat_pre_atendimentos
+
+chat_documents
+
+chat_ai_analysis
+
+protocolos
+
+---
+
+# Etapa 10 — Hermes
+
+Executar:
+
+HermesAnalysisService
+
+Resultado:
+
+* Urgência
+* Complexidade
+* Entidades
+* Prazos
+* Resumo jurídico
+
+---
+
+# Etapa 11 — Encaminhamento
+
+Disparar:
+
+chat_finalizado
+
+Payload:
+
+{
+"protocolo": "JUR-20260617-0001",
+"cliente": {},
+"juridico": {},
+"documentos": [],
+"resumo": {},
+"hermes": {}
+}
+
+---
+
+# Integração Kinbox
+
+Status:
+
+Planejado
+
+Objetivo:
+
+Criar atendimento automaticamente para equipe comercial.
+
+Dados enviados:
+
+* Nome
+* Telefone
+* Área
+* Subárea
+* Resumo
+* Urgência
+* Protocolo
+
+---
+
+# Regras de IA
+
+A IA nunca deve:
+
+* Prometer resultado jurídico
+* Informar ganho de causa
+* Informar prazo definitivo
+* Informar valores definitivos
+* Emitir parecer jurídico vinculante
+
+A IA deve:
+
+* Coletar informações
+* Organizar contexto
+* Auxiliar triagem
+
+---
+
+# Métricas de Sucesso
+
+KPIs
+
+* Taxa de conclusão > 70%
+* Upload de documentos > 50%
+* Conversão para contato humano > 30%
+* Tempo médio de triagem < 5 minutos
+* Custo IA por atendimento < R$ 0,10
+
+---
+
+# Roadmap Futuro
+
+Sprint 4.1
+
+* Integração Kinbox
+
+Sprint 4.2
+
+* Memória persistente Redis
+
+Sprint 4.3
+
+* Agentes especializados por subárea
+
+Sprint 4.4
+
+* Conversions API Meta
+
+Sprint 4.5
+
+* Dashboard de produtividade jurídica
+
+Sprint 5.0
+
+* Plataforma white-label para escritórios parceiros
+
+---
+
+# Conclusão
+
+A FSM permanece como núcleo operacional do sistema.
+
+O N8N passa a atuar como camada de inteligência jurídica e contextual.
+
+O resultado é um atendimento mais humano, mais qualificado e com maior taxa de conversão, sem comprometer a previsibilidade do fluxo já homologado nas Sprints 3.x.

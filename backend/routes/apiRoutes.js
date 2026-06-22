@@ -8,13 +8,23 @@ const chatLeadController = require("../controllers/ChatLeadController");
 const preAtendimentoAdminController = require("../controllers/PreAtendimentoAdminController");
 const chatDocumentController = require("../controllers/ChatDocumentController");
 const authMiddleware = require("../middleware/authMiddleware");
+const requireRole = require("../middleware/requireRole");
 const diagnosticoLeadController = require("../controllers/DiagnosticoLeadController");
+const diagnosticoPedidoController = require("../controllers/DiagnosticoPedidoController");
+const asaasWebhookController = require("../controllers/AsaasWebhookController");
 
 // Sprint 3.5: Hermes Analysis Engine
 const aiAnalysisController = require("../controllers/AIAnalysisController");
 
 // Sprint 3.4.3: Rate Limiting e File Validation
-const { preAtendimentoLimiter, uploadLimiter } = require("../middleware/rateLimiter");
+const {
+  preAtendimentoLimiter,
+  uploadLimiter,
+  diagnosticoPedidoLimiter,
+  diagnosticoLeadLimiter,
+  asaasWebhookLimiter,
+  leadsLimiter,
+} = require("../middleware/rateLimiter");
 const { createFileValidationMiddleware } = require("../utils/fileValidator");
 
 // Sprint 3.4: Configuração do Multer para upload de documentos
@@ -55,12 +65,24 @@ const upload = multer({
   }
 });
 
+const adminOnly = [
+  authMiddleware.verifyToken,
+  requireRole(["admin", "superadmin"]),
+];
+
 // Public Routes (Tracking & Lead Capture)
 router.post("/track", mainController.trackVisit);
-router.post("/leads", mainController.createLead); // Form submission from public site
+router.post("/leads", leadsLimiter, mainController.createLead); // Form submission from public site
 
 // Sprint 3.6: Diagnóstico Tributário — Public (no auth required)
-router.post("/diagnostico", diagnosticoLeadController.create);
+router.post("/diagnostico", diagnosticoLeadLimiter, diagnosticoLeadController.create);
+
+// Sprint 3.11: Diagnóstico Tributário Premium — Pedidos e Pagamento
+router.post("/diagnostico/pedido", diagnosticoPedidoLimiter, diagnosticoPedidoController.createPedido);
+router.get("/diagnostico/pedido/:id", diagnosticoPedidoController.getPedido);
+
+// Sprint 3.11: Webhook ASAAS
+router.post("/asaas/webhook", asaasWebhookLimiter, asaasWebhookController.handleWebhook);
 
 // Sprint 3.2: Chat Pré-Atendimento (Public - NO AUTH REQUIRED)
 // Sprint 3.4.3: Rate limiting
@@ -76,40 +98,46 @@ router.post("/chat/upload-documents",
   chatDocumentController.upload
 );
 router.get("/chat/documents/:preAtendimentoId", chatDocumentController.listByPreAtendimento);
-router.get("/chat/documents/download/:id", chatDocumentController.download);
 
 // Sprint 3.3: Painel Administrativo de Pré-Atendimentos (Protected - Admin Only)
-router.get("/admin/chat/pre-atendimentos", authMiddleware.verifyToken, preAtendimentoAdminController.list);
-router.get("/admin/chat/pre-atendimentos/stats", authMiddleware.verifyToken, preAtendimentoAdminController.getStats);
-router.get("/admin/chat/pre-atendimentos/areas", authMiddleware.verifyToken, preAtendimentoAdminController.getAreas);
-router.get("/admin/chat/pre-atendimentos/subareas", authMiddleware.verifyToken, preAtendimentoAdminController.getSubareas);
-router.get("/admin/chat/pre-atendimentos/:id", authMiddleware.verifyToken, preAtendimentoAdminController.getById);
-router.put("/admin/chat/pre-atendimentos/:id/status", authMiddleware.verifyToken, preAtendimentoAdminController.updateStatus);
+router.get("/admin/chat/pre-atendimentos", ...adminOnly, preAtendimentoAdminController.list);
+router.get("/admin/chat/pre-atendimentos/stats", ...adminOnly, preAtendimentoAdminController.getStats);
+router.get("/admin/chat/pre-atendimentos/areas", ...adminOnly, preAtendimentoAdminController.getAreas);
+router.get("/admin/chat/pre-atendimentos/subareas", ...adminOnly, preAtendimentoAdminController.getSubareas);
+router.get("/admin/chat/pre-atendimentos/:id", ...adminOnly, preAtendimentoAdminController.getById);
+router.put("/admin/chat/pre-atendimentos/:id/status", ...adminOnly, preAtendimentoAdminController.updateStatus);
 
 // Sprint 3.4: Admin - Gerenciamento de Documentos
-router.get("/admin/chat/documents", authMiddleware.verifyToken, chatDocumentController.getStats);
-router.get("/admin/chat/documents/:id", authMiddleware.verifyToken, chatDocumentController.getById);
-router.delete("/admin/chat/documents/:id", authMiddleware.verifyToken, chatDocumentController.delete);
+router.get("/admin/chat/documents", ...adminOnly, chatDocumentController.getStats);
+router.get("/admin/chat/documents/download/:id", ...adminOnly, chatDocumentController.download);
+router.get("/admin/chat/documents/:id", ...adminOnly, chatDocumentController.getById);
+router.delete("/admin/chat/documents/:id", ...adminOnly, chatDocumentController.delete);
 
 // Sprint 3.6: Diagnóstico Tributário — Admin Routes (protected)
-router.get("/admin/diagnostico", authMiddleware.verifyToken, diagnosticoLeadController.list);
-router.get("/admin/diagnostico/stats", authMiddleware.verifyToken, diagnosticoLeadController.getStats);
-router.get("/admin/diagnostico/:id", authMiddleware.verifyToken, diagnosticoLeadController.getById);
-router.put("/admin/diagnostico/:id/status", authMiddleware.verifyToken, diagnosticoLeadController.updateStatus);
+router.get("/admin/diagnostico", ...adminOnly, diagnosticoLeadController.list);
+router.get("/admin/diagnostico/stats", ...adminOnly, diagnosticoLeadController.getStats);
+
+// Sprint 3.11: Diagnóstico Tributário Premium — Admin (rotas específicas ANTES de /:id)
+router.get("/admin/diagnostico/pedidos", ...adminOnly, diagnosticoPedidoController.listPedidos);
+router.get("/admin/diagnostico/pedidos/stats", ...adminOnly, diagnosticoPedidoController.getPedidosStats);
+router.get("/admin/diagnostico/pedidos/export", ...adminOnly, diagnosticoPedidoController.exportPedidos);
+
+router.get("/admin/diagnostico/:id", ...adminOnly, diagnosticoLeadController.getById);
+router.put("/admin/diagnostico/:id/status", ...adminOnly, diagnosticoLeadController.updateStatus);
 
 // Sprint 3.5: Hermes Analysis Engine - Admin Routes
-router.get("/admin/chat/analysis/:preAtendimentoId", authMiddleware.verifyToken, aiAnalysisController.getByPreAtendimento);
-router.post("/admin/chat/analysis/:preAtendimentoId/reprocess", authMiddleware.verifyToken, aiAnalysisController.reprocess);
-router.get("/admin/chat/analysis/stats", authMiddleware.verifyToken, aiAnalysisController.getStats);
+router.get("/admin/chat/analysis/:preAtendimentoId", ...adminOnly, aiAnalysisController.getByPreAtendimento);
+router.post("/admin/chat/analysis/:preAtendimentoId/reprocess", ...adminOnly, aiAnalysisController.reprocess);
+router.get("/admin/chat/analysis/stats", ...adminOnly, aiAnalysisController.getStats);
 
 // Sprint 3.9: Webhook Logs — Admin Routes
 const chatWebhookLogController = require("../controllers/ChatWebhookLogController");
-router.get("/admin/chat/webhook-logs/:preAtendimentoId", authMiddleware.verifyToken, chatWebhookLogController.getByPreAtendimento);
+router.get("/admin/chat/webhook-logs/:preAtendimentoId", ...adminOnly, chatWebhookLogController.getByPreAtendimento);
 
 // Sprint 3.10: Hermes Webhook Logs — Admin Routes
 const hermesWebhookLogController = require("../controllers/HermesWebhookLogController");
-router.get("/admin/chat/hermes-webhook-logs/:preAtendimentoId", authMiddleware.verifyToken, hermesWebhookLogController.getByPreAtendimento);
-router.post("/admin/chat/hermes-webhook-logs/:preAtendimentoId/reenviar", authMiddleware.verifyToken, hermesWebhookLogController.reenviar);
+router.get("/admin/chat/hermes-webhook-logs/:preAtendimentoId", ...adminOnly, hermesWebhookLogController.getByPreAtendimento);
+router.post("/admin/chat/hermes-webhook-logs/:preAtendimentoId/reenviar", ...adminOnly, hermesWebhookLogController.reenviar);
 
 // Public Content Routes (Read-only)
 router.get("/posts", contentController.getPosts);
@@ -119,13 +147,11 @@ router.get("/professionals", contentController.getProfessionals);
 router.post("/forgot-password", contentController.forgotPassword);
 router.post("/reset-password", contentController.resetPassword);
 
-// Auth Routes (Public)
-const authController = require("../controllers/authController");
-router.post("/auth/register", authController.register);
-router.post("/auth/login", authController.login);
+// Auth: login/register em /api/auth (authRoutes.js)
 
 // Protected Routes (Admin)
 router.use(authMiddleware);
+router.use(requireRole(["admin", "superadmin"]));
 
 // Analytics & Dashboard
 router.get("/dashboard", mainController.getDashboardStats);

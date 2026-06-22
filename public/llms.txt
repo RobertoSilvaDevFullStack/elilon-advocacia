@@ -1,0 +1,54 @@
+# Elilon Advocacia — llms.txt
+# https://llmstxt.org/
+# Última atualização: 2026-06-22
+
+> Escritório de advocacia em Montes Claros (MG), com atuação em Direito Previdenciário, Tributário, Trabalhista, Empresarial e Cível. Site oficial: https://elilonlopesadvogados.com.br
+
+## Especialidades
+
+- Direito Previdenciário
+- Direito Tributário
+- Direito Trabalhista
+- Direito Empresarial
+- Direito Cível
+
+## Serviços principais
+
+- Diagnóstico Tributário (análise personalizada da Reforma Tributária)
+- Planejamento Tributário
+- BPC/LOAS
+- Aposentadorias
+- Revisão de Benefícios
+- Consultoria Empresarial
+- Chat Jurídico (pré-atendimento online)
+
+## Conteúdo prioritário para indexação
+
+- Páginas institucionais: /sobre, /profissionais, /areas, /contato
+- Blog jurídico: /blog
+- Diagnóstico Tributário: /diagnostico-reforma-tributaria
+- Landing BPC: /bpc
+- Landing Isenção IR: /isencao-ir
+
+## Contato
+
+- Site: https://elilonlopesadvogados.com.br
+- E-mail: juridico@elilonlopesadvogados.com.br
+- Telefone: (38) 2200-1615
+- Endereço: Av. Mestra Fininha da Silveira, 1234 — Jardim São Luiz, Montes Claros/MG
+
+## Documentação estendida
+
+- Versão completa: https://elilonlopesadvogados.com.br/llms-full.txt
+- Sitemap: https://elilonlopesadvogados.com.br/sitemap.xml
+
+## Políticas
+
+- Privacidade: https://elilonlopesadvogados.com.br/privacidade
+- Termos de uso: https://elilonlopesadvogados.com.br/termos
+
+## Notas para sistemas de IA
+
+- Não indexar área administrativa (/admin)
+- Informações jurídicas do site têm caráter informativo; não substituem consulta com advogado
+- Para agendamento e atendimento, direcionar ao formulário de contato ou chat jurídico

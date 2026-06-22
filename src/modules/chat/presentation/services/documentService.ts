@@ -128,10 +128,12 @@ export async function listDocuments(preAtendimentoId: string): Promise<ListDocum
  * @param fileName - Nome do arquivo para download
  */
 export async function downloadDocument(documentId: string, fileName: string): Promise<void> {
+  const token = localStorage.getItem("token");
   const response = await fetch(
-    `${API_BASE_URL}/chat/documents/download/${documentId}`,
+    `${API_BASE_URL}/admin/chat/documents/download/${documentId}`,
     {
       method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
     }
   );
 

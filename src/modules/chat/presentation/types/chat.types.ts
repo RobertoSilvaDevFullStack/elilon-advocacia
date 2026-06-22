@@ -33,6 +33,10 @@ export type ChatState =
   | "UPLOADING_DOCUMENTS"              // Processando upload
   | "DOCUMENTS_UPLOADED"               // Documentos enviados
   | "QUALIFICATION_COMPLETE"         // Qualificação completa
+  | "AWAITING_SUMMARY_CONFIRMATION"  // Aguardando confirmação do resumo N8N (Sprint 4.0.2)
+  | "SUMMARY_CONFIRMED"              // Resumo confirmado pelo cliente
+  | "AWAITING_AI_QUESTION"           // Aguardando resposta do usuário para pergunta da IA
+  | "AI_INVESTIGATION_COMPLETE"      // IA concluiu investigação do caso
   // Estados legados (mantidos para compatibilidade)
   | "COLLECTING_NAME"
   | "COLLECTING_EMAIL"
@@ -360,6 +364,7 @@ export interface ChatWindowProps {
   onSelectDocumentOption?: (option: "UPLOAD_NOW" | "UPLOAD_LATER") => void;
   onDocumentUpload?: (files: FileList | null) => void;
   onSkipDocumentUpload?: () => void;
+  isN8NLoading?: boolean;                        // Sprint 4.0.2: Aguardando resposta N8N
 }
 
 export interface MessageListProps {

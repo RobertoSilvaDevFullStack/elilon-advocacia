@@ -1,0 +1,523 @@
+{
+  "name": "Elilon Advocacia — Chat Jurídico Orchestration v1.0",
+  "nodes": [
+
+    {
+      "id": "node_webhook_entrada",
+      "name": "🔗 Webhook Entrada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 400],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-juridico",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false
+        }
+      },
+      "notes": "Recebe o payload do ChatWebhookService (evento chat_finalizado) ou do HermesWebhookService (evento hermes_analise_concluida). Também aceita chamadas diretas para testes."
+    },
+
+    {
+      "id": "node_validacao_sessao",
+      "name": "🛡️ Validação de Sessão",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 400],
+      "parameters": {
+        "jsCode": "// ─── Validação de Sessão ────────────────────────────────────────────────\n// Garante que o payload contém os campos mínimos obrigatórios.\n// A FSM continua sendo a fonte da verdade — N8N NÃO controla estados.\n\nconst body = $input.item.json.body || $input.item.json;\n\nconst evento = body.evento;\nconst protocolo = body.protocolo;\nconst cliente = body.cliente;\nconst juridico = body.juridico;\n\n// Validações mínimas\nconst errors = [];\n\nif (!evento) errors.push('evento ausente');\nif (!protocolo) errors.push('protocolo ausente');\nif (!cliente?.nome) errors.push('cliente.nome ausente');\nif (!juridico?.area) errors.push('juridico.area ausente');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      valid: false,\n      errors,\n      protocolo: protocolo || null\n    }\n  }];\n}\n\n// Extrair sessionId do protocolo (JUR-YYYYMMDD-XXXX)\nconst sessionId = `session_${protocolo.replace(/[^A-Z0-9]/gi, '_')}`;\n\nreturn [{\n  json: {\n    valid: true,\n    evento,\n    protocolo,\n    sessionId,\n    cliente,\n    juridico,\n    documentos: body.documentos || [],\n    hermes: body.hermes || null,\n    timestamp: body.timestamp || new Date().toISOString()\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_if_valido",
+      "name": "✅ Payload Válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 400],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "id": "cond_valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+
+    {
+      "id": "node_resposta_erro_validacao",
+      "name": "❌ Resposta Erro Validação",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 600],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'Payload inválido', details: $json.errors }) }}",
+        "options": { "responseCode": 400 }
+      }
+    },
+
+    {
+      "id": "node_recuperar_contexto",
+      "name": "📦 Recuperar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 400],
+      "parameters": {
+        "jsCode": "// ─── Recuperar / Construir Contexto da Sessão ──────────────────────────\n// N8N NÃO armazena estado da conversa — constrói contexto a partir\n// dos dados recebidos no payload (fonte única de verdade).\n\nconst data = $json;\n\n// Contexto enriquecido para processamento\nconst contexto = {\n  sessao: {\n    id: data.sessionId,\n    protocolo: data.protocolo,\n    evento: data.evento,\n    timestamp: data.timestamp\n  },\n  cliente: {\n    nome: data.cliente.nome,\n    telefone: data.cliente.telefone,\n    email: data.cliente.email,\n    cidade: data.cliente.cidade,\n    estado: data.cliente.estado\n  },\n  juridico: {\n    area: data.juridico.area,\n    subarea: data.juridico.subarea,\n    descricao_caso: data.juridico.descricao_caso || data.juridico.descricaoCaso || ''\n  },\n  documentos: data.documentos || [],\n  hermes: data.hermes || null,\n  // Flags de processamento\n  qualificacaoCompleta: true, // Webhook só dispara após qualificação completa\n  temDocumentos: (data.documentos || []).length > 0,\n  temHermes: !!data.hermes && data.hermes.status === 'concluida'\n};\n\nreturn [{ json: contexto }];"
+      }
+    },
+
+    {
+      "id": "node_switch_area",
+      "name": "⚖️ Switch por Área Jurídica",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1200, 400],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.juridico.area }}",
+                    "rightValue": "Previdenciário",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Previdenciário"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.juridico.area }}",
+                    "rightValue": "Trabalhista",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Trabalhista"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.juridico.area }}",
+                    "rightValue": "Tributário",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Tributário"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.juridico.area }}",
+                    "rightValue": "Cível",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Cível"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      }
+    },
+
+    {
+      "id": "node_previdenciario_memoria",
+      "name": "🧠 Previdenciário — Memória Conversacional",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 100],
+      "parameters": {
+        "jsCode": "// ─── Memória Conversacional — Previdenciário ────────────────────────────\n// Constrói contexto jurídico especializado para a área previdenciária.\n// Identifica subárea e prepara perguntas de qualificação específicas.\n\nconst ctx = $json;\nconst subarea = ctx.juridico.subarea;\nconst descricao = ctx.juridico.descricao_caso;\n\n// Mapeamento de perguntas por subárea\nconst perguntasPorSubarea = {\n  'BPC/LOAS': [\n    'Qual é a renda familiar mensal total?',\n    'Há membros com deficiência grave na família?',\n    'Já houve negativa do INSS anteriormente?',\n    'Qual a data de nascimento do requerente?'\n  ],\n  'Aposentadoria': [\n    'Qual o tempo de contribuição até o momento?',\n    'Qual categoria de segurado (empregado, autônomo, rural)?',\n    'Há períodos de atividade especial (insalubres/periculosos)?',\n    'Possui CTPS ou carnês de contribuição?\\''\n  ],\n  'Auxílio-doença': [\n    'Qual o CID da doença diagnosticada?',\n    'Qual a data de início da incapacidade?',\n    'Já solicitou auxílio ao INSS? Qual o resultado?',\n    'Há atestados médicos recentes (menos de 30 dias)?'\n  ],\n  'Pensão': [\n    'Qual o grau de parentesco com o falecido?',\n    'O falecido era contribuinte ativo ou aposentado?',\n    'Há outros dependentes que já recebem pensão?',\n    'Qual a data do óbito?'\n  ],\n  'Revisão': [\n    'Qual benefício está em revisão (número NB)?',\n    'Qual o motivo da revisão (erro de cálculo, tempo especial, etc.)?',\n    'Qual a data de concessão do benefício original?',\n    'Há decisão administrativa anterior?'\n  ]\n};\n\nconst perguntas = perguntasPorSubarea[subarea] || [\n  'Descreva melhor a situação previdenciária.',\n  'Há documentação de histórico de contribuição disponível?'\n];\n\nreturn [{\n  json: {\n    ...ctx,\n    area_config: {\n      area: 'Previdenciário',\n      subarea,\n      perguntas_qualificacao: perguntas,\n      documentos_necessarios: [\n        'RG e CPF',\n        'CTPS ou Carnê de contribuição',\n        'Extrato do CNIS (disponível no Meu INSS)',\n        'Laudos e atestados médicos (se aplicável)'\n      ],\n      urgencia_padrao: subarea === 'Auxílio-doença' ? 'alta' : 'media',\n      complexidade_padrao: ['Revisão', 'Aposentadoria'].includes(subarea) ? 'alta' : 'media'\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_previdenciario_openai",
+      "name": "🤖 Previdenciário — Análise OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1760, 100],
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é um especialista em Direito Previdenciário do escritório Elilon Lopes Advogados. Analise o caso descrito e:\n1. Confirme a subárea identificada\n2. Avalie urgência (baixa/media/alta)\n3. Avalie complexidade (baixa/media/alta)\n4. Gere 3 perguntas de qualificação específicas\n5. Liste documentos essenciais para o caso\n6. Escreva um resumo executivo em 2-3 frases\n\nResponda APENAS em JSON válido, sem markdown."
+            },
+            {
+              "role": "user",
+              "content": "=Caso Previdenciário:\nSubárea: {{ $json.juridico.subarea }}\nCliente: {{ $json.cliente.nome }}, {{ $json.cliente.cidade }}/{{ $json.cliente.estado }}\nDescrição: {{ $json.juridico.descricao_caso }}\n\nDocumentos enviados: {{ $json.documentos.length }} arquivo(s)\nAnálise Hermes disponível: {{ $json.temHermes ? 'SIM - Urgência: ' + $json.hermes.urgencia + ' / Complexidade: ' + $json.hermes.complexidade : 'NÃO' }}\n\nResponda com JSON:\n{\n  \"subarea_confirmada\": \"string\",\n  \"urgencia\": \"baixa|media|alta\",\n  \"complexidade\": \"baixa|media|alta\",\n  \"perguntas_adicionais\": [\"string\", \"string\", \"string\"],\n  \"documentos_essenciais\": [\"string\"],\n  \"resumo_executivo\": \"string\",\n  \"recomendacao_acao\": \"string\"\n}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.3,
+          "maxTokens": 1000
+        }
+      },
+      "credentials": {
+        "openAiApi": { "id": "openai_cred", "name": "OpenAI API" }
+      }
+    },
+
+    {
+      "id": "node_previdenciario_contexto",
+      "name": "💾 Previdenciário — Atualizar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 100],
+      "parameters": {
+        "jsCode": "const ctx = $('node_previdenciario_memoria').item.json;\nconst aiRaw = $json.message?.content || $json.text || '{}';\n\nlet aiAnalysis = {};\ntry {\n  const cleaned = aiRaw.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  aiAnalysis = JSON.parse(cleaned);\n} catch(e) {\n  aiAnalysis = { erro: 'Falha ao parsear resposta OpenAI', raw: aiRaw };\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    n8n_analysis: {\n      area: 'Previdenciário',\n      subarea_confirmada: aiAnalysis.subarea_confirmada || ctx.juridico.subarea,\n      urgencia: aiAnalysis.urgencia || ctx.area_config.urgencia_padrao,\n      complexidade: aiAnalysis.complexidade || ctx.area_config.complexidade_padrao,\n      perguntas_adicionais: aiAnalysis.perguntas_adicionais || [],\n      documentos_essenciais: aiAnalysis.documentos_essenciais || ctx.area_config.documentos_necessarios,\n      resumo_executivo: aiAnalysis.resumo_executivo || '',\n      recomendacao_acao: aiAnalysis.recomendacao_acao || '',\n      processado_em: new Date().toISOString()\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_trabalhista_memoria",
+      "name": "🧠 Trabalhista — Memória Conversacional",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 300],
+      "parameters": {
+        "jsCode": "const ctx = $json;\nconst subarea = ctx.juridico.subarea;\n\nconst perguntasPorSubarea = {\n  'Rescisão': [\n    'O desligamento foi pedido de demissão, demissão sem justa causa ou justa causa?',\n    'Há verbas rescisórias pendentes (FGTS, aviso, 13º)?',\n    'Qual a data de admissão e demissão?',\n    'Há horas extras ou banco de horas não pagas?'\n  ],\n  'FGTS': [\n    'O FGTS foi sacado ou ainda está na Caixa Econômica?',\n    'Houve irregularidade no recolhimento (FGTS sonegado)?',\n    'O contrato era CLT formal?',\n    'Há mais de 2 anos desde a rescisão?'\n  ],\n  'Horas Extras': [\n    'Qual era a jornada contratual e a jornada real?',\n    'Há registros de ponto (cartão, digital, etc.)?',\n    'Qual o período de referência das horas não pagas?',\n    'Há adicional noturno também envolvido?'\n  ],\n  'Assédio': [\n    'O assédio é moral, sexual ou ambos?',\n    'Há testemunhas ou comunicações documentadas?',\n    'O fato foi reportado ao RH ou superior?',\n    'Há danos à saúde documentados (afastamentos, laudos)?'\n  ],\n  'Acidente de Trabalho': [\n    'O acidente foi comunicado via CAT (Comunicado de Acidente de Trabalho)?',\n    'Houve afastamento pelo INSS?',\n    'Há sequelas permanentes?',\n    'A empresa tem CIPA ativa?'\n  ]\n};\n\nconst perguntas = perguntasPorSubarea[subarea] || [\n  'Descreva a situação trabalhista em mais detalhes.',\n  'Há documentação da relação empregatícia?'\n];\n\nreturn [{\n  json: {\n    ...ctx,\n    area_config: {\n      area: 'Trabalhista',\n      subarea,\n      perguntas_qualificacao: perguntas,\n      documentos_necessarios: [\n        'CTPS (física ou digital)',\n        'Termo de Rescisão (TRCT) se houver',\n        'Contracheques dos últimos 6 meses',\n        'Cartão de ponto ou espelho de horas',\n        'Contrato de trabalho'\n      ],\n      urgencia_padrao: ['Assédio', 'Acidente de Trabalho'].includes(subarea) ? 'alta' : 'media',\n      complexidade_padrao: 'media'\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_trabalhista_openai",
+      "name": "🤖 Trabalhista — Análise OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1760, 300],
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é um especialista em Direito do Trabalho do escritório Elilon Lopes Advogados. Analise o caso e responda APENAS em JSON válido sem markdown."
+            },
+            {
+              "role": "user",
+              "content": "=Caso Trabalhista:\nSubárea: {{ $json.juridico.subarea }}\nCliente: {{ $json.cliente.nome }}, {{ $json.cliente.cidade }}/{{ $json.cliente.estado }}\nDescrição: {{ $json.juridico.descricao_caso }}\n\nDocumentos enviados: {{ $json.documentos.length }} arquivo(s)\nAnálise Hermes: {{ $json.temHermes ? 'Urgência: ' + $json.hermes.urgencia : 'Não disponível' }}\n\nJSON esperado:\n{\n  \"subarea_confirmada\": \"string\",\n  \"urgencia\": \"baixa|media|alta\",\n  \"complexidade\": \"baixa|media|alta\",\n  \"perguntas_adicionais\": [\"string\", \"string\", \"string\"],\n  \"documentos_essenciais\": [\"string\"],\n  \"resumo_executivo\": \"string\",\n  \"recomendacao_acao\": \"string\"\n}"
+            }
+          ]
+        },
+        "options": { "temperature": 0.3, "maxTokens": 1000 }
+      },
+      "credentials": {
+        "openAiApi": { "id": "openai_cred", "name": "OpenAI API" }
+      }
+    },
+
+    {
+      "id": "node_trabalhista_contexto",
+      "name": "💾 Trabalhista — Atualizar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 300],
+      "parameters": {
+        "jsCode": "const ctx = $('node_trabalhista_memoria').item.json;\nconst aiRaw = $json.message?.content || $json.text || '{}';\n\nlet aiAnalysis = {};\ntry {\n  const cleaned = aiRaw.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  aiAnalysis = JSON.parse(cleaned);\n} catch(e) {\n  aiAnalysis = { erro: 'Falha ao parsear resposta OpenAI', raw: aiRaw };\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    n8n_analysis: {\n      area: 'Trabalhista',\n      subarea_confirmada: aiAnalysis.subarea_confirmada || ctx.juridico.subarea,\n      urgencia: aiAnalysis.urgencia || ctx.area_config.urgencia_padrao,\n      complexidade: aiAnalysis.complexidade || ctx.area_config.complexidade_padrao,\n      perguntas_adicionais: aiAnalysis.perguntas_adicionais || [],\n      documentos_essenciais: aiAnalysis.documentos_essenciais || ctx.area_config.documentos_necessarios,\n      resumo_executivo: aiAnalysis.resumo_executivo || '',\n      recomendacao_acao: aiAnalysis.recomendacao_acao || '',\n      processado_em: new Date().toISOString()\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_tributario_memoria",
+      "name": "🧠 Tributário — Memória Conversacional",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 500],
+      "parameters": {
+        "jsCode": "const ctx = $json;\nconst subarea = ctx.juridico.subarea;\n\nconst perguntasPorSubarea = {\n  'Impostos': [\n    'Qual imposto está em discussão (IRPJ, ICMS, ISS, PIS/COFINS)?',\n    'A empresa está em regime Simples, Presumido ou Real?',\n    'Há auto de infração ou notificação fiscal?',\n    'Qual o valor estimado em disputa?'\n  ],\n  'Planejamento Tributário': [\n    'Qual o faturamento anual da empresa?',\n    'Qual o regime tributário atual?',\n    'Há operações entre empresas do mesmo grupo?',\n    'Existem incentivos fiscais já utilizados?'\n  ],\n  'Restituição': [\n    'Qual tributo pago indevidamente (IRPF, IRPJ, contribuições)?',\n    'Qual o período de apuração?',\n    'Há declaração retificadora já protocolada?',\n    'Qual o valor estimado para restituição?'\n  ],\n  'Execução Fiscal': [\n    'Há penhora ou bloqueio de ativos em andamento?',\n    'Qual o número da CDA (Certidão de Dívida Ativa)?',\n    'Qual a origem da dívida (Federal, Estadual ou Municipal)?',\n    'O prazo para embargos à execução ainda está aberto?'\n  ]\n};\n\nconst perguntas = perguntasPorSubarea[subarea] || [\n  'Descreva a situação tributária em detalhes.',\n  'Há documentação fiscal disponível (notas, guias, certidões)?'\n];\n\nreturn [{\n  json: {\n    ...ctx,\n    area_config: {\n      area: 'Tributário',\n      subarea,\n      perguntas_qualificacao: perguntas,\n      documentos_necessarios: [\n        'Certidão de Dívida Ativa (CDA) se houver',\n        'Guias de pagamento (DARF, GPS, GNRE)',\n        'Declarações fiscais (IRPJ, SPED, etc.)',\n        'Auto de infração ou notificação se houver',\n        'Contrato Social ou CNPJ atualizado'\n      ],\n      urgencia_padrao: subarea === 'Execução Fiscal' ? 'alta' : 'media',\n      complexidade_padrao: ['Planejamento Tributário', 'Execução Fiscal'].includes(subarea) ? 'alta' : 'media'\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_tributario_openai",
+      "name": "🤖 Tributário — Análise OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1760, 500],
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é um especialista em Direito Tributário do escritório Elilon Lopes Advogados. Analise o caso e responda APENAS em JSON válido sem markdown."
+            },
+            {
+              "role": "user",
+              "content": "=Caso Tributário:\nSubárea: {{ $json.juridico.subarea }}\nCliente: {{ $json.cliente.nome }}, {{ $json.cliente.cidade }}/{{ $json.cliente.estado }}\nDescrição: {{ $json.juridico.descricao_caso }}\n\nDocumentos enviados: {{ $json.documentos.length }} arquivo(s)\nAnálise Hermes: {{ $json.temHermes ? 'Urgência: ' + $json.hermes.urgencia + ', Complexidade: ' + $json.hermes.complexidade : 'Não disponível' }}\n\nJSON esperado:\n{\n  \"subarea_confirmada\": \"string\",\n  \"urgencia\": \"baixa|media|alta\",\n  \"complexidade\": \"baixa|media|alta\",\n  \"perguntas_adicionais\": [\"string\", \"string\", \"string\"],\n  \"documentos_essenciais\": [\"string\"],\n  \"resumo_executivo\": \"string\",\n  \"recomendacao_acao\": \"string\"\n}"
+            }
+          ]
+        },
+        "options": { "temperature": 0.3, "maxTokens": 1000 }
+      },
+      "credentials": {
+        "openAiApi": { "id": "openai_cred", "name": "OpenAI API" }
+      }
+    },
+
+    {
+      "id": "node_tributario_contexto",
+      "name": "💾 Tributário — Atualizar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 500],
+      "parameters": {
+        "jsCode": "const ctx = $('node_tributario_memoria').item.json;\nconst aiRaw = $json.message?.content || $json.text || '{}';\n\nlet aiAnalysis = {};\ntry {\n  const cleaned = aiRaw.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  aiAnalysis = JSON.parse(cleaned);\n} catch(e) {\n  aiAnalysis = { erro: 'Falha ao parsear resposta OpenAI', raw: aiRaw };\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    n8n_analysis: {\n      area: 'Tributário',\n      subarea_confirmada: aiAnalysis.subarea_confirmada || ctx.juridico.subarea,\n      urgencia: aiAnalysis.urgencia || ctx.area_config.urgencia_padrao,\n      complexidade: aiAnalysis.complexidade || ctx.area_config.complexidade_padrao,\n      perguntas_adicionais: aiAnalysis.perguntas_adicionais || [],\n      documentos_essenciais: aiAnalysis.documentos_essenciais || ctx.area_config.documentos_necessarios,\n      resumo_executivo: aiAnalysis.resumo_executivo || '',\n      recomendacao_acao: aiAnalysis.recomendacao_acao || '',\n      processado_em: new Date().toISOString()\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_civel_memoria",
+      "name": "🧠 Cível — Memória Conversacional",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 700],
+      "parameters": {
+        "jsCode": "const ctx = $json;\nconst subarea = ctx.juridico.subarea;\n\nconst perguntasPorSubarea = {\n  'Contratos': [\n    'Qual a natureza do contrato (compra e venda, serviço, locação, etc.)?',\n    'Há descumprimento de cláusulas específicas?',\n    'O contrato está registrado ou tem reconhecimento de firma?',\n    'Qual o valor do contrato e o dano estimado?'\n  ],\n  'Consumidor': [\n    'Qual o produto ou serviço com problema?',\n    'Já foi feita reclamação no SAC ou Procon?',\n    'Há nota fiscal ou comprovante de compra?',\n    'Qual o dano sofrido (material, moral ou ambos)?'\n  ],\n  'Família': [\n    'Trata-se de divórcio, guarda, alimentos ou herança?',\n    'Há filhos menores envolvidos?',\n    'Existe acordo entre as partes ou litígio?',\n    'Há bens a partilhar? Qual o regime de bens?'\n  ],\n  'Indenização': [\n    'Qual o evento causador do dano (acidente, erro médico, etc.)?',\n    'O dano é material, moral ou ambos?',\n    'Há laudo, boletim de ocorrência ou documentação do evento?',\n    'Quem é o responsável pelo dano (pessoa física, empresa)?'\n  ]\n};\n\nconst perguntas = perguntasPorSubarea[subarea] || [\n  'Descreva a situação cível em detalhes.',\n  'Há documentação do caso disponível?'\n];\n\nreturn [{\n  json: {\n    ...ctx,\n    area_config: {\n      area: 'Cível',\n      subarea,\n      perguntas_qualificacao: perguntas,\n      documentos_necessarios: [\n        'RG e CPF',\n        'Contrato ou documento gerador da obrigação',\n        'Comprovantes de pagamento ou não pagamento',\n        'Comunicações e notificações trocadas',\n        'Boletim de Ocorrência (se houver)'\n      ],\n      urgencia_padrao: 'media',\n      complexidade_padrao: subarea === 'Família' ? 'alta' : 'media'\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_civel_openai",
+      "name": "🤖 Cível — Análise OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1760, 700],
+      "parameters": {
+        "resource": "chat",
+        "operation": "complete",
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é um especialista em Direito Civil do escritório Elilon Lopes Advogados. Analise o caso e responda APENAS em JSON válido sem markdown."
+            },
+            {
+              "role": "user",
+              "content": "=Caso Cível:\nSubárea: {{ $json.juridico.subarea }}\nCliente: {{ $json.cliente.nome }}, {{ $json.cliente.cidade }}/{{ $json.cliente.estado }}\nDescrição: {{ $json.juridico.descricao_caso }}\n\nDocumentos enviados: {{ $json.documentos.length }} arquivo(s)\nAnálise Hermes: {{ $json.temHermes ? 'Urgência: ' + $json.hermes.urgencia : 'Não disponível' }}\n\nJSON esperado:\n{\n  \"subarea_confirmada\": \"string\",\n  \"urgencia\": \"baixa|media|alta\",\n  \"complexidade\": \"baixa|media|alta\",\n  \"perguntas_adicionais\": [\"string\", \"string\", \"string\"],\n  \"documentos_essenciais\": [\"string\"],\n  \"resumo_executivo\": \"string\",\n  \"recomendacao_acao\": \"string\"\n}"
+            }
+          ]
+        },
+        "options": { "temperature": 0.3, "maxTokens": 1000 }
+      },
+      "credentials": {
+        "openAiApi": { "id": "openai_cred", "name": "OpenAI API" }
+      }
+    },
+
+    {
+      "id": "node_civel_contexto",
+      "name": "💾 Cível — Atualizar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2020, 700],
+      "parameters": {
+        "jsCode": "const ctx = $('node_civel_memoria').item.json;\nconst aiRaw = $json.message?.content || $json.text || '{}';\n\nlet aiAnalysis = {};\ntry {\n  const cleaned = aiRaw.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  aiAnalysis = JSON.parse(cleaned);\n} catch(e) {\n  aiAnalysis = { erro: 'Falha ao parsear resposta OpenAI', raw: aiRaw };\n}\n\nreturn [{\n  json: {\n    ...ctx,\n    n8n_analysis: {\n      area: 'Cível',\n      subarea_confirmada: aiAnalysis.subarea_confirmada || ctx.juridico.subarea,\n      urgencia: aiAnalysis.urgencia || ctx.area_config.urgencia_padrao,\n      complexidade: aiAnalysis.complexidade || ctx.area_config.complexidade_padrao,\n      perguntas_adicionais: aiAnalysis.perguntas_adicionais || [],\n      documentos_essenciais: aiAnalysis.documentos_essenciais || ctx.area_config.documentos_necessarios,\n      resumo_executivo: aiAnalysis.resumo_executivo || '',\n      recomendacao_acao: aiAnalysis.recomendacao_acao || '',\n      processado_em: new Date().toISOString()\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_merge_areas",
+      "name": "🔀 Merge de Áreas",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2280, 400],
+      "parameters": {
+        "mode": "passThrough",
+        "output": "input1"
+      },
+      "notes": "Recebe resultado de qualquer uma das 4 áreas e passa adiante para o gerador de resumo. Apenas um branch executa por execução."
+    },
+
+    {
+      "id": "node_gerar_resumo",
+      "name": "📄 Gerar Resumo Executivo Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2520, 400],
+      "parameters": {
+        "jsCode": "// ─── Gerador de Resumo Executivo Final ──────────────────────────────────\n// Consolida todos os dados do contexto + análise OpenAI em um resumo\n// estruturado pronto para envio à equipe jurídica.\n\nconst ctx = $json;\nconst analysis = ctx.n8n_analysis;\nconst cliente = ctx.cliente;\nconst juridico = ctx.juridico;\nconst hermes = ctx.hermes;\n\n// Prioridade: Hermes (Sprint 3.5) > N8N OpenAI > Padrão da área\nconst urgenciaFinal = hermes?.urgencia || analysis.urgencia || 'media';\nconst complexidadeFinal = hermes?.complexidade || analysis.complexidade || 'media';\n\n// Resumo executivo consolidado\nconst resumo = {\n  protocolo: ctx.protocolo,\n  processado_em: new Date().toISOString(),\n\n  cliente: {\n    nome: cliente.nome,\n    telefone: cliente.telefone,\n    email: cliente.email,\n    localizacao: `${cliente.cidade}/${cliente.estado}`\n  },\n\n  caso: {\n    area: analysis.area,\n    subarea: analysis.subarea_confirmada || juridico.subarea,\n    descricao: juridico.descricao_caso\n  },\n\n  classificacao: {\n    urgencia: urgenciaFinal,\n    complexidade: complexidadeFinal,\n    urgencia_badge: urgenciaFinal === 'alta' ? '🔴 URGENTE' : urgenciaFinal === 'media' ? '🟡 MÉDIO' : '🟢 BAIXO',\n    complexidade_badge: complexidadeFinal === 'alta' ? '⚠️ COMPLEXO' : '✅ PADRÃO'\n  },\n\n  analise_n8n: {\n    resumo_executivo: analysis.resumo_executivo,\n    recomendacao_acao: analysis.recomendacao_acao,\n    perguntas_adicionais: analysis.perguntas_adicionais\n  },\n\n  hermes_analysis: hermes ? {\n    urgencia: hermes.urgencia,\n    complexidade: hermes.complexidade,\n    resumo: hermes.resumo,\n    status: hermes.status\n  } : null,\n\n  documentos: {\n    count: ctx.documentos.length,\n    arquivos: ctx.documentos.map(d => ({\n      nome: d.original_name || d.nome || d.fileName,\n      tipo: d.mime_type || d.tipo,\n      tamanho: d.size_bytes || d.tamanho\n    })),\n    documentos_solicitados: analysis.documentos_essenciais\n  },\n\n  // Placeholder para integrações futuras (Sprint 4.1 — Kinbox)\n  encaminhamento: {\n    destino: 'equipe_juridica',\n    canal: 'webhook_interno',\n    status: 'pendente'\n  }\n};\n\nreturn [{ json: { resumo, contexto_original: ctx } }];"
+      }
+    },
+
+    {
+      "id": "node_encerramento_final",
+      "name": "✅ Encerramento e Resposta Final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2760, 400],
+      "parameters": {
+        "jsCode": "// ─── Encerramento do Workflow ────────────────────────────────────────────\n// Prepara a resposta final para o chamador do webhook e\n// sinaliza que o atendimento foi processado com sucesso.\n// \n// Integrações futuras (Sprint 4.1):\n//   - Kinbox: enviar resumo ao atendente\n//   - Email: notificar advogado responsável\n//   - CRM: registrar lead qualificado\n\nconst { resumo, contexto_original } = $json;\n\nreturn [{\n  json: {\n    sucesso: true,\n    protocolo: resumo.protocolo,\n    processado_em: resumo.processado_em,\n    area: resumo.caso.area,\n    subarea: resumo.caso.subarea,\n    urgencia: resumo.classificacao.urgencia,\n    complexidade: resumo.classificacao.complexidade,\n    resumo_executivo: resumo.analise_n8n.resumo_executivo,\n    documentos_solicitados: resumo.documentos.documentos_solicitados,\n    perguntas_adicionais: resumo.analise_n8n.perguntas_adicionais,\n    // Metadados do processamento\n    _meta: {\n      workflow: 'chat-juridico-orchestration-v1.0',\n      sprint: '4.0',\n      fontes_analise: [\n        contexto_original.temHermes ? 'hermes' : null,\n        'n8n-openai'\n      ].filter(Boolean)\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_resposta_sucesso",
+      "name": "📤 Resposta Webhook — Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3000, 400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      }
+    },
+
+    {
+      "id": "node_area_desconhecida",
+      "name": "⚠️ Área Desconhecida",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1500, 900],
+      "parameters": {
+        "jsCode": "const area = $json.juridico?.area || 'desconhecida';\nreturn [{\n  json: {\n    sucesso: false,\n    erro: `Área jurídica não mapeada: ${area}`,\n    area_recebida: area,\n    areas_suportadas: ['Previdenciário', 'Trabalhista', 'Tributário', 'Cível']\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "node_resposta_area_desconhecida",
+      "name": "❌ Resposta Área Desconhecida",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1760, 900],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 422 }
+      }
+    }
+
+  ],
+
+  "connections": {
+    "🔗 Webhook Entrada": {
+      "main": [[{ "node": "🛡️ Validação de Sessão", "type": "main", "index": 0 }]]
+    },
+    "🛡️ Validação de Sessão": {
+      "main": [[{ "node": "✅ Payload Válido?", "type": "main", "index": 0 }]]
+    },
+    "✅ Payload Válido?": {
+      "main": [
+        [{ "node": "📦 Recuperar Contexto", "type": "main", "index": 0 }],
+        [{ "node": "❌ Resposta Erro Validação", "type": "main", "index": 0 }]
+      ]
+    },
+    "📦 Recuperar Contexto": {
+      "main": [[{ "node": "⚖️ Switch por Área Jurídica", "type": "main", "index": 0 }]]
+    },
+    "⚖️ Switch por Área Jurídica": {
+      "main": [
+        [{ "node": "🧠 Previdenciário — Memória Conversacional", "type": "main", "index": 0 }],
+        [{ "node": "🧠 Trabalhista — Memória Conversacional", "type": "main", "index": 0 }],
+        [{ "node": "🧠 Tributário — Memória Conversacional", "type": "main", "index": 0 }],
+        [{ "node": "🧠 Cível — Memória Conversacional", "type": "main", "index": 0 }],
+        [{ "node": "⚠️ Área Desconhecida", "type": "main", "index": 0 }]
+      ]
+    },
+    "🧠 Previdenciário — Memória Conversacional": {
+      "main": [[{ "node": "🤖 Previdenciário — Análise OpenAI", "type": "main", "index": 0 }]]
+    },
+    "🤖 Previdenciário — Análise OpenAI": {
+      "main": [[{ "node": "💾 Previdenciário — Atualizar Contexto", "type": "main", "index": 0 }]]
+    },
+    "💾 Previdenciário — Atualizar Contexto": {
+      "main": [[{ "node": "🔀 Merge de Áreas", "type": "main", "index": 0 }]]
+    },
+    "🧠 Trabalhista — Memória Conversacional": {
+      "main": [[{ "node": "🤖 Trabalhista — Análise OpenAI", "type": "main", "index": 0 }]]
+    },
+    "🤖 Trabalhista — Análise OpenAI": {
+      "main": [[{ "node": "💾 Trabalhista — Atualizar Contexto", "type": "main", "index": 0 }]]
+    },
+    "💾 Trabalhista — Atualizar Contexto": {
+      "main": [[{ "node": "🔀 Merge de Áreas", "type": "main", "index": 1 }]]
+    },
+    "🧠 Tributário — Memória Conversacional": {
+      "main": [[{ "node": "🤖 Tributário — Análise OpenAI", "type": "main", "index": 0 }]]
+    },
+    "🤖 Tributário — Análise OpenAI": {
+      "main": [[{ "node": "💾 Tributário — Atualizar Contexto", "type": "main", "index": 0 }]]
+    },
+    "💾 Tributário — Atualizar Contexto": {
+      "main": [[{ "node": "🔀 Merge de Áreas", "type": "main", "index": 2 }]]
+    },
+    "🧠 Cível — Memória Conversacional": {
+      "main": [[{ "node": "🤖 Cível — Análise OpenAI", "type": "main", "index": 0 }]]
+    },
+    "🤖 Cível — Análise OpenAI": {
+      "main": [[{ "node": "💾 Cível — Atualizar Contexto", "type": "main", "index": 0 }]]
+    },
+    "💾 Cível — Atualizar Contexto": {
+      "main": [[{ "node": "🔀 Merge de Áreas", "type": "main", "index": 3 }]]
+    },
+    "🔀 Merge de Áreas": {
+      "main": [[{ "node": "📄 Gerar Resumo Executivo Final", "type": "main", "index": 0 }]]
+    },
+    "📄 Gerar Resumo Executivo Final": {
+      "main": [[{ "node": "✅ Encerramento e Resposta Final", "type": "main", "index": 0 }]]
+    },
+    "✅ Encerramento e Resposta Final": {
+      "main": [[{ "node": "📤 Resposta Webhook — Sucesso", "type": "main", "index": 0 }]]
+    },
+    "⚠️ Área Desconhecida": {
+      "main": [[{ "node": "❌ Resposta Área Desconhecida", "type": "main", "index": 0 }]]
+    }
+  },
+
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "",
+    "timezone": "America/Sao_Paulo"
+  },
+
+  "staticData": null,
+  "tags": [
+    { "id": "tag_elilon", "name": "elilon-advocacia" },
+    { "id": "tag_sprint40", "name": "sprint-4.0" },
+    { "id": "tag_chat", "name": "chat-juridico" }
+  ],
+  "pinData": {},
+  "versionId": "sprint-4.0.0"
+}
