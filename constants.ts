@@ -247,7 +247,7 @@ export const BLOG_POSTS: BlogPost[] = [
     date: "12 Out 2023",
     category: "Previdenciário",
     slug: "aposentadoria-planejamento",
-    image: "/images/previdenciario.webp",
+    image: "/images/direito-previdenciario.webp",
     author: "Dra. Clara Marinho",
     content: `
       <p>O <strong>planejamento previdenciário</strong> é fundamental para garantir uma aposentadoria tranquila e sem surpresas. Muitos segurados do INSS deixam para se preocupar com isso apenas quando estão próximos da idade, perdendo oportunidades de maximizar seu benefício.</p>

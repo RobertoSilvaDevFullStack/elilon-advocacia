@@ -8,11 +8,40 @@ import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lu
 import { BrazilMap } from "../components/BrazilMap";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { LazyYouTube } from "../components/LazyYouTube";
+import { MobilePortraitImage } from "../components/MobilePortraitImage";
 
 export const Home: React.FC = () => {
   const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
   const [currentBlogIndex, setCurrentBlogIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  const sortedBlogPosts = useMemo(() => {
+    return [...BLOG_POSTS].sort((a, b) => {
+      const months: { [key: string]: number } = {
+        Jan: 0,
+        Fev: 1,
+        Mar: 2,
+        Abr: 3,
+        Mai: 4,
+        Jun: 5,
+        Jul: 6,
+        Ago: 7,
+        Set: 8,
+        Out: 9,
+        Nov: 10,
+        Dez: 11,
+      };
+      const parseDate = (dateStr: string) => {
+        const parts = dateStr.split(" ");
+        if (parts.length !== 3) return 0;
+        const day = parseInt(parts[0], 10);
+        const month = months[parts[1]];
+        const year = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+      };
+      return parseDate(b.date) - parseDate(a.date);
+    });
+  }, []);
 
   // Detect mobile screen
   useEffect(() => {
@@ -41,41 +70,15 @@ export const Home: React.FC = () => {
   useEffect(() => {
     if (!isMobile) return;
 
+    const total = sortedBlogPosts.length;
+    if (total <= 1) return;
+
     const interval = setInterval(() => {
-      setCurrentBlogIndex((prev) => (prev + 1) % 3);
+      setCurrentBlogIndex((prev) => (prev + 1) % total);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isMobile]);
-
-  // Memoize sorted blog posts to avoid re-calculation on every render
-  const sortedBlogPosts = useMemo(() => {
-    return [...BLOG_POSTS].sort((a, b) => {
-      const months: { [key: string]: number } = {
-        Jan: 0,
-        Fev: 1,
-        Mar: 2,
-        Abr: 3,
-        Mai: 4,
-        Jun: 5,
-        Jul: 6,
-        Ago: 7,
-        Set: 8,
-        Out: 9,
-        Nov: 10,
-        Dez: 11,
-      };
-      const parseDate = (dateStr: string) => {
-        const parts = dateStr.split(" ");
-        if (parts.length !== 3) return 0;
-        const day = parseInt(parts[0], 10);
-        const month = months[parts[1]];
-        const year = parseInt(parts[2], 10);
-        return new Date(year, month, day).getTime();
-      };
-      return parseDate(b.date) - parseDate(a.date);
-    });
-  }, []);
+  }, [isMobile, sortedBlogPosts.length]);
 
   return (
     <Layout>
@@ -257,6 +260,12 @@ export const Home: React.FC = () => {
                   title="Tradição e Modernidade"
                   subtitle="Sobre Nós"
                 />
+                <MobilePortraitImage
+                  src="/images/elilon-sorrindo.JPG"
+                  alt="Elilon Lopes — sócio fundador"
+                  objectPosition="center 15%"
+                  layout="float"
+                />
                 <p className="text-neutral-600 mb-6 leading-relaxed">
                   O escritório Elilon Lopes Advogados nasceu da união de
                   advogados experientes com uma visão moderna do Direito. Nossa
@@ -268,7 +277,7 @@ export const Home: React.FC = () => {
                   medida. Combinamos o rigor da advocacia tradicional com a
                   agilidade necessária para o mundo corporativo atual.
                 </p>
-                <Link to="/sobre">
+                <Link to="/sobre" className="clear-both md:clear-none inline-block">
                   <Button
                     variant="text"
                     className="text-accent-600 border-b border-accent-600 pb-1 rounded-none px-0"
@@ -279,7 +288,7 @@ export const Home: React.FC = () => {
               </div>
             </ScrollReveal>
             <ScrollReveal animation="slide-in-right" delay="delay-200">
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-accent-500 opacity-80"></div>
                 <img
                   src="/images/elilon-sorrindo.JPG"
@@ -467,7 +476,7 @@ export const Home: React.FC = () => {
           {/* Mobile: Blog Carousel */}
           <div className="md:hidden relative mt-12">
             <div className="relative h-96 overflow-hidden">
-              {sortedBlogPosts.slice(0, 3).map((post, index) => (
+              {sortedBlogPosts.map((post, index) => (
                 <div
                   key={post.id}
                   className={`absolute inset-0 transition-all duration-500 ${
@@ -496,6 +505,11 @@ export const Home: React.FC = () => {
                       <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
                         {post.category}
                       </span>
+                      {index === 0 && (
+                        <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-white bg-accent-600 px-2 py-0.5 rounded">
+                          Novo
+                        </span>
+                      )}
                       <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
                         {post.title}
                       </h3>
@@ -512,7 +526,7 @@ export const Home: React.FC = () => {
             </div>
             {/* Blog Carousel Indicators */}
             <div className="flex justify-center gap-2 mt-4">
-              {[0, 1, 2].map((index) => (
+              {sortedBlogPosts.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentBlogIndex(index)}
@@ -528,14 +542,19 @@ export const Home: React.FC = () => {
           </div>
 
           {/* Desktop: Blog Grid */}
-          <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-            {sortedBlogPosts.slice(0, 3).map((post) => (
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+            {sortedBlogPosts.map((post, index) => (
               <Link
                 to={`/blog/${post.slug}`}
                 key={post.id}
                 className="group bg-white hover:shadow-xl transition-shadow duration-300"
               >
-                <div className="h-48 overflow-hidden">
+                <div className="h-48 overflow-hidden relative">
+                  {index === 0 && (
+                    <span className="absolute top-3 left-3 z-10 text-[10px] font-bold uppercase tracking-wider text-white bg-accent-600 px-2 py-1 rounded">
+                      Novo
+                    </span>
+                  )}
                   <img
                     src={post.image}
                     alt={post.title}

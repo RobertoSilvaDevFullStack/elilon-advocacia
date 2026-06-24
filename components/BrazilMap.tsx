@@ -279,9 +279,7 @@ export const BrazilMap: React.FC = () => {
           <ZoomableGroup
             zoom={zoom}
             center={center}
-            onMoveEnd={({ coordinates }) =>
-              setCenter(coordinates as [number, number])
-            }
+            disablePanning
             minZoom={MIN_ZOOM}
             maxZoom={MAX_ZOOM}
           >
@@ -297,14 +295,12 @@ export const BrazilMap: React.FC = () => {
                     style={{
                       default: {
                         outline: "none",
-                        filter: "drop-shadow(0 0 0 transparent)",
-                        transition: "all 0.3s ease",
+                        transition: "fill 0.2s ease",
                       },
                       hover: {
-                        fill: "rgba(161, 51, 62, 0.25)",
+                        fill: "rgba(161, 51, 62, 0.35)",
                         outline: "none",
-                        filter: "drop-shadow(0 0 8px rgba(161, 51, 62, 0.3))",
-                        transition: "all 0.3s ease",
+                        cursor: "default",
                       },
                       pressed: {
                         fill: "rgba(161, 51, 62, 0.4)",

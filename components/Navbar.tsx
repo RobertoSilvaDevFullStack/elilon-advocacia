@@ -98,6 +98,16 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
 
+        {/* Mobile CTA — Diagnóstico Tributário (header recolhido) */}
+        <Link
+          to="/diagnostico-reforma-tributaria"
+          className="lg:hidden ml-auto mr-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-400 text-[#1A1A1A] text-[10px] sm:text-xs font-bold uppercase tracking-wide rounded-md shadow-md shadow-amber-400/30 hover:bg-amber-300 transition-colors whitespace-nowrap animate-pulse-subtle"
+          style={{ animationDuration: "3s" }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] opacity-70 shrink-0" />
+          Diagnóstico
+        </Link>
+
         {/* Mobile Menu Button */}
         <button
           className="lg:hidden text-white p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
