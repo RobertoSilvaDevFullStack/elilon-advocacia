@@ -1,63 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
-import { Hero, SectionTitle, Button } from "../components/Components";
+import { SectionTitle } from "../components/ui/SectionTitle";
+import { Button } from "../components/ui/Button";
+import { HomeHero } from "../components/HomeHero";
 import { SEO } from "../components/SEO";
-import { AREAS } from "../constants";
+import { AREAS } from "../constants/areas";
 import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lucide-react";
 import { LazyBrazilMap } from "../components/LazyBrazilMap";
-import { ScrollReveal } from "../components/ScrollReveal";
-import { LazyYouTube } from "../components/LazyYouTube";
+import { MobileSnapCarousel } from "../components/MobileSnapCarousel";
 import { MobilePortraitImage } from "../components/MobilePortraitImage";
 import { useBlogPosts } from "../hooks/useBlogPosts";
+import { useInView } from "../hooks/useInView";
 import { buildHomeSchema } from "../utils/seo";
 
 export const Home: React.FC = () => {
-  const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
-  const [currentBlogIndex, setCurrentBlogIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  const { posts: blogPosts } = useBlogPosts();
-
-  // Detect mobile screen
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 756);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Auto-rotate areas carousel
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const interval = setInterval(() => {
-      setCurrentAreaIndex((prev) => (prev + 1) % 3);
-    }, 4000);
-
-    return () => clearInterval(interval);
-  }, [isMobile]);
-
-  // Auto-rotate blog carousel
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const total = blogPosts.length;
-    if (total <= 1) return;
-
-    const interval = setInterval(() => {
-      setCurrentBlogIndex((prev) => (prev + 1) % total);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isMobile, blogPosts.length]);
-
-  useEffect(() => {
-    setCurrentBlogIndex(0);
-  }, [blogPosts.length]);
+  const { ref: blogRef, inView: blogInView } = useInView("300px");
+  const { posts: blogPosts, loading: blogLoading } = useBlogPosts(blogInView);
 
   return (
     <Layout>
@@ -66,44 +25,7 @@ export const Home: React.FC = () => {
         description="Elilon Lopes Advogados - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
         schema={buildHomeSchema()}
       />
-      {/* Hero */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
-        <div className="absolute inset-0 z-0">
-          {/* YouTube Lazy Load - Performance Optimized */}
-          <LazyYouTube
-            videoId="nxZTDjDXjOw"
-            title="Vídeo Institucional Elilon Lopes Advogados"
-            className="absolute opacity-40 pointer-events-auto"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-neutral-900/50 pointer-events-none" />
-        </div>
-
-        <div className="container relative z-10 px-4 text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-headline mb-6 leading-tight">
-            Defesa Estratégica.
-            <br />
-            <span className="text-accent-400 italic">Resultados Reais.</span>
-          </h1>
-          <p className="text-lg md:text-xl text-neutral-300 max-w-2xl mx-auto mb-10 font-light">
-            Soluções jurídicas personalizadas para empresas e indivíduos que
-            buscam excelência e comprometimento em Montes Claros e em todo o
-            Brasil.
-          </p>
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-            <Link to="/contato">
-              <Button variant="primary">Agende uma Consulta</Button>
-            </Link>
-            <Link to="/areas">
-              <Button
-                variant="outline"
-                className="border-white text-white hover:bg-accent-600 hover:border-accent-600"
-              >
-                Conheça Nossas Áreas
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <HomeHero />
 
       {/* ── Diagnóstico Tributário Highlight ──────────────────────────────── */}
       <section className="relative py-16 md:py-20 bg-gradient-to-br from-[#200A0C] via-[#1A1A1A] to-[#0d0d0d] overflow-hidden">
@@ -209,8 +131,7 @@ export const Home: React.FC = () => {
       <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-            <ScrollReveal animation="fade-in-up">
-              <div>
+            <div>
                 <SectionTitle
                   title="Tradição e Modernidade"
                   subtitle="Sobre Nós"
@@ -241,20 +162,22 @@ export const Home: React.FC = () => {
                   </Button>
                 </Link>
               </div>
-            </ScrollReveal>
-            <ScrollReveal animation="slide-in-right" delay="delay-200">
-              <div className="relative hidden md:block">
+            <div className="hidden md:block relative">
                 <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4 border-accent-500 opacity-80"></div>
-                <img
-                  src="/images/elilon-sorrindo.JPG"
-                  alt="Equipe Elilon Lopes Advogados"
-                  width="800"
-                  height="1000"
-                  className="w-full max-w-2xl h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
-                />
+                <picture>
+                  <source srcSet="/images/elilon-sorrindo.webp" type="image/webp" />
+                  <img
+                    src="/images/elilon-sorrindo.JPG"
+                    alt="Equipe Elilon Lopes Advogados"
+                    width={853}
+                    height={1280}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full max-w-2xl h-auto shadow-2xl hover:shadow-accent-500/20 transition-shadow duration-300"
+                  />
+                </picture>
                 <div className="absolute -bottom-4 -right-4 w-24 h-24 border-b-4 border-r-4 border-accent-500 opacity-80"></div>
               </div>
-            </ScrollReveal>
           </div>
         </div>
       </section>
@@ -331,61 +254,34 @@ export const Home: React.FC = () => {
             </Link>
           </div>
 
-          {/* Mobile: Carousel */}
-          <div className="md:hidden relative h-80 overflow-hidden">
-            {AREAS.slice(0, 3).map((area, index) => (
-              <div
+          <MobileSnapCarousel slideClassName="w-[85vw] max-w-md" className="md:hidden">
+            {AREAS.slice(0, 3).map((area) => (
+              <Link
                 key={area.id}
-                className={`absolute inset-0 transition-all duration-500 ${
-                  index === currentAreaIndex
-                    ? "opacity-100 translate-x-0 z-10"
-                    : index < currentAreaIndex
-                      ? "opacity-0 -translate-x-full z-0"
-                      : "opacity-0 translate-x-full z-0"
-                }`}
+                to="/areas"
+                className="block relative h-80 overflow-hidden group"
               >
-                <Link
-                  to={`/areas`}
-                  className="block relative h-80 overflow-hidden cursor-pointer group"
-                >
-                  <div className="absolute inset-0 bg-neutral-900 group-hover:bg-accent-900 transition-colors duration-500">
-                    <img
-                      src={area.image}
-                      alt={area.title}
-                      width="400"
-                      height="320"
-                      loading="lazy"
-                      className="w-full h-full object-cover opacity-40 group-hover:opacity-20 transition-opacity duration-500"
-                    />
-                  </div>
-                  <div className="absolute inset-0 p-8 flex flex-col justify-end border-2 border-neutral-800 group-hover:border-accent-500 transition-colors duration-300 m-2 group-hover:shadow-lg group-hover:shadow-accent-500/30">
-                    <h3 className="text-2xl font-headline text-white mb-2">
-                      {area.title}
-                    </h3>
-                    <div className="w-8 h-0.5 bg-accent-500 mb-4 group-hover:w-16 transition-all duration-300" />
-                    <p className="text-neutral-300 text-sm">
-                      {area.description}
-                    </p>
-                  </div>
-                </Link>
-              </div>
+                <div className="absolute inset-0 bg-neutral-900">
+                  <img
+                    src={area.image}
+                    alt={area.title}
+                    width={400}
+                    height={320}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover opacity-40"
+                  />
+                </div>
+                <div className="absolute inset-0 p-8 flex flex-col justify-end border-2 border-neutral-800 m-2">
+                  <h3 className="text-2xl font-headline text-white mb-2">
+                    {area.title}
+                  </h3>
+                  <div className="w-8 h-0.5 bg-accent-500 mb-4" />
+                  <p className="text-neutral-300 text-sm">{area.description}</p>
+                </div>
+              </Link>
             ))}
-            {/* Carousel Indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-              {[0, 1, 2].map((index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentAreaIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentAreaIndex
-                      ? "bg-accent-500 w-8"
-                      : "bg-white/50"
-                  }`}
-                  aria-label={`Slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+          </MobileSnapCarousel>
 
           {/* Desktop: Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -420,81 +316,58 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Blog Highlight */}
-      <section className="py-20 bg-neutral-100">
+      {/* Blog Highlight — fetch deferred até scroll */}
+      <section ref={blogRef} className="py-20 bg-neutral-100" aria-labelledby="blog-home-title">
         <div className="container mx-auto px-4">
           <SectionTitle
             title="Notícias e Artigos"
             subtitle="Atualizações"
             centered
           />
-          {/* Mobile: Blog Carousel */}
-          <div className="md:hidden relative mt-12">
-            <div className="relative h-96 overflow-hidden">
-              {blogPosts.map((post, index) => (
-                <div
-                  key={post.id}
-                  className={`absolute inset-0 transition-all duration-500 ${
-                    index === currentBlogIndex
-                      ? "opacity-100 translate-x-0 z-10"
-                      : index < currentBlogIndex
-                        ? "opacity-0 -translate-x-full z-0"
-                        : "opacity-0 translate-x-full z-0"
-                  }`}
-                >
-                  <Link
-                    to={`/blog/${post.slug}`}
-                    className="block h-full group bg-white hover:shadow-xl transition-shadow duration-300"
-                  >
-                    <div className="h-48 overflow-hidden">
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        width="400"
-                        height="200"
-                        loading="lazy"
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
-                        {post.category}
-                      </span>
-                      {index === 0 && (
-                        <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-white bg-accent-600 px-2 py-0.5 rounded">
-                          Novo
-                        </span>
-                      )}
-                      <h3 className="text-xl font-headline font-bold mt-2 mb-3 group-hover:text-accent-600 transition-colors">
-                        {post.title}
-                      </h3>
-                      <p className="text-neutral-500 text-sm mb-4">
-                        {post.summary}
-                      </p>
-                      <span className="text-xs text-neutral-400">
-                        {post.date}
-                      </span>
-                    </div>
-                  </Link>
+          {blogLoading && blogPosts.length === 0 && (
+            <p className="text-center text-neutral-500 text-sm mt-8" role="status">
+              Carregando artigos...
+            </p>
+          )}
+
+          <MobileSnapCarousel slideClassName="w-[85vw] max-w-md" className="md:hidden mt-12">
+            {blogPosts.map((post, index) => (
+              <Link
+                key={post.id}
+                to={`/blog/${post.slug}`}
+                className="block group bg-white shadow-sm"
+              >
+                <div className="h-48 overflow-hidden relative">
+                  {index === 0 && (
+                    <span className="absolute top-3 left-3 z-10 text-[10px] font-bold uppercase text-white bg-accent-600 px-2 py-1 rounded">
+                      Novo
+                    </span>
+                  )}
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    width={400}
+                    height={200}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              ))}
-            </div>
-            {/* Blog Carousel Indicators */}
-            <div className="flex justify-center gap-2 mt-4">
-              {blogPosts.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentBlogIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentBlogIndex
-                      ? "bg-accent-500 w-8"
-                      : "bg-neutral-400"
-                  }`}
-                  aria-label={`Blog slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          </div>
+                <div className="p-6">
+                  <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">
+                    {post.category}
+                  </span>
+                  <h3 className="text-xl font-headline font-bold mt-2 mb-3 line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-neutral-500 text-sm mb-4 line-clamp-2">
+                    {post.summary}
+                  </p>
+                  <span className="text-xs text-neutral-400">{post.date}</span>
+                </div>
+              </Link>
+            ))}
+          </MobileSnapCarousel>
 
           {/* Desktop: Blog Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">

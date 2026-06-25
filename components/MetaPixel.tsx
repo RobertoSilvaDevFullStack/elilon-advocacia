@@ -1,64 +1,71 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-// Typings for fbq
 declare global {
   interface Window {
-    fbq: any;
-    _fbq: any;
+    fbq?: (...args: unknown[]) => void;
+    _fbq?: unknown;
   }
 }
 
 const PIXEL_ID = "2447345122366584";
 
+/** Meta Pixel — só após primeira interação (scroll/click) para não penalizar TBT/LCP. */
 const MetaPixel: React.FC = () => {
   const location = useLocation();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const initPixel = () => {
-      if (window.fbq) return;
-      (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
+    const boot = () => {
+      if (window.fbq) {
+        setReady(true);
+        return;
+      }
+      (function (f: Window, b: Document, e: string, v: string) {
         if (f.fbq) return;
-        n = f.fbq = function () {
-          n.callMethod
-            ? n.callMethod.apply(n, arguments)
-            : n.queue.push(arguments);
+        const n: any = function (...args: unknown[]) {
+          n.callMethod ? n.callMethod(...args) : n.queue.push(args);
         };
+        f.fbq = n;
         if (!f._fbq) f._fbq = n;
         n.push = n;
         n.loaded = true;
         n.version = "2.0";
         n.queue = [];
-        t = b.createElement(e);
+        const t = b.createElement(e) as HTMLScriptElement;
         t.async = true;
         t.src = v;
-        s = b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t, s);
-      })(
-        window,
-        document,
-        "script",
-        "https://connect.facebook.net/en_US/fbevents.js",
-      );
-      window.fbq("init", PIXEL_ID);
-      window.fbq("track", "PageView");
+        const s = b.getElementsByTagName(e)[0];
+        s.parentNode?.insertBefore(t, s);
+      })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+      window.fbq!("init", PIXEL_ID);
+      window.fbq!("track", "PageView");
+      setReady(true);
     };
 
-    // Adia pixel de terceiros até após idle — melhora TBT e Best Practices
-    if ("requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(initPixel, { timeout: 4000 });
-      return () => window.cancelIdleCallback(id);
-    }
-    const timer = setTimeout(initPixel, 3000);
-    return () => clearTimeout(timer);
+    const onInteract = () => {
+      boot();
+      window.removeEventListener("scroll", onInteract);
+      window.removeEventListener("pointerdown", onInteract);
+    };
+
+    window.addEventListener("scroll", onInteract, { passive: true });
+    window.addEventListener("pointerdown", onInteract, { passive: true });
+
+    const fallback = window.setTimeout(onInteract, 12000);
+
+    return () => {
+      window.clearTimeout(fallback);
+      window.removeEventListener("scroll", onInteract);
+      window.removeEventListener("pointerdown", onInteract);
+    };
   }, []);
 
   useEffect(() => {
-    // Track PageView on route change
-    if (window.fbq) {
+    if (ready && window.fbq) {
       window.fbq("track", "PageView");
     }
-  }, [location.pathname]);
+  }, [location.pathname, ready]);
 
   return (
     <noscript>
@@ -67,7 +74,7 @@ const MetaPixel: React.FC = () => {
         width="1"
         style={{ display: "none" }}
         src={`https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1`}
-        alt="Meta Pixel"
+        alt=""
       />
     </noscript>
   );

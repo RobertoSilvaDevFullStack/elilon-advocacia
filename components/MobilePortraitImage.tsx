@@ -5,8 +5,12 @@ interface MobilePortraitImageProps {
   alt: string;
   objectPosition?: string;
   className?: string;
-  /** center = acima do texto; float = ao lado, texto desce ao redor */
   layout?: "center" | "float";
+}
+
+function resolveWebp(src: string): string {
+  if (/\.webp$/i.test(src)) return src;
+  return src.replace(/\.(jpe?g|png)$/i, ".webp");
 }
 
 /** Circular portrait for mobile — hidden on md+. */
@@ -17,16 +21,23 @@ export const MobilePortraitImage: React.FC<MobilePortraitImageProps> = ({
   className = "",
   layout = "center",
 }) => {
+  const webp = resolveWebp(src);
+
   const portrait = (
     <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden ring-4 ring-accent-500/25 shadow-lg shadow-accent-500/10">
-      <img
-        src={src}
-        alt={alt}
-        width={128}
-        height={128}
-        className="w-full h-full object-cover scale-110"
-        style={{ objectPosition }}
-      />
+      <picture>
+        <source srcSet={webp} type="image/webp" />
+        <img
+          src={src}
+          alt={alt}
+          width={128}
+          height={192}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover scale-110"
+          style={{ objectPosition }}
+        />
+      </picture>
     </div>
   );
 

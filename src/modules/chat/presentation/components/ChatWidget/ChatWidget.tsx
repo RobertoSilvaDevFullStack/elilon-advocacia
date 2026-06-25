@@ -5,6 +5,7 @@
  */
 
 import React, { useEffect, useCallback, useState, useRef } from "react";
+import "../../../../../../styles/chat.css";
 import { trackChatLead } from "../../../../../../utils/tracking";
 import { ChatButton } from "./ChatButton";
 import { ChatWindow } from "./ChatWindow";

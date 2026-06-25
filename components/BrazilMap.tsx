@@ -267,6 +267,8 @@ export const BrazilMap: React.FC = () => {
       >
         <ComposableMap
           projection="geoMercator"
+          role="img"
+          aria-label="Mapa de atuação nacional do escritório no Brasil"
           projectionConfig={{
             scale: INITIAL_SCALE,
             center: BRAZIL_CENTER,
@@ -289,6 +291,9 @@ export const BrazilMap: React.FC = () => {
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
+                    role="presentation"
+                    tabIndex={-1}
+                    aria-hidden="true"
                     fill="rgba(26, 26, 46, 0.6)"
                     stroke="rgba(161, 51, 62, 0.4)"
                     strokeWidth={0.8}

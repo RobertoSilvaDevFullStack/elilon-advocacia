@@ -10,10 +10,11 @@ interface OptimizedImageProps
   loading?: "lazy" | "eager";
   priority?: boolean;
   /** Quando true, tenta <picture> com .webp equivalente */
-  webp?: boolean;
+  /** Quando true, não aplica height:auto (object-cover absoluto) */
+  cover?: boolean;
 }
 
-/** Resolve caminho .webp a partir de .jpg/.jpeg/.png */
+/** Resolve .webp a partir de .jpg/.jpeg/.png/.JPG */
 function webpSrc(src: string): string | null {
   if (/\.(jpe?g|png)$/i.test(src)) {
     return src.replace(/\.(jpe?g|png)$/i, ".webp");
@@ -34,6 +35,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = "lazy",
   priority = false,
   webp = true,
+  cover = false,
   style,
   ...rest
 }) => {
@@ -47,7 +49,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     loading: loadingStrategy as "lazy" | "eager",
     decoding: "async" as const,
     className,
-    style: { maxWidth: "100%", height: "auto", ...style },
+    style: cover
+      ? style
+      : { maxWidth: "100%", height: "auto", ...style },
     ...(priority ? { fetchPriority: "high" as const } : {}),
     ...rest,
   };

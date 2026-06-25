@@ -2,77 +2,14 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 import OptimizedImage from "./OptimizedImage";
 import { Link } from "react-router-dom";
-import { AREAS } from "../constants";
+import { AREAS } from "../constants/areas";
 import { getApiBaseUrl } from "../utils/api";
 import { trackLead } from "../utils/tracking";
 
+export { Button } from "./ui/Button";
+export { SectionTitle } from "./ui/SectionTitle";
+
 const API_URL = getApiBaseUrl();
-
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline" | "text";
-}
-
-export const Button: React.FC<ButtonProps> = ({
-  className = "",
-  variant = "primary",
-  children,
-  ...props
-}) => {
-  const baseStyle =
-    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group min-h-[48px] min-w-[48px]";
-
-  const variants = {
-    primary:
-      "bg-gradient-to-r from-accent-600 to-accent-500 text-white hover:shadow-lg hover:shadow-accent-500/50 hover:scale-105 transform",
-    outline:
-      "border-2 border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white hover:shadow-lg",
-    text: "text-neutral-900 hover:text-accent-600 p-0",
-  };
-
-  return (
-    <button
-      className={`${baseStyle} ${variants[variant]} ${className}`}
-      {...props}
-    >
-      {children}
-      {variant !== "text" && (
-        <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-      )}
-    </button>
-  );
-};
-
-export const SectionTitle: React.FC<{
-  title: string;
-  subtitle?: string;
-  centered?: boolean;
-  light?: boolean;
-}> = ({ title, subtitle, centered, light }) => (
-  <div className={`mb-12 ${centered ? "text-center" : ""}`}>
-    {subtitle && (
-      <span
-        className={`block text-xs font-bold uppercase tracking-[0.2em] mb-3 ${
-          light ? "text-accent-400" : "text-accent-600"
-        }`}
-      >
-        {subtitle}
-      </span>
-    )}
-    <h2
-      className={`text-3xl md:text-4xl font-headline font-medium ${
-        light ? "text-white" : "text-neutral-900"
-      }`}
-    >
-      {title}
-    </h2>
-    <div
-      className={`h-1 w-20 bg-gradient-to-r from-accent-500 to-navy-500 mt-4 ${
-        centered ? "mx-auto" : ""
-      }`}
-    />
-  </div>
-);
-
 export const ContactForm: React.FC<{ source?: string }> = ({
   source = "General",
 }) => {

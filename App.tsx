@@ -79,9 +79,9 @@ const DiagnosticoSucesso = React.lazy(() =>
   import("./pages/DiagnosticoSucesso").then((m) => ({ default: m.DiagnosticoSucesso })),
 );
 
-// Components — MetaPixel carregado sob demanda para não bloquear LCP
+// Components — carregados sob demanda (não bloqueiam LCP)
 const MetaPixel = React.lazy(() => import("./components/MetaPixel"));
-import DiagnosticoPopup from "./components/DiagnosticoPopup";
+const DiagnosticoPopup = React.lazy(() => import("./components/DiagnosticoPopup"));
 import { isChatEnabled } from "./src/config/chat";
 
 const ENABLE_CHAT = isChatEnabled();
@@ -117,7 +117,9 @@ const PublicWidgets: React.FC = () => {
 
   return (
     <>
-      <DiagnosticoPopup />
+      <Suspense fallback={null}>
+        <DiagnosticoPopup />
+      </Suspense>
       {ENABLE_CHAT && ChatWidget && (
         <Suspense fallback={null}>
           <ChatWidget />

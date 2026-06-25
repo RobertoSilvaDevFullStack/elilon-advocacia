@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import Sitemap from "vite-plugin-sitemap";
 import viteCompression from "vite-plugin-compression";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const dynamicRoutes = [
   "/blog/compliance-trabalhista",
@@ -45,6 +46,12 @@ export default defineConfig(({ mode }) => {
       // Gzip + Brotli para assets estáticos em produção
       viteCompression({ algorithm: "gzip", ext: ".gz" }),
       viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
+      visualizer({
+        filename: "dist/stats.html",
+        gzipSize: true,
+        brotliSize: true,
+        open: false,
+      }),
     ],
     define: {
       "import.meta.env.VITE_API_URL": JSON.stringify(
@@ -95,6 +102,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       cssCodeSplit: true,
       cssMinify: true,
+      target: "es2020",
+      modulePreload: { polyfill: false },
     },
     optimizeDeps: {
       include: ["react", "react-dom", "react-router-dom"],

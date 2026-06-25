@@ -42,7 +42,7 @@ const Footer: React.FC = () => {
               href="https://www.instagram.com/elilonlopesadvogados"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="Instagram"
             >
               <Instagram size={24} />
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
               href="https://www.facebook.com/elilon.lopesdeabreu"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="Facebook"
             >
               <Facebook size={24} />
@@ -216,7 +216,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div className="flex flex-col min-h-screen font-sans text-neutral-900 bg-neutral-50">
       <Navbar />
-      <main className="flex-grow">{children}</main>
+      <main id="conteudo-principal" className="flex-grow">
+        {children}
+      </main>
       <Footer />
       <FloatingWhatsApp />
     </div>

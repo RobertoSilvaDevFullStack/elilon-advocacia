@@ -1,64 +1,7 @@
-import { Professional, AreaOfPractice, BlogPost, NavItem } from "./types";
+import { Professional, BlogPost } from "./types";
 
-export const NAV_ITEMS: NavItem[] = [
-  { label: "Home", path: "/" },
-  {
-    label: "Sobre Nós",
-    path: "/sobre",
-    subItems: [
-      { label: "Entrega e Soluções", path: "/sobre/entrega" },
-      { label: "Pensamento Inovador", path: "/sobre/inovacao" },
-      { label: "Depoimentos", path: "/sobre/depoimentos" },
-    ],
-  },
-  { label: "Profissionais", path: "/profissionais" },
-  { label: "Áreas de Atuação", path: "/areas" },
-  { label: "Blog", path: "/blog" },
-  { label: "Diagnóstico Tributário", path: "/diagnostico-reforma-tributaria", highlight: true },
-];
-
-export const AREAS: AreaOfPractice[] = [
-  {
-    id: 1,
-    title: "Direito Trabalhista",
-    slug: "trabalhista",
-    description:
-      "Consultoria em rescisões, contratos e compliance trabalhista.",
-    image: "/images/direito-trabalhista.webp",
-  },
-  {
-    id: 3,
-    title: "Direito Previdenciário",
-    slug: "previdenciario",
-    description:
-      "Planejamento previdenciário e requerimento de benefícios do INSS.",
-    image: "/images/direito-previdenciario.webp",
-  },
-  {
-    id: 5,
-    title: "Direito Tributário",
-    slug: "tributario",
-    description:
-      "Planejamento tributário, defesa em autuações e recuperação de créditos.",
-    image: "/images/direito-tributario.webp",
-  },
-  {
-    id: 4,
-    title: "Direito Imobiliário",
-    slug: "imobiliario",
-    description:
-      "Assessoria em compra, venda, locação e regularização de imóveis.",
-    image: "/images/direito-imobiliario.webp",
-  },
-  {
-    id: 2,
-    title: "Direito Civil",
-    slug: "civil",
-    description:
-      "Soluções em contratos, responsabilidade civil, família e sucessões.",
-    image: "/images/direito-civil.webp",
-  },
-];
+export { AREAS } from "./constants/areas";
+export { NAV_ITEMS } from "./constants/nav";
 
 export const PROFESSIONALS: Professional[] = [
   {

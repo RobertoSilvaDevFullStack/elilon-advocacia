@@ -11,31 +11,29 @@
   <meta name="description"
     content="Escritório de advocacia empresarial em Montes Claros - MG. Soluções jurídicas inovadoras." />
 
-  <!-- Critical resource hints — apenas fontes (YouTube carrega lazy na Home) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-
-  <!-- Logo LCP — WebP leve (~5 KB) -->
-  <link rel="preload" href="/images/logo-elilon.webp" as="image" type="image/webp" fetchpriority="high" />
-
-  <!-- Fontes: pesos reduzidos + display=swap, sem bloquear render -->
-  <link rel="preload" as="style"
-    href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap"
-    rel="stylesheet" media="print" onload="this.media='all'" />
-  <noscript>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap"
-      rel="stylesheet" />
-  </noscript>
+  <!-- LCP: hero mobile 800w WebP — pinta antes do bundle React -->
+  <link rel="preload" href="/images/ambiente-fotorrealista-advogado-800.webp" as="image" type="image/webp" fetchpriority="high" />
+  <link rel="preload" href="/images/logo-elilon.webp" as="image" type="image/webp" />
 
   <link rel="icon" type="image/webp" href="/images/logo-elilon.webp" />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs" />
+
+  <style>
+    #static-hero{position:fixed;inset:0;z-index:0;background:#171717;pointer-events:none}
+    #static-hero img{width:100%;height:100%;object-fit:cover;object-position:center;opacity:.4}
+    #static-hero .grad{position:absolute;inset:0;background:linear-gradient(to top,#171717,transparent 50%,rgba(23,23,23,.5))}
+    body{margin:0;background:#fdfdfd}
+  </style>
 </head>
 
 <body>
+  <div id="static-hero" aria-hidden="true">
+    <img src="/images/ambiente-fotorrealista-advogado-800.webp" alt="" width="800" height="534" fetchpriority="high" decoding="async" />
+    <div class="grad"></div>
+  </div>
+  <a href="#conteudo-principal" class="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-2 focus:left-2 focus:bg-white focus:text-neutral-900 focus:px-4 focus:py-2 focus:rounded">
+    Ir para o conteúdo principal
+  </a>
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>

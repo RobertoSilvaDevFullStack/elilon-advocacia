@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { NAV_ITEMS } from "../constants";
+import { NAV_ITEMS } from "../constants/nav";
 import { BrandLogo } from "./BrandLogo";
 
 const Navbar: React.FC = () => {
@@ -28,16 +28,8 @@ const Navbar: React.FC = () => {
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group" aria-label="Elilon Lopes Advogados — página inicial">
+        <Link to="/" className="flex items-center group" aria-label="Elilon Lopes Advogados — página inicial">
           <BrandLogo />
-          <div className="flex flex-col items-start leading-tight">
-            <span className="text-xl font-headline font-bold tracking-widest text-white group-hover:text-vermelho-400 transition-colors">
-              ELILON LOPES
-            </span>
-            <span className="text-[10px] tracking-[0.3em] text-neutral-100 uppercase group-hover:text-white transition-colors">
-              Advogados
-            </span>
-          </div>
         </Link>
 
         {/* Desktop Menu */}
@@ -81,8 +73,7 @@ const Navbar: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className="relative inline-flex items-center gap-1.5 px-4 py-2 bg-amber-400 text-[#1A1A1A] text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-all duration-200 hover:shadow-lg hover:shadow-amber-400/40 hover:scale-105 whitespace-nowrap animate-pulse-subtle"
-              style={{ animationDuration: "3s" }}
+              className="relative inline-flex items-center gap-1.5 px-4 py-2 bg-amber-400 text-[#1A1A1A] text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors duration-200 whitespace-nowrap"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] opacity-70"></span>
               {item.label}
@@ -99,8 +90,7 @@ const Navbar: React.FC = () => {
         {/* Mobile CTA — Diagnóstico Tributário (header recolhido) */}
         <Link
           to="/diagnostico-reforma-tributaria"
-          className="lg:hidden ml-auto mr-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-400 text-[#1A1A1A] text-[10px] sm:text-xs font-bold uppercase tracking-wide rounded-md shadow-md shadow-amber-400/30 hover:bg-amber-300 transition-colors whitespace-nowrap animate-pulse-subtle"
-          style={{ animationDuration: "3s" }}
+          className="lg:hidden ml-auto mr-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-400 text-[#1A1A1A] text-[10px] sm:text-xs font-bold uppercase tracking-wide rounded-md shadow-md shadow-amber-400/30 hover:bg-amber-300 transition-colors whitespace-nowrap"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#1A1A1A] opacity-70 shrink-0" />
           Diagnóstico
