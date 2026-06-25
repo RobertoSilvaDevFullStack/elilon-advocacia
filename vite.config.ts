@@ -42,7 +42,9 @@ export default defineConfig(({ mode }) => {
         hostname: "https://elilonlopesadvogados.com.br",
         dynamicRoutes,
       }),
-      viteCompression(),
+      // Gzip + Brotli para assets estáticos em produção
+      viteCompression({ algorithm: "gzip", ext: ".gz" }),
+      viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
     ],
     define: {
       "import.meta.env.VITE_API_URL": JSON.stringify(
@@ -58,11 +60,22 @@ export default defineConfig(({ mode }) => {
       minify: "terser",
       rollupOptions: {
         output: {
-          manualChunks: {
-            "react-vendor": ["react", "react-dom"],
-            "router-vendor": ["react-router-dom"],
-            "ui-vendor": ["lucide-react"],
-            "maps-vendor": ["react-simple-maps", "d3-scale"],
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("react-dom") || id.includes("/react/")) {
+                return "react-vendor";
+              }
+              if (id.includes("react-router")) return "router-vendor";
+              if (id.includes("lucide-react")) return "ui-vendor";
+              if (
+                id.includes("react-simple-maps") ||
+                id.includes("d3-")
+              ) {
+                return "maps-vendor";
+              }
+              if (id.includes("react-quill")) return "editor-vendor";
+              if (id.includes("isomorphic-dompurify")) return "sanitize-vendor";
+            }
           },
           assetFileNames: (assetInfo) => {
             let extType = assetInfo.name.split(".").pop();

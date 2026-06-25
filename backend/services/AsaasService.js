@@ -78,8 +78,16 @@ class AsaasService {
 
   /**
    * Gera cobrança (PIX ou Cartão de Crédito).
+   * callback.successUrl — URL de retorno após pagamento (cadastrar domínio no ASAAS).
    */
-  async createPayment({ customerId, value, billingType, description, externalReference }) {
+  async createPayment({
+    customerId,
+    value,
+    billingType,
+    description,
+    externalReference,
+    callback,
+  }) {
     const client = this._client();
     const dueDate = new Date();
     dueDate.setDate(dueDate.getDate() + 3);
@@ -93,6 +101,13 @@ class AsaasService {
       description,
       externalReference,
     };
+
+    if (callback?.successUrl) {
+      payload.callback = {
+        successUrl: callback.successUrl,
+        autoRedirect: callback.autoRedirect !== false,
+      };
+    }
 
     const { data } = await client.post("/payments", payload);
     logger.info("[Asaas] Cobrança criada", {

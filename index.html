@@ -11,23 +11,27 @@
   <meta name="description"
     content="Escritório de advocacia empresarial em Montes Claros - MG. Soluções jurídicas inovadoras." />
 
-  <!-- Resource Hints -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://www.youtube.com">
-  <link rel="preconnect" href="https://i.ytimg.com">
+  <!-- Critical resource hints — apenas fontes (YouTube carrega lazy na Home) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
 
-  <!-- Optimized Fonts with display=swap and subset -->
+  <!-- Logo LCP — WebP leve (~5 KB) -->
+  <link rel="preload" href="/images/logo-elilon.webp" as="image" type="image/webp" fetchpriority="high" />
+
+  <!-- Fontes: pesos reduzidos + display=swap, sem bloquear render -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap&subset=latin"
-    rel="stylesheet" media="print" onload="this.media='all'">
+    href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript>
     <link
-      href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap&subset=latin"
-      rel="stylesheet">
+      href="https://fonts.googleapis.com/css2?family=Cabin:wght@500;600;700&family=Montserrat:wght@400;500;600&display=swap"
+      rel="stylesheet" />
   </noscript>
-  <link rel="icon" type="image/png" href="/images/logo-elilon.png" />
+
+  <link rel="icon" type="image/webp" href="/images/logo-elilon.webp" />
   <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs" />
 </head>
 

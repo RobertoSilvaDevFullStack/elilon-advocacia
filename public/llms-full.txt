@@ -2,6 +2,17 @@
 # Documentação estendida para sistemas de IA
 # Site: https://elilonlopesadvogados.com.br
 
+## Stack técnica
+
+| Camada | Tecnologia |
+|--------|------------|
+| Frontend | React 18, TypeScript, Vite 6, Tailwind CSS |
+| Roteamento | React Router 7 |
+| SEO | react-helmet-async, JSON-LD (Schema.org), sitemap.xml |
+| Backend API | Node.js, Express, SQLite/PostgreSQL |
+| Pagamentos | ASAAS (PIX/cartão) — Diagnóstico Tributário |
+| Automação | N8N (chat jurídico — quando habilitado) |
+
 ## Resumo institucional
 
 Elilon Lopes Advogados é um escritório de advocacia sediado em Montes Claros, Minas Gerais, liderado pelo Dr. Elilon Lopes. O escritório combina atendimento humanizado com tecnologia jurídica (chat inteligente, diagnósticos automatizados e análise documental) para atender pessoas físicas e empresas.

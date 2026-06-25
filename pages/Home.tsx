@@ -1,47 +1,22 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
 import { SEO } from "../components/SEO";
-import { AREAS, BLOG_POSTS } from "../constants";
+import { AREAS } from "../constants";
 import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lucide-react";
-import { BrazilMap } from "../components/BrazilMap";
+import { LazyBrazilMap } from "../components/LazyBrazilMap";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { LazyYouTube } from "../components/LazyYouTube";
 import { MobilePortraitImage } from "../components/MobilePortraitImage";
+import { useBlogPosts } from "../hooks/useBlogPosts";
+import { buildHomeSchema } from "../utils/seo";
 
 export const Home: React.FC = () => {
   const [currentAreaIndex, setCurrentAreaIndex] = useState(0);
   const [currentBlogIndex, setCurrentBlogIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-
-  const sortedBlogPosts = useMemo(() => {
-    return [...BLOG_POSTS].sort((a, b) => {
-      const months: { [key: string]: number } = {
-        Jan: 0,
-        Fev: 1,
-        Mar: 2,
-        Abr: 3,
-        Mai: 4,
-        Jun: 5,
-        Jul: 6,
-        Ago: 7,
-        Set: 8,
-        Out: 9,
-        Nov: 10,
-        Dez: 11,
-      };
-      const parseDate = (dateStr: string) => {
-        const parts = dateStr.split(" ");
-        if (parts.length !== 3) return 0;
-        const day = parseInt(parts[0], 10);
-        const month = months[parts[1]];
-        const year = parseInt(parts[2], 10);
-        return new Date(year, month, day).getTime();
-      };
-      return parseDate(b.date) - parseDate(a.date);
-    });
-  }, []);
+  const { posts: blogPosts } = useBlogPosts();
 
   // Detect mobile screen
   useEffect(() => {
@@ -70,7 +45,7 @@ export const Home: React.FC = () => {
   useEffect(() => {
     if (!isMobile) return;
 
-    const total = sortedBlogPosts.length;
+    const total = blogPosts.length;
     if (total <= 1) return;
 
     const interval = setInterval(() => {
@@ -78,38 +53,18 @@ export const Home: React.FC = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isMobile, sortedBlogPosts.length]);
+  }, [isMobile, blogPosts.length]);
+
+  useEffect(() => {
+    setCurrentBlogIndex(0);
+  }, [blogPosts.length]);
 
   return (
     <Layout>
       <SEO
         title="Home"
         description="Elilon Lopes Advogados - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "LegalService",
-          name: "Elilon Lopes Advogados",
-          url: "https://elilonlopesadvogados.com.br",
-          logo: "https://elilonlopesadvogados.com.br/images/logo-nova.png",
-          image: "https://elilonlopesadvogados.com.br/og-image.jpg",
-          description:
-            "Sociedade de Advogados especializada em Direito Empresarial, Trabalhista e Civil em Montes Claros - MG.",
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: "Rua João Pinheiro, 95, Centro",
-            addressLocality: "Montes Claros",
-            addressRegion: "MG",
-            postalCode: "39400-000",
-            addressCountry: "BR",
-          },
-          telephone: "+55-38-2200-1615",
-          priceRange: "$$$",
-          sameAs: [
-            "https://www.linkedin.com/in/elilon-lopes",
-            "https://www.instagram.com/elilonlopesadvogados",
-            "https://www.facebook.com/elilon.lopesdeabreu",
-          ],
-        }}
+        schema={buildHomeSchema()}
       />
       {/* Hero */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-900">
@@ -332,7 +287,7 @@ export const Home: React.FC = () => {
 
           {/* Map Container - Full Width Responsive */}
           <div className="relative">
-            <BrazilMap />
+            <LazyBrazilMap />
           </div>
 
           {/* Stats Row - Below Map */}
@@ -476,7 +431,7 @@ export const Home: React.FC = () => {
           {/* Mobile: Blog Carousel */}
           <div className="md:hidden relative mt-12">
             <div className="relative h-96 overflow-hidden">
-              {sortedBlogPosts.map((post, index) => (
+              {blogPosts.map((post, index) => (
                 <div
                   key={post.id}
                   className={`absolute inset-0 transition-all duration-500 ${
@@ -526,7 +481,7 @@ export const Home: React.FC = () => {
             </div>
             {/* Blog Carousel Indicators */}
             <div className="flex justify-center gap-2 mt-4">
-              {sortedBlogPosts.map((_, index) => (
+              {blogPosts.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentBlogIndex(index)}
@@ -543,7 +498,7 @@ export const Home: React.FC = () => {
 
           {/* Desktop: Blog Grid */}
           <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {sortedBlogPosts.map((post, index) => (
+            {blogPosts.map((post, index) => (
               <Link
                 to={`/blog/${post.slug}`}
                 key={post.id}

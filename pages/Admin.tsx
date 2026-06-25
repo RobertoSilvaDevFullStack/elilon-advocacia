@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Lead, BlogPost, Professional } from "../types";
 import { BLOG_POSTS, PROFESSIONALS } from "../constants";
 import {
@@ -87,14 +87,43 @@ type ViewState =
   | "diagnosticoLeads" // Sprint 3.6
   | "diagnosticoPremium"; // Sprint 3.11
 
+const ADMIN_VIEWS: ViewState[] = [
+  "dashboard",
+  "leads",
+  "blog",
+  "professionals",
+  "users",
+  "settings",
+  "preAtendimentos",
+  "diagnosticoLeads",
+  "diagnosticoPremium",
+];
+
+function parseAdminView(value: string | null): ViewState {
+  if (value && ADMIN_VIEWS.includes(value as ViewState)) {
+    return value as ViewState;
+  }
+  return "dashboard";
+}
+
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentView = parseAdminView(searchParams.get("view"));
+
+  const navigateToView = (view: ViewState) => {
+    if (view === "dashboard") {
+      setSearchParams({}, { replace: false });
+    } else {
+      setSearchParams({ view }, { replace: false });
+    }
+  };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Prevent login screen flash
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [currentView, setCurrentView] = useState<ViewState>("dashboard");
 
   // Data States
   const [stats, setStats] = useState<any>(null);
@@ -975,7 +1004,7 @@ export const Admin: React.FC = () => {
 
   const NavButton = ({ view, icon: Icon, label }: any) => (
     <button
-      onClick={() => setCurrentView(view)}
+      onClick={() => navigateToView(view)}
       className={`w-full flex items-center ${
         sidebarCollapsed ? "justify-center" : "space-x-3"
       } px-4 py-3 rounded transition-colors ${

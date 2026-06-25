@@ -7,7 +7,9 @@ Disallow: /admin/
 Disallow: /diagnostico/pagamento/
 Disallow: /diagnostico/sucesso
 
-# SEO para sistemas de IA
-# llms.txt: https://elilonlopesadvogados.com.br/llms.txt
-
+# Sitemap
 Sitemap: https://elilonlopesadvogados.com.br/sitemap.xml
+
+# LLMs — documentação para agentes de IA (https://llmstxt.org/)
+LLMs: https://elilonlopesadvogados.com.br/llms.txt
+LLMs-full: https://elilonlopesadvogados.com.br/llms-full.txt

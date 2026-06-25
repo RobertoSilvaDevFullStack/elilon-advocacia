@@ -1,55 +1,77 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
+import {
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+  DEFAULT_OG_IMAGE,
+  toAbsoluteUrl,
+} from "../utils/seo";
 
 interface SEOProps {
   title: string;
   description: string;
   image?: string;
   url?: string;
-  schema?: object;
+  schema?: object | object[];
+  type?: "website" | "article";
+  noindex?: boolean;
 }
 
 export const SEO: React.FC<SEOProps> = ({
   title,
   description,
-  image = "/og-image.jpg", // Default image if one exists, or we can use a logo
+  image,
   url,
   schema,
+  type = "website",
+  noindex = false,
 }) => {
-  const siteTitle = "Elilon Lopes Advogados | Sociedade de Advogados";
-  const fullTitle =
-    title === siteTitle ? title : `${title} | Elilon Lopes Advogados`;
+  const fullTitle = title === SITE_TITLE ? title : `${title} | ${SITE_NAME}`;
   const currentUrl =
     url ||
-    (typeof window !== "undefined"
-      ? window.location.href
-      : "https://elilonlopesadvogados.com.br");
+    (typeof window !== "undefined" ? window.location.href : SITE_URL);
+  const ogImage = toAbsoluteUrl(image || DEFAULT_OG_IMAGE);
+
+  const schemas = schema
+    ? Array.isArray(schema)
+      ? schema
+      : [schema]
+    : [];
 
   return (
     <Helmet>
-      {/* Standard metadata */}
+      <html lang="pt-BR" />
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={currentUrl} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
 
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content="website" />
+      {/* Open Graph */}
+      <meta property="og:type" content={type} />
       <meta property="og:url" content={currentUrl} />
+      <meta property="og:site_name" content={SITE_NAME} />
+      <meta property="og:locale" content="pt_BR" />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:alt" content={fullTitle} />
 
       {/* Twitter */}
-      <meta property="twitter:card" content="summary_large_image" />
-      <meta property="twitter:url" content={currentUrl} />
-      <meta property="twitter:title" content={fullTitle} />
-      <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={image} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:url" content={currentUrl} />
+      <meta name="twitter:title" content={fullTitle} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
 
-      {/* Structured Data */}
-      {schema && (
-        <script type="application/ld+json">{JSON.stringify(schema)}</script>
-      )}
+      {/* AI / Agentic discovery */}
+      <link rel="alternate" type="text/plain" href={`${SITE_URL}/llms.txt`} title="LLMs" />
+
+      {schemas.map((s, i) => (
+        <script key={i} type="application/ld+json">
+          {JSON.stringify(s)}
+        </script>
+      ))}
     </Helmet>
   );
 };

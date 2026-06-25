@@ -9,6 +9,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Navbar from "./Navbar";
+import { BrandLogo } from "./BrandLogo";
 import { openWhatsApp } from "../utils/whatsapp";
 
 const Footer: React.FC = () => {
@@ -18,11 +19,7 @@ const Footer: React.FC = () => {
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3 mb-6">
-            <img
-              src="/images/logo-nova.png"
-              alt="Elilon Lopes Advogados Logo"
-              className="h-12 w-auto object-contain"
-            />
+            <BrandLogo className="h-12 w-auto object-contain" />
             <h2 className="text-3xl font-headline font-bold text-vermelho-400">
               Elilon Lopes Advogados
             </h2>
@@ -36,7 +33,7 @@ const Footer: React.FC = () => {
               href="https://www.linkedin.com/in/elilon-lopes"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-200 hover:text-accent-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-200 hover:text-accent-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="LinkedIn"
             >
               <Linkedin size={24} />

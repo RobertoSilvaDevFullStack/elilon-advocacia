@@ -1,6 +1,10 @@
 require("dotenv").config();
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcryptjs");
+const {
+  translatePostgresToSqlite,
+  normalizeSqliteRow,
+} = require("./utils/sqlDialect");
 
 // Connect to SQLite database
 const sqliteDb = new sqlite3.Database("./database.sqlite", (err) => {
@@ -261,17 +265,19 @@ const db = {
   // Wrap SQLite's all() method to return PostgreSQL-style result
   query: (sql, params = []) => {
     return new Promise((resolve, reject) => {
-      // Convert PostgreSQL placeholders ($1, $2) to SQLite placeholders (?, ?)
-      const sqliteSql = sql.replace(/\$(\d+)/g, "?");
+      const sqliteSql = translatePostgresToSqlite(sql);
+      const trimUpper = sqliteSql.trim().toUpperCase();
+
+      const finishRows = (rows) =>
+        resolve({ rows: (rows || []).map(normalizeSqliteRow) });
 
       // For SELECT queries
-      if (sqliteSql.trim().toUpperCase().startsWith("SELECT")) {
+      if (trimUpper.startsWith("SELECT")) {
         sqliteDb.all(sqliteSql, params, (err, rows) => {
           if (err) {
             reject(err);
           } else {
-            // Return PostgreSQL-style result object
-            resolve({ rows: rows || [] });
+            finishRows(rows);
           }
         });
       }
@@ -296,7 +302,7 @@ const db = {
               if (selErr || !row) {
                 resolve({ rows: [{ id: lastId }] });
               } else {
-                resolve({ rows: [row] });
+                resolve({ rows: [normalizeSqliteRow(row)] });
               }
             });
           } else {

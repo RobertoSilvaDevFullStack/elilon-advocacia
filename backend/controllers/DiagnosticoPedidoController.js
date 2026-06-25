@@ -20,6 +20,7 @@ const {
   sanitizeString,
 } = require("../utils/inputValidator");
 const { formatPhoneForAsaas, isValidBrazilianMobile } = require("../utils/phoneFormatter");
+const { buildDiagnosticoSuccessUrl } = require("../utils/frontendUrl");
 const { signPedidoAccess, verifyPedidoAccess, escapeLikePattern } = require("../utils/pedidoAccessToken");
 const { logger } = require("../config/logger");
 
@@ -168,6 +169,7 @@ exports.createPedido = async (req, res) => {
     const pedidoId = crypto.randomUUID();
 
     const billingType = payment_method === "PIX" ? "PIX" : "CREDIT_CARD";
+    const successUrl = buildDiagnosticoSuccessUrl(cleanEmail);
 
     const customer = await withRetry(
       () =>
@@ -188,6 +190,10 @@ exports.createPedido = async (req, res) => {
           billingType,
           description: `Diagnóstico Tributário Premium — ${cleanEmpresa}`,
           externalReference: pedidoId,
+          callback: {
+            successUrl,
+            autoRedirect: true,
+          },
         }),
       "createPayment"
     );

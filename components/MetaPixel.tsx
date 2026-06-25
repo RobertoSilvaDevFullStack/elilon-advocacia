@@ -15,8 +15,8 @@ const MetaPixel: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Initialize Pixel
-    if (!window.fbq) {
+    const initPixel = () => {
+      if (window.fbq) return;
       (function (f: any, b: any, e: any, v: any, n?: any, t?: any, s?: any) {
         if (f.fbq) return;
         n = f.fbq = function () {
@@ -41,7 +41,16 @@ const MetaPixel: React.FC = () => {
         "https://connect.facebook.net/en_US/fbevents.js",
       );
       window.fbq("init", PIXEL_ID);
+      window.fbq("track", "PageView");
+    };
+
+    // Adia pixel de terceiros até após idle — melhora TBT e Best Practices
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(initPixel, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
     }
+    const timer = setTimeout(initPixel, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

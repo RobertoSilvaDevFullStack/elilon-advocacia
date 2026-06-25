@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { NAV_ITEMS } from "../constants";
+import { BrandLogo } from "./BrandLogo";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,18 +21,15 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
+      aria-label="Navegação principal"
       className={`fixed w-full z-50 transition-all duration-300 bg-gradient-to-r from-[#1A1A1A] via-[#101010] to-[#200A0C] border-b-2 border-[#A1333E]/40 shadow-lg backdrop-blur-sm ${
         scrolled ? "shadow-xl py-2" : "py-4"
       }`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
-          <img
-            src="/images/logo-nova.png"
-            alt="Elilon Lopes Advogados Logo"
-            className="h-12 w-auto object-contain mix-blend-screen"
-          />
+        <Link to="/" className="flex items-center gap-3 group" aria-label="Elilon Lopes Advogados — página inicial">
+          <BrandLogo />
           <div className="flex flex-col items-start leading-tight">
             <span className="text-xl font-headline font-bold tracking-widest text-white group-hover:text-vermelho-400 transition-colors">
               ELILON LOPES
@@ -110,9 +108,12 @@ const Navbar: React.FC = () => {
 
         {/* Mobile Menu Button */}
         <button
-          className="lg:hidden text-white p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+          type="button"
+          className="lg:hidden text-white p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
           onClick={() => setIsOpen(!isOpen)}
-          aria-label="Toggle menu"
+          aria-label={isOpen ? "Fechar menu de navegação" : "Abrir menu de navegação"}
+          aria-expanded={isOpen}
+          aria-controls="mobile-nav-menu"
         >
           {isOpen ? <X size={28} /> : <Menu size={28} />}
         </button>
@@ -120,6 +121,7 @@ const Navbar: React.FC = () => {
 
       {/* Mobile Menu */}
       <div
+        id="mobile-nav-menu"
         className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
         }`}

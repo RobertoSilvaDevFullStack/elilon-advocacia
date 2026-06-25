@@ -1,5 +1,6 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
+import OptimizedImage from "./OptimizedImage";
 import { Link } from "react-router-dom";
 import { AREAS } from "../constants";
 import { getApiBaseUrl } from "../utils/api";
@@ -18,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyle =
-    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group min-h-[44px]";
+    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group min-h-[48px] min-w-[48px]";
 
   const variants = {
     primary:
@@ -249,11 +250,15 @@ export const Hero: React.FC<{
       className={`relative ${heightClass} flex items-center justify-center overflow-hidden bg-neutral-900`}
     >
       <div className="absolute inset-0 z-0 opacity-50">
-        <img
+        <OptimizedImage
           src={image}
-          alt={title}
+          alt=""
+          role="presentation"
           className="w-full h-full object-cover"
           style={{ objectPosition: imagePosition }}
+          priority
+          width={1920}
+          height={1080}
         />
       </div>
       <div className="container relative z-10 px-4 text-center text-white pt-20 md:pt-0">

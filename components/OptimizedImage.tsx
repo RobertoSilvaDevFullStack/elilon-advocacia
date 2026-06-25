@@ -1,6 +1,7 @@
 import React from "react";
 
-interface OptimizedImageProps {
+interface OptimizedImageProps
+  extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
   alt: string;
   width?: number;
@@ -8,10 +9,21 @@ interface OptimizedImageProps {
   className?: string;
   loading?: "lazy" | "eager";
   priority?: boolean;
+  /** Quando true, tenta <picture> com .webp equivalente */
+  webp?: boolean;
+}
+
+/** Resolve caminho .webp a partir de .jpg/.jpeg/.png */
+function webpSrc(src: string): string | null {
+  if (/\.(jpe?g|png)$/i.test(src)) {
+    return src.replace(/\.(jpe?g|png)$/i, ".webp");
+  }
+  return null;
 }
 
 /**
- * Componente otimizado de imagem com lazy loading e atributos de performance
+ * Imagem com lazy loading, dimensões explícitas (CLS) e WebP via <picture>.
+ * priority=true → fetchPriority high + loading eager (LCP).
  */
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
@@ -21,25 +33,35 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = "",
   loading = "lazy",
   priority = false,
+  webp = true,
+  style,
+  ...rest
 }) => {
-  // Se for priority, força eager loading
   const loadingStrategy = priority ? "eager" : loading;
+  const webpPath = webp ? webpSrc(src) : null;
 
-  return (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      loading={loadingStrategy}
-      decoding="async"
-      className={className}
-      style={{
-        maxWidth: "100%",
-        height: "auto",
-      }}
-    />
-  );
+  const imgProps = {
+    alt,
+    width,
+    height,
+    loading: loadingStrategy as "lazy" | "eager",
+    decoding: "async" as const,
+    className,
+    style: { maxWidth: "100%", height: "auto", ...style },
+    ...(priority ? { fetchPriority: "high" as const } : {}),
+    ...rest,
+  };
+
+  if (webpPath) {
+    return (
+      <picture>
+        <source srcSet={webpPath} type="image/webp" />
+        <img src={src} {...imgProps} />
+      </picture>
+    );
+  }
+
+  return <img src={src} {...imgProps} />;
 };
 
 export default OptimizedImage;

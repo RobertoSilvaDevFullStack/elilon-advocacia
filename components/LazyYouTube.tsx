@@ -7,13 +7,23 @@ interface LazyYouTubeProps {
   autoplay?: boolean;
 }
 
+const POSTER_STYLE: React.CSSProperties = {
+  width: "100vw",
+  height: "100vh",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%) scale(1.5)",
+  objectFit: "cover",
+};
+
 /**
- * Componente otimizado para embed do YouTube com lazy loading
- * Usa Intersection Observer para autoplay sem bloquear FCP inicial
+ * YouTube com lazy load agressivo — LCP usa poster leve (hqdefault),
+ * iframe só após idle + interseção para não bloquear renderização.
  */
 export const LazyYouTube: React.FC<LazyYouTubeProps> = ({
   videoId,
-  title = "YouTube video",
+  title = "Vídeo institucional",
   className = "",
   autoplay = true,
 }) => {
@@ -23,67 +33,60 @@ export const LazyYouTube: React.FC<LazyYouTubeProps> = ({
   useEffect(() => {
     if (!autoplay) return;
 
-    // Usar Intersection Observer para carregar quando visível
+    const loadVideo = () => {
+      if (isLoaded) return;
+      setIsLoaded(true);
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !isLoaded) {
-            // Pequeno delay para não bloquear FCP
-            setTimeout(() => {
-              setIsLoaded(true);
-            }, 100);
-          }
-        });
+        if (!entries[0]?.isIntersecting) return;
+
+        // Adia iframe até o browser estar ocioso — melhora LCP/TBT
+        if ("requestIdleCallback" in window) {
+          (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback(loadVideo, { timeout: 3000 });
+        } else {
+          setTimeout(loadVideo, 2000);
+        }
+        observer.disconnect();
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: "50px" },
     );
 
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-    };
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
   }, [autoplay, isLoaded]);
 
   if (isLoaded) {
-    // Carregar iframe real quando visível
     return (
       <iframe
         src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1`}
         title={title}
         allow="autoplay; encrypted-media"
         className={className}
+        loading="lazy"
         style={{
           border: "none",
-          width: "100vw",
-          height: "100vh",
-          objectFit: "cover",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) scale(1.5)",
+          ...POSTER_STYLE,
         }}
       />
     );
   }
 
-  // Mostrar placeholder enquanto não carregar
+  // hqdefault (~30 KB) em vez de maxresdefault (~150 KB) — mesmo visual com opacity 40%
   return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={{
-        backgroundImage: `url(https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        width: "100vw",
-        height: "100vh",
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%) scale(1.5)",
-      }}
-    />
+    <div ref={containerRef} className={className} style={POSTER_STYLE}>
+      <img
+        src={`https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`}
+        alt=""
+        role="presentation"
+        width={480}
+        height={360}
+        decoding="async"
+        fetchPriority="high"
+        className="w-full h-full object-cover"
+        style={POSTER_STYLE}
+      />
+    </div>
   );
 };

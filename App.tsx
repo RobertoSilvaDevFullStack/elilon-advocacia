@@ -79,14 +79,12 @@ const DiagnosticoSucesso = React.lazy(() =>
   import("./pages/DiagnosticoSucesso").then((m) => ({ default: m.DiagnosticoSucesso })),
 );
 
-// Components
-import MetaPixel from "./components/MetaPixel";
+// Components — MetaPixel carregado sob demanda para não bloquear LCP
+const MetaPixel = React.lazy(() => import("./components/MetaPixel"));
 import DiagnosticoPopup from "./components/DiagnosticoPopup";
-import { isN8NConfigured } from "./src/config/n8n";
+import { isChatEnabled } from "./src/config/chat";
 
-// Chat Widget — só ativo com flag explícita + webhook N8N configurado
-const ENABLE_CHAT =
-  import.meta.env.VITE_ENABLE_CHAT === "true" && isN8NConfigured();
+const ENABLE_CHAT = isChatEnabled();
 const ChatWidget = ENABLE_CHAT
   ? React.lazy(() => import("./src/modules/chat").then((m) => ({ default: m.ChatWidget })))
   : null;
@@ -165,7 +163,9 @@ const App: React.FC = () => {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <MetaPixel />
+          <Suspense fallback={null}>
+            <MetaPixel />
+          </Suspense>
           <PublicWidgets />
         </Suspense>
       </Router>

@@ -4,7 +4,8 @@ import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
 import { ChevronLeft, Calendar, User, Share2 } from "lucide-react";
 import DOMPurify from "isomorphic-dompurify";
-import { getApiBaseUrl } from "../utils/api";
+import { buildArticleSchema, buildBreadcrumbSchema } from "../utils/seo";
+import OptimizedImage from "../components/OptimizedImage";
 import { trackNewsletter } from "../utils/tracking";
 
 const API_URL = getApiBaseUrl();
@@ -153,26 +154,31 @@ export const BlogPostDetail: React.FC = () => {
         title={post.title}
         description={post.excerpt}
         image={post.image}
-        schema={{
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
-          headline: post.title,
-          image: [post.image],
-          datePublished: post.created_at,
-          description: post.excerpt,
-          author: {
-            "@type": "Organization",
-            name: "Elilon Lopes Advogados",
-            url: "https://elilonlopesadvogados.com.br",
-          },
-        }}
+        type="article"
+        schema={[
+          buildArticleSchema({
+            title: post.title,
+            description: post.excerpt,
+            slug: post.slug,
+            image: post.image,
+            datePublished: post.created_at,
+          }),
+          buildBreadcrumbSchema([
+            { name: "Home", path: "/" },
+            { name: "Blog", path: "/blog" },
+            { name: post.title, path: `/blog/${post.slug}` },
+          ]),
+        ]}
       />
       {/* Hero Section */}
       <div className="relative h-[60vh] min-h-[400px]">
-        <img
+        <OptimizedImage
           src={post.image}
           alt={post.title}
           className="w-full h-full object-cover grayscale brightness-50"
+          priority
+          width={1200}
+          height={630}
         />
         <div className="absolute inset-0 bg-black/40 flex flex-col justify-center items-center text-center px-4">
           <span className="bg-accent-600 text-white text-xs font-bold uppercase px-4 py-1 mb-6 tracking-widest rounded-sm">

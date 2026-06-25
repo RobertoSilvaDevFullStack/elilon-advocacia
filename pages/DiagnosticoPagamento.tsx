@@ -208,13 +208,18 @@ export const DiagnosticoPagamento: React.FC = () => {
                 {pedido.payment_link && pedido.status_pagamento !== "pago" && (
                   <a
                     href={pedido.payment_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full min-h-[44px] py-4 bg-gradient-to-r from-vinho-600 to-vermelho-600 text-white font-semibold text-sm uppercase tracking-wider rounded-xl hover:shadow-lg hover:shadow-vinho-500/30 transition-all"
                   >
                     <CreditCard className="w-5 h-5" />
                     Pagar Agora
                   </a>
+                )}
+
+                {pedido.payment_link && pedido.status_pagamento !== "pago" && (
+                  <p className="text-xs text-neutral-500 text-center leading-relaxed">
+                    Após concluir o pagamento no ASAAS, você será redirecionado automaticamente
+                    para a página de confirmação.
+                  </p>
                 )}
 
                 {pedido.status_pagamento === "pago" && (
