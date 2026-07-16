@@ -14,7 +14,7 @@ export const Contact: React.FC = () => {
       <Hero
         title="Fale Conosco"
         subtitle="Contato"
-        image="/images/fale.jpg"
+        image="/images/fale.webp"
         height="small"
       />
 

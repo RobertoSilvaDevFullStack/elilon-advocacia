@@ -41,6 +41,9 @@ const ProfessionalDetail = React.lazy(() =>
 const Areas = React.lazy(() =>
   import("./pages/Areas").then((module) => ({ default: module.Areas })),
 );
+const AreaDetail = React.lazy(() =>
+  import("./pages/AreaDetail").then((module) => ({ default: module.AreaDetail })),
+);
 const Blog = React.lazy(() =>
   import("./pages/Blog").then((module) => ({ default: module.Blog })),
 );
@@ -81,7 +84,6 @@ const DiagnosticoSucesso = React.lazy(() =>
 
 // Components — carregados sob demanda (não bloqueiam LCP)
 const MetaPixel = React.lazy(() => import("./components/MetaPixel"));
-const DiagnosticoPopup = React.lazy(() => import("./components/DiagnosticoPopup"));
 import { isChatEnabled } from "./src/config/chat";
 
 const ENABLE_CHAT = isChatEnabled();
@@ -117,9 +119,6 @@ const PublicWidgets: React.FC = () => {
 
   return (
     <>
-      <Suspense fallback={null}>
-        <DiagnosticoPopup />
-      </Suspense>
       {ENABLE_CHAT && ChatWidget && (
         <Suspense fallback={null}>
           <ChatWidget />
@@ -154,6 +153,7 @@ const App: React.FC = () => {
             <Route path="/profissionais" element={<Professionals />} />
             <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
             <Route path="/areas" element={<Areas />} />
+            <Route path="/areas/:slug" element={<AreaDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPostDetail />} />
             <Route path="/contato" element={<Contact />} />

@@ -18,11 +18,8 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
         {/* Brand */}
         <div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="mb-6">
             <BrandLogo className="h-12 w-auto object-contain" />
-            <h2 className="text-3xl font-headline font-bold text-vermelho-400">
-              Elilon Lopes Advogados
-            </h2>
           </div>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Excelência jurídica com foco em resultados. Atuamos com integridade

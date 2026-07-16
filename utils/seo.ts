@@ -4,7 +4,7 @@ export const SITE_NAME = "Elilon Lopes Advogados";
 export const SITE_TITLE = `${SITE_NAME} | Sociedade de Advogados`;
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/images/escritorio-entrada.webp`;
 export const DEFAULT_DESCRIPTION =
-  "Escritório de advocacia empresarial em Montes Claros - MG. Soluções jurídicas inovadoras em Direito Tributário, Trabalhista, Previdenciário e Empresarial.";
+  "Advogado trabalhista para bancários e escritório de advocacia em Montes Claros - MG. Atuação em Direito Trabalhista Bancário, Tributário, Previdenciário e Empresarial.";
 
 /** Garante URL absoluta para crawlers sociais e LLMs. */
 export function toAbsoluteUrl(path?: string): string {

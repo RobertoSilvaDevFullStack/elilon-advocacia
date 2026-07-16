@@ -1,7 +1,15 @@
 import type { AreaOfPractice } from "../types";
 
-/** Áreas de atuação — chunk leve, sem conteúdo de blog. */
+/** Áreas de atuação — bancário em destaque no topo. */
 export const AREAS: AreaOfPractice[] = [
+  {
+    id: 7,
+    title: "Direito Trabalhista Bancário",
+    slug: "trabalhista-bancario",
+    description:
+      "Defesa de bancários em demissões, horas extras, cargo de confiança e assédio moral.",
+    image: "/images/direito-trabalhista.webp",
+  },
   {
     id: 1,
     title: "Direito Trabalhista",
@@ -49,3 +57,7 @@ export const AREAS: AreaOfPractice[] = [
     image: "/images/direito-civil.webp",
   },
 ];
+
+export function getAreaBySlug(slug: string): AreaOfPractice | undefined {
+  return AREAS.find((a) => a.slug === slug);
+}

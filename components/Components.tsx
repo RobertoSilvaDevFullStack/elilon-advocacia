@@ -1,13 +1,14 @@
 import React from "react";
-import { ArrowRight } from "lucide-react";
 import OptimizedImage from "./OptimizedImage";
 import { Link } from "react-router-dom";
 import { AREAS } from "../constants/areas";
 import { getApiBaseUrl } from "../utils/api";
 import { trackLead } from "../utils/tracking";
+import { Button } from "./ui/Button";
+import { SectionTitle } from "./ui/SectionTitle";
 
-export { Button } from "./ui/Button";
-export { SectionTitle } from "./ui/SectionTitle";
+export { Button };
+export { SectionTitle };
 
 const API_URL = getApiBaseUrl();
 export const ContactForm: React.FC<{ source?: string }> = ({

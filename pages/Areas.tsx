@@ -10,6 +10,7 @@ const AreaCard: React.FC<(typeof AREAS)[0]> = ({
   title,
   description,
   image,
+  slug,
 }) => (
   <div className="group relative border border-neutral-200 hover:border-accent-500 transition-colors duration-300 bg-white p-6 md:p-8 hover:shadow-lg h-full">
     <div className="mb-4 md:mb-6 h-36 md:h-48 overflow-hidden bg-neutral-100">
@@ -25,7 +26,7 @@ const AreaCard: React.FC<(typeof AREAS)[0]> = ({
     <p className="text-neutral-600 text-sm md:text-base mb-4 md:mb-6">
       {description}
     </p>
-    <Link to="/contato">
+    <Link to={`/areas/${slug}`}>
       <span className="text-sm font-bold uppercase tracking-wider text-neutral-900 group-hover:text-accent-600 border-b border-neutral-200 group-hover:border-accent-600 pb-1 transition-all">
         Saiba Mais
       </span>

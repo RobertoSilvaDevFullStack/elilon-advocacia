@@ -4,6 +4,7 @@ import { Layout } from "../components/Layout";
 import { SectionTitle } from "../components/ui/SectionTitle";
 import { Button } from "../components/ui/Button";
 import { HomeHero } from "../components/HomeHero";
+import { HomePurpose } from "../components/HomePurpose";
 import { SEO } from "../components/SEO";
 import { AREAS } from "../constants/areas";
 import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lucide-react";
@@ -22,10 +23,11 @@ export const Home: React.FC = () => {
     <Layout>
       <SEO
         title="Home"
-        description="Elilon Lopes Advogados - Sociedade de Advogados. Excelência jurídica com foco em resultados em Montes Claros e região."
+        description="Advogado trabalhista para bancários em Montes Claros e em todo o Brasil. Elilon Lopes Advogados — demissões, horas extras, cargo de confiança e assédio no setor bancário."
         schema={buildHomeSchema()}
       />
       <HomeHero />
+      <HomePurpose />
 
       {/* ── Diagnóstico Tributário Highlight ──────────────────────────────── */}
       <section className="relative py-16 md:py-20 bg-gradient-to-br from-[#200A0C] via-[#1A1A1A] to-[#0d0d0d] overflow-hidden">
@@ -258,7 +260,7 @@ export const Home: React.FC = () => {
             {AREAS.slice(0, 3).map((area) => (
               <Link
                 key={area.id}
-                to="/areas"
+                to={`/areas/${area.slug}`}
                 className="block relative h-80 overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-neutral-900">
@@ -287,7 +289,7 @@ export const Home: React.FC = () => {
           <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-8">
             {AREAS.slice(0, 3).map((area) => (
               <Link
-                to={`/areas`}
+                to={`/areas/${area.slug}`}
                 key={area.id}
                 className="group relative h-80 overflow-hidden cursor-pointer"
               >
