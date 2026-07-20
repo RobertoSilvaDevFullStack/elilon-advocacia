@@ -34,28 +34,28 @@ export const AREAS: AreaOfPractice[] = [
       "Planejamento tributário, defesa em autuações e recuperação de créditos.",
     image: "/images/direito-tributario.webp",
   },
-  {
-    id: 4,
-    title: "Direito Imobiliário",
-    slug: "imobiliario",
-    description:
-      "Assessoria em compra, venda, locação e regularização de imóveis.",
-    image: "/images/direito-imobiliario.webp",
-  },
-  {
-    id: 2,
-    title: "Direito Empresarial",
-    slug: "empresarial",
-    description: "Consultoria societária, contratos e compliance empresarial.",
-    image: "/images/direito-empresarial.webp",
-  },
-  {
-    id: 6,
-    title: "Direito Cível",
-    slug: "civel",
-    description: "Demandas cíveis, contratos e responsabilidade civil.",
-    image: "/images/direito-civil.webp",
-  },
+  // {
+  //   id: 4,
+  //   title: "Direito Imobiliário",
+  //   slug: "imobiliario",
+  //   description:
+  //     "Assessoria em compra, venda, locação e regularização de imóveis.",
+  //   image: "/images/direito-imobiliario.webp",
+  // },
+  // {
+  //   id: 2,
+  //   title: "Direito Empresarial",
+  //   slug: "empresarial",
+  //   description: "Consultoria societária, contratos e compliance empresarial.",
+  //   image: "/images/direito-empresarial.webp",
+  // },
+  // {
+  //   id: 6,
+  //   title: "Direito Cível",
+  //   slug: "civel",
+  //   description: "Demandas cíveis, contratos e responsabilidade civil.",
+  //   image: "/images/direito-civil.webp",
+  // },
 ];
 
 export function getAreaBySlug(slug: string): AreaOfPractice | undefined {

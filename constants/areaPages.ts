@@ -25,6 +25,10 @@ export const AREA_PAGES: AreaPageContent[] = [
       "A categoria bancária possui convenção coletiva própria, com regras sobre jornada, horas extras, cargos de gestão e remuneração variável. Instituições financeiras conhecem bem essas regras — e, em muitos casos, se aproveitam do desconhecimento do trabalhador. No Elilon Lopes Advogados, atuamos na defesa de bancários que tiveram direitos desrespeitados: horas extras incorretas, enquadramento indevido como cargo de confiança, assédio moral ou rescisões com verbas calculadas de forma equivocada.",
     sections: [
       {
+        title: "Doenças ocupacionais no setor bancário",
+        text: "Metas agressivas, digitação intensa, cobrança constante e exposição a assaltos fazem do setor bancário um dos que mais afastam por doença do trabalho — como LER/DORT, burnout e transtornos de ansiedade. Mesmo sem CAT emitida pelo banco, a Justiça reconhece o nexo quando o trabalho contribuiu para o quadro, o que pode garantir estabilidade, indenização e conversão do benefício em acidentário.",
+      },
+      {
         title: "Horas extras e jornada bancária",
         text: "A jornada de 6 horas é um direito da categoria. Quando desrespeitada, ou quando o cargo de confiança é aplicado indevidamente para suprimir esse direito, é possível buscar a reparação pelas horas trabalhadas além do permitido.",
       },
