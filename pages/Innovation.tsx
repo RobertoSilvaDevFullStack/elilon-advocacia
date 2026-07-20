@@ -1,10 +1,10 @@
 import React from "react";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
-import { Link } from "react-router-dom";
 import { Cpu, Scale, Brain, Lightbulb } from "lucide-react";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 export const Innovation: React.FC = () => {
   return (
@@ -117,9 +117,9 @@ export const Innovation: React.FC = () => {
             Conte com uma assessoria jurídica que fala a língua da inovação e
             entende os desafios da nova economia.
           </p>
-          <Link to="/contato">
+          <WhatsAppLink ctaName="innovation_especialista">
             <Button>Fale com um Especialista</Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>

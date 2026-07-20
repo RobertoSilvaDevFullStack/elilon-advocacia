@@ -6,6 +6,7 @@ import { SEO } from "../components/SEO";
 import { getAreaBySlug, AREAS } from "../constants/areas";
 import { getAreaPage } from "../constants/areaPages";
 import { buildBreadcrumbSchema, SITE_URL } from "../utils/seo";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 export const AreaDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -65,12 +66,12 @@ export const AreaDetail: React.FC = () => {
           </p>
 
           <div className="mb-8">
-            <Link
-              to="/contato"
+            <WhatsAppLink
+              ctaName={`area_${area.slug}_escritorio`}
               className="inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider border-2 border-neutral-900 text-neutral-900 hover:bg-accent-600 hover:border-accent-600 hover:text-white transition-colors min-h-[48px]"
             >
               Fale com o escritório
-            </Link>
+            </WhatsAppLink>
           </div>
         </div>
       </section>
@@ -97,9 +98,9 @@ export const AreaDetail: React.FC = () => {
             ))}
           </div>
 
-          <Link to="/contato">
+          <WhatsAppLink ctaName={`area_${area.slug}_cta`}>
             <Button variant="primary">{page.ctaLabel}</Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
 
@@ -108,14 +109,14 @@ export const AreaDetail: React.FC = () => {
           <p className="text-lg md:text-xl font-light leading-relaxed mb-8 text-neutral-200">
             {page.closing}
           </p>
-          <Link to="/contato">
+          <WhatsAppLink ctaName={`area_${area.slug}_closing`}>
             <Button
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-neutral-900"
             >
               Fale conosco
             </Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
 

@@ -1,10 +1,10 @@
 import React from "react";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
-import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { MobileSnapCarousel } from "../components/MobileSnapCarousel";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 const VALUES = [
   {
@@ -221,9 +221,9 @@ export const About: React.FC = () => {
           <h3 className="text-3xl font-headline mb-6">
             Pronto para conversarmos?
           </h3>
-          <Link to="/contato">
+          <WhatsAppLink ctaName="about_entre_em_contato">
             <Button>Entre em Contato</Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>

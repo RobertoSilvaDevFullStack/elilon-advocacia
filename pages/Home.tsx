@@ -5,6 +5,7 @@ import { SectionTitle } from "../components/ui/SectionTitle";
 import { Button } from "../components/ui/Button";
 import { HomeHero } from "../components/HomeHero";
 import { HomePurpose } from "../components/HomePurpose";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 import { SEO } from "../components/SEO";
 import { AREAS } from "../constants/areas";
 import { MapPin, ArrowUpRight, ArrowRight, AlertTriangle, CheckCircle } from "lucide-react";
@@ -423,14 +424,14 @@ export const Home: React.FC = () => {
             Nossa equipe está pronta para entender o seu cenário e propor as
             melhores soluções.
           </p>
-          <Link to="/contato">
+          <WhatsAppLink ctaName="home_cta_especialista">
             <Button
               variant="outline"
               className="border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white"
             >
               Fale com um Especialista
             </Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>

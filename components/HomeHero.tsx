@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import OptimizedImage from "./OptimizedImage";
 import { Button } from "./ui/Button";
+import { WhatsAppLink } from "./WhatsAppLink";
 
 interface HeroSlide {
   id: string;
@@ -12,7 +13,7 @@ interface HeroSlide {
   image: string;
   imageMobile?: string;
   imageAlt: string;
-  primaryHref: string;
+  primaryCtaName: string;
   primaryLabel: string;
   secondaryHref: string;
   secondaryLabel: string;
@@ -34,7 +35,7 @@ const SLIDES: HeroSlide[] = [
     image: "/images/ambiente-fotorrealista-advogado.webp",
     imageMobile: "/images/ambiente-fotorrealista-advogado-800.webp",
     imageAlt: "Estátua da Justiça em ambiente jurídico",
-    primaryHref: "/contato",
+    primaryCtaName: "hero_trabalhista_primary",
     primaryLabel: "Fale com um advogado",
     secondaryHref: "/areas/trabalhista-bancario",
     secondaryLabel: "Conheça a atuação bancária",
@@ -53,7 +54,7 @@ const SLIDES: HeroSlide[] = [
       "Aposentadorias, revisões e benefícios do INSS pedem análise técnica antes de cada decisão — para você não perder tempo nem direitos.",
     image: "/images/direito-previdenciario.webp",
     imageAlt: "Direito previdenciário e benefícios do INSS",
-    primaryHref: "/contato",
+    primaryCtaName: "hero_previdenciario_primary",
     primaryLabel: "Fale com um advogado",
     secondaryHref: "/areas/previdenciario",
     secondaryLabel: "Conheça a atuação previdenciária",
@@ -72,7 +73,7 @@ const SLIDES: HeroSlide[] = [
       "Planejamento tributário, defesa em autuações e recuperação de créditos para empresas e contribuintes que precisam de clareza fiscal.",
     image: "/images/reforma-tributaria.webp",
     imageAlt: "Direito tributário e planejamento fiscal",
-    primaryHref: "/contato",
+    primaryCtaName: "hero_tributario_primary",
     primaryLabel: "Fale com um advogado",
     secondaryHref: "/areas/tributario",
     secondaryLabel: "Conheça a atuação tributária",
@@ -164,9 +165,9 @@ export const HomeHero: React.FC = () => {
             {slide.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <Link to={slide.primaryHref}>
+            <WhatsAppLink ctaName={slide.primaryCtaName}>
               <Button variant="primary">{slide.primaryLabel}</Button>
-            </Link>
+            </WhatsAppLink>
             <Link to={slide.secondaryHref}>
               <span
                 className="inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-colors duration-300 group min-h-[48px] border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-neutral-900 hover:border-white"

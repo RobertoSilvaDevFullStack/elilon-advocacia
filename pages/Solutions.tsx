@@ -7,6 +7,7 @@ import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
 import { MobilePortraitImage } from "../components/MobilePortraitImage";
 import { MobileSnapCarousel } from "../components/MobileSnapCarousel";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 const METHODOLOGY_STEPS = [
   {
@@ -120,9 +121,9 @@ export const Solutions: React.FC = () => {
               ))}
             </ul>
             <div className="mt-8 text-center clear-both">
-              <Link to="/contato">
+              <WhatsAppLink ctaName="solutions_agende_reuniao_mobile">
                 <Button>Agende uma Reunião</Button>
-              </Link>
+              </WhatsAppLink>
             </div>
           </div>
 
@@ -147,9 +148,9 @@ export const Solutions: React.FC = () => {
                 ))}
               </ul>
               <div className="mt-8">
-                <Link to="/contato">
+                <WhatsAppLink ctaName="solutions_agende_reuniao_desktop">
                   <Button>Agende uma Reunião</Button>
-                </Link>
+                </WhatsAppLink>
               </div>
             </div>
           </div>

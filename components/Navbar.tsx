@@ -3,6 +3,7 @@ import { NavLink, Link, useLocation } from "react-router-dom";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { NAV_ITEMS } from "../constants/nav";
 import { BrandLogo } from "./BrandLogo";
+import { WhatsAppLink } from "./WhatsAppLink";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -82,12 +83,12 @@ const Navbar: React.FC = () => {
               <span className="hidden xl:inline">{item.label}</span>
             </Link>
           ))}
-          <Link
-            to="/contato"
+          <WhatsAppLink
+            ctaName="navbar_fale_conosco_desktop"
             className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-2.5 xl:px-4 py-1.5 text-[10px] xl:text-xs uppercase tracking-wider font-semibold hover:shadow-lg hover:shadow-red-500/40 transition-shadow whitespace-nowrap shrink-0"
           >
             Fale Conosco
-          </Link>
+          </WhatsAppLink>
         </div>
 
         <Link
@@ -156,13 +157,13 @@ const Navbar: React.FC = () => {
                 {item.label}
               </Link>
             ))}
-            <Link
-              to="/contato"
+            <WhatsAppLink
+              ctaName="navbar_fale_conosco_mobile"
               onClick={() => setIsOpen(false)}
               className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-5 py-3 text-sm uppercase tracking-wider font-semibold hover:shadow-lg transition-all text-center mt-2 min-h-[44px] flex items-center justify-center"
             >
               Fale Conosco
-            </Link>
+            </WhatsAppLink>
           </div>
         </div>
       </div>

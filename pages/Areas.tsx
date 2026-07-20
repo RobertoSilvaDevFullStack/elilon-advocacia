@@ -5,6 +5,7 @@ import { AREAS } from "../constants";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { MobileSnapCarousel } from "../components/MobileSnapCarousel";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 const AreaCard: React.FC<(typeof AREAS)[0]> = ({
   title,
@@ -82,14 +83,14 @@ export const Areas: React.FC = () => {
             Nossa equipe está apta a lidar com demandas complexas e
             personalizadas.
           </p>
-          <Link to="/contato">
+          <WhatsAppLink ctaName="areas_fale_conosco">
             <Button
               variant="outline"
               className="border-white text-white hover:bg-white hover:text-neutral-900"
             >
               Fale Conosco
             </Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>
