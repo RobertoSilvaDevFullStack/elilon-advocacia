@@ -137,11 +137,10 @@ export const useChatSession = (): UseChatSessionReturn => {
           await response.json();
 
         if (result.success && result.data) {
+          const { protocolNumber } = result.data;
           // Atualizar sessão com protocolo
           setSession((prev) =>
-            prev
-              ? { ...prev, protocolNumber: result.data.protocolNumber }
-              : null
+            prev ? { ...prev, protocolNumber } : null
           );
         }
 

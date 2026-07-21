@@ -7,6 +7,7 @@ import DOMPurify from "isomorphic-dompurify";
 import { buildArticleSchema, buildBreadcrumbSchema } from "../utils/seo";
 import OptimizedImage from "../components/OptimizedImage";
 import { trackNewsletter } from "../utils/tracking";
+import { getApiBaseUrl } from "../utils/api";
 
 const API_URL = getApiBaseUrl();
 
@@ -234,7 +235,7 @@ export const BlogPostDetail: React.FC = () => {
                   onClick={() => {
                     const shareData = {
                       title: post.title,
-                      text: post.summary,
+                      text: post.excerpt,
                       url: window.location.href,
                     };
                     if (navigator.share) {

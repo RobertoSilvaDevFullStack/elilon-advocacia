@@ -395,6 +395,9 @@ export const Admin: React.FC = () => {
           email: "",
           linkedin: "",
           phone: "",
+          location: "",
+          education: [],
+          specializations: [],
         });
         fetchDashboardData();
       } else {
@@ -432,7 +435,7 @@ export const Admin: React.FC = () => {
       if (data.success) {
         alert(editingItem ? "Usuário atualizado!" : "Usuário criado!");
         setShowUserModal(false);
-        setUserForm({ username: "", password: "", role: "editor" });
+        setUserForm({ username: "", email: "", password: "", role: "editor", approved: false });
         fetchDashboardData();
       } else {
         alert(data.message || "Erro ao salvar usuário");

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Linkedin, Instagram, Facebook, Phone, Mail } from "lucide-react";
+import { Phone, Mail } from "lucide-react";
+import { Linkedin, Instagram, Facebook } from "../components/icons/SocialIcons";
 
 const ComingSoon: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -38,7 +39,7 @@ const ComingSoon: React.FC = () => {
     <div className="relative min-h-screen w-full overflow-hidden">
       {/* Animated Gradient Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-[#1A1A1A] to-[#200A0C] animate-gradient-shift" />
+        <div className="absolute inset-0 bg-linear-to-br from-black via-[#1A1A1A] to-[#200A0C] animate-gradient-shift" />
 
         {/* Animated Pattern Overlay */}
         <div className="absolute inset-0 opacity-20">
@@ -46,8 +47,8 @@ const ComingSoon: React.FC = () => {
         </div>
 
         {/* Red accent glow */}
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-[#C41414]/20 to-transparent blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-[#F51919]/20 to-transparent blur-3xl" />
+        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-linear-to-bl from-[#C41414]/20 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-linear-to-tr from-[#F51919]/20 to-transparent blur-3xl" />
       </div>
 
       {/* Content */}
@@ -65,7 +66,7 @@ const ComingSoon: React.FC = () => {
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-slide-up">
           {/* Status Badge */}
           <div className="inline-block">
-            <span className="px-6 py-2 bg-gradient-to-r from-[#C41414] to-[#F51919] text-white text-sm uppercase tracking-widest font-semibold rounded-full shadow-lg shadow-red-500/30">
+            <span className="px-6 py-2 bg-linear-to-r from-[#C41414] to-[#F51919] text-white text-sm uppercase tracking-widest font-semibold rounded-full shadow-lg shadow-red-500/30">
               Em Breve
             </span>
           </div>
@@ -73,7 +74,7 @@ const ComingSoon: React.FC = () => {
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-headline font-bold text-white leading-tight">
             Em{" "}
-            <span className="bg-gradient-to-r from-[#C41414] to-[#F51919] bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-[#C41414] to-[#F51919] bg-clip-text text-transparent">
               Construção
             </span>
           </h1>
@@ -99,7 +100,7 @@ const ComingSoon: React.FC = () => {
                 key={index}
                 className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-6 md:p-8 shadow-2xl hover:bg-white/15 transition-all duration-300 hover:scale-105"
               >
-                <div className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-br from-white to-neutral-300 bg-clip-text text-transparent tabular-nums">
+                <div className="text-4xl md:text-5xl lg:text-6xl font-bold bg-linear-to-br from-white to-neutral-300 bg-clip-text text-transparent tabular-nums">
                   {String(item.value).padStart(2, "0")}
                 </div>
                 <div className="text-xs md:text-sm text-neutral-400 uppercase tracking-wider mt-2 font-medium">

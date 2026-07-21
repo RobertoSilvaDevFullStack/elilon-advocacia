@@ -1,20 +1,14 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  MapPin,
-  Linkedin,
-  Instagram,
-  Facebook,
-  Phone,
-  MessageCircle,
-} from "lucide-react";
+import { MapPin, Phone, MessageCircle } from "lucide-react";
+import { Linkedin, Instagram, Facebook } from "./icons/SocialIcons";
 import Navbar from "./Navbar";
 import { BrandLogo } from "./BrandLogo";
 import { openWhatsApp } from "../utils/whatsapp";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
+    <footer className="bg-linear-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
         {/* Brand */}
         <div>
@@ -213,7 +207,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div className="flex flex-col min-h-screen font-sans text-neutral-900 bg-neutral-50">
       <Navbar />
-      <main id="conteudo-principal" className="flex-grow">
+      <main id="conteudo-principal" className="grow">
         {children}
       </main>
       <Footer />

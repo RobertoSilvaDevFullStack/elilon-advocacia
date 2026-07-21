@@ -81,11 +81,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           placeholder={disabled ? "Aguarde..." : placeholder}
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:bg-gray-100 disabled:text-gray-400"
+          className="flex-1 resize-none rounded-lg border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#A1333E] focus:ring-opacity-50 disabled:bg-gray-100 disabled:text-gray-400"
           style={{
             minHeight: "48px",
             maxHeight: "120px",
-            focusRing: "#A1333E",
           }}
         />
 

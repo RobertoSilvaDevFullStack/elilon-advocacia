@@ -123,7 +123,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
     title: "A importância do Compliance Trabalhista",
-    summary:
+    excerpt:
       "Saiba como adequar sua empresa às novas normas e evitar passivos judiciais.",
     date: "20 Out 2023",
     category: "Trabalhista",
@@ -159,7 +159,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 2,
     title: "Reforma Tributária: O que muda?",
-    summary:
+    excerpt:
       "Uma análise profunda sobre os impactos da reforma para o setor de serviços.",
     date: "15 Out 2023",
     category: "Tributário",
@@ -186,7 +186,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 3,
     title: "Aposentadoria por Idade: Como se Planejar",
-    summary: "Dicas essenciais para garantir seu benefício previdenciário.",
+    excerpt: "Dicas essenciais para garantir seu benefício previdenciário.",
     date: "12 Out 2023",
     category: "Previdenciário",
     slug: "aposentadoria-planejamento",
@@ -217,7 +217,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 4,
     title: "LGPD no Agronegócio",
-    summary: "Desafios e soluções para a proteção de dados no campo.",
+    excerpt: "Desafios e soluções para a proteção de dados no campo.",
     date: "10 Out 2023",
     category: "Agronegócio",
     slug: "lgpd-agro",

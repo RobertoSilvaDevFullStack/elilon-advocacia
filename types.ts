@@ -30,7 +30,7 @@ export interface AreaOfPractice {
 export interface BlogPost {
   id: number;
   title: string;
-  summary: string;
+  excerpt: string;
   date: string;
   category: string;
   image: string;

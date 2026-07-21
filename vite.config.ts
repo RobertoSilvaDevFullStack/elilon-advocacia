@@ -92,7 +92,7 @@ export default defineConfig(({ mode }) => {
             }
           },
           assetFileNames: (assetInfo) => {
-            let extType = assetInfo.name.split(".").pop();
+            let extType = (assetInfo.name ?? "").split(".").pop() ?? "";
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
               return `assets/images/[name]-[hash][extname]`;
             }

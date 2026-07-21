@@ -10,6 +10,7 @@ interface OptimizedImageProps
   loading?: "lazy" | "eager";
   priority?: boolean;
   /** Quando true, tenta <picture> com .webp equivalente */
+  webp?: boolean;
   /** Quando true, não aplica height:auto (object-cover absoluto) */
   cover?: boolean;
 }

@@ -3,7 +3,6 @@ import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
 import {
-  Linkedin,
   Mail,
   Phone,
   ChevronLeft,
@@ -11,6 +10,7 @@ import {
   Award,
   BookOpen,
 } from "lucide-react";
+import { Linkedin } from "../components/icons/SocialIcons";
 import { getApiBaseUrl } from "../utils/api";
 
 const API_URL = getApiBaseUrl();
@@ -113,7 +113,7 @@ export const ProfessionalDetail: React.FC = () => {
                 <img
                   src={professional.image}
                   alt={professional.name}
-                  className="w-full aspect-[3/4] object-cover"
+                  className="w-full aspect-3/4 object-cover"
                 />
               </div>
             </div>

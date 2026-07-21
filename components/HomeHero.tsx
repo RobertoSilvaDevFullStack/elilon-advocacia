@@ -27,7 +27,7 @@ const SLIDES: HeroSlide[] = [
       <>
         Advogado trabalhista
         <br />
-        para bancários
+        para bancários doentes
       </>
     ),
     description:
