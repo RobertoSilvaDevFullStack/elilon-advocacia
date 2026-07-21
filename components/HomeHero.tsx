@@ -105,7 +105,7 @@ export const HomeHero: React.FC = () => {
 
   return (
     <section
-      className="relative min-h-[100svh] flex items-end md:items-center overflow-hidden bg-neutral-900 pb-24 md:pb-0"
+      className="relative min-h-svh flex items-end md:items-center overflow-hidden bg-neutral-900 pb-24 md:pb-0"
       aria-label="Destaque principal"
       aria-roledescription="carrossel"
       onMouseEnter={() => setPaused(true)}
@@ -145,8 +145,8 @@ export const HomeHero: React.FC = () => {
               cover
             />
           </picture>
-          <div className="absolute inset-0 bg-gradient-to-r from-neutral-950/90 via-neutral-950/65 to-neutral-900/35 pointer-events-none" />
-          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/40 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-neutral-950/90 via-neutral-950/65 to-neutral-900/35 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-neutral-950 via-transparent to-neutral-950/40 pointer-events-none" />
         </div>
       ))}
 
@@ -170,7 +170,7 @@ export const HomeHero: React.FC = () => {
             </WhatsAppLink>
             <Link to={slide.secondaryHref}>
               <span
-                className="inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-colors duration-300 group min-h-[48px] border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-neutral-900 hover:border-white"
+                className="inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-colors duration-300 group min-h-12 border-2 border-white/80 text-white bg-transparent hover:bg-white hover:text-neutral-900 hover:border-white"
               >
                 {slide.secondaryLabel}
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
