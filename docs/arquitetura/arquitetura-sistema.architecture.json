@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Arquitetura — Elilon Lopes Advogados",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1370,
+      660
+    ],
+    "views": [
+      {
+        "id": "caminho-visitante",
+        "label": "Caminho do visitante",
+        "focus": [
+          "visitantes",
+          "spa",
+          "api",
+          "db"
+        ],
+        "note": "Requisição pública do navegador até o estado durável."
+      },
+      {
+        "id": "pagamento-diagnostico",
+        "label": "Pagamento do diagnóstico",
+        "focus": [
+          "spa",
+          "api",
+          "asaas",
+          "db"
+        ],
+        "note": "Cobrança no Asaas e retorno do webhook assinado."
+      },
+      {
+        "id": "pre-atendimento-ia",
+        "label": "Pré-atendimento com IA",
+        "focus": [
+          "chat",
+          "n8n",
+          "api",
+          "ia",
+          "docs"
+        ],
+        "note": "Conversa, orquestração no n8n, análise e documentos."
+      },
+      {
+        "id": "seguranca-admin",
+        "label": "Segurança e admin",
+        "focus": [
+          "auth",
+          "api",
+          "db"
+        ],
+        "note": "Login, JWT e rotas administrativas protegidas."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "visitantes",
+      "type": "external",
+      "label": "Visitantes",
+      "sublabel": "Navegador mobile e desktop",
+      "pos": [
+        50,
+        300
+      ],
+      "size": [
+        180,
+        86
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "Autenticação",
+      "sublabel": "/api/auth · JWT + bcrypt",
+      "pos": [
+        320,
+        165
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "tag": "adminOnly"
+    },
+    {
+      "id": "spa",
+      "type": "frontend",
+      "label": "SPA React 19",
+      "sublabel": "Vite + React Router 7",
+      "pos": [
+        320,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "tag": "inclui /admin",
+      "brand": "react"
+    },
+    {
+      "id": "chat",
+      "type": "frontend",
+      "label": "ChatWidget",
+      "sublabel": "FSM de pré-atendimento",
+      "pos": [
+        280,
+        470
+      ],
+      "size": [
+        200,
+        86
+      ]
+    },
+    {
+      "id": "asaas",
+      "type": "external",
+      "label": "Asaas",
+      "sublabel": "cobrança do diagnóstico",
+      "pos": [
+        760,
+        45
+      ],
+      "size": [
+        200,
+        78
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API Express",
+      "sublabel": "Node :5000",
+      "pos": [
+        760,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "tag": "helmet · CORS · rate limit"
+    },
+    {
+      "id": "ia",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "chat/completions · gpt-4o",
+      "pos": [
+        1110,
+        45
+      ],
+      "size": [
+        200,
+        78
+      ],
+      "brand": "openai"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "pg Pool :5432",
+      "pos": [
+        1110,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "brand": "postgresql"
+    },
+    {
+      "id": "n8n",
+      "type": "messagebus",
+      "label": "n8n",
+      "sublabel": "orquestração por webhook",
+      "pos": [
+        620,
+        525
+      ],
+      "size": [
+        200,
+        86
+      ]
+    },
+    {
+      "id": "docs",
+      "type": "database",
+      "label": "Documentos do chat",
+      "sublabel": "disco · uploads/chat-documents",
+      "pos": [
+        880,
+        525
+      ],
+      "size": [
+        200,
+        86
+      ]
+    },
+    {
+      "id": "smtp",
+      "type": "external",
+      "label": "SMTP próprio",
+      "sublabel": "smtp.elilonlopesadvogados.com.br",
+      "pos": [
+        1130,
+        525
+      ],
+      "size": [
+        200,
+        86
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "helmet · CORS allowlist · rate limit por rota",
+      "wraps": [
+        "api"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "visita",
+      "from": "visitantes",
+      "to": "spa",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "login",
+      "from": "spa",
+      "to": "auth",
+      "label": "POST /api/auth/login",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "monta-widget",
+      "from": "spa",
+      "to": "chat",
+      "label": "renderiza o widget",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "jwt",
+      "from": "auth",
+      "to": "api",
+      "label": "JWT Bearer verificado",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "rest",
+      "from": "spa",
+      "to": "api",
+      "label": "REST /api (JSON)",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDx": 60,
+      "labelDy": 18
+    },
+    {
+      "id": "cobranca",
+      "from": "api",
+      "to": "asaas",
+      "label": "POST /customers, /payments",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelDx": -94,
+      "labelDy": -87
+    },
+    {
+      "id": "webhook-asaas",
+      "from": "asaas",
+      "to": "api",
+      "label": "webhook validado por token",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 93,
+      "labelDy": 120
+    },
+    {
+      "id": "sql",
+      "from": "api",
+      "to": "db",
+      "label": "SQL via pg Pool",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": 20
+    },
+    {
+      "id": "analise",
+      "from": "api",
+      "to": "ia",
+      "label": "análise Hermes",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "evento-n8n",
+      "from": "api",
+      "to": "n8n",
+      "label": "webhook de evento (settings)",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "conversa-n8n",
+      "from": "chat",
+      "to": "n8n",
+      "label": "webhook conversacional",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "upload",
+      "from": "api",
+      "to": "docs",
+      "label": "grava multipart",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "email",
+      "from": "api",
+      "to": "smtp",
+      "label": "reset de senha",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Navegador",
+      "items": [
+        "SPA React 19 com React Router 7, empacotada pelo Vite",
+        "O painel /admin é rota da mesma SPA, não outro deploy",
+        "O ChatWidget chama o webhook do n8n direto do cliente"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "API e estado",
+      "items": [
+        "Express em Node :5000 com helmet, CORS allowlist e rate limit por rota",
+        "PostgreSQL via pg Pool; DATABASE_TYPE alterna para SQLite em dev",
+        "Documentos do chat ficam em disco, não no banco"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Segurança e integrações",
+      "items": [
+        "JWT Bearer com middleware adminOnly nas rotas /api/admin",
+        "Webhook do Asaas validado por ASAAS_WEBHOOK_TOKEN",
+        "Leads de /api/leads também vão ao CRM Exact Sales quando habilitado"
+      ]
+    }
+  ]
+}
