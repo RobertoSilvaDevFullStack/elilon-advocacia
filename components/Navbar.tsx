@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
             </div>
           ))}
 
-          {NAV_ITEMS.filter((item) => item.highlight).map((item) => (
+          {/* {NAV_ITEMS.filter((item) => item.highlight).map((item) => (
             <Link
               key={item.path}
               to={item.path}
@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
               <span className="xl:hidden">Diagnóstico</span>
               <span className="hidden xl:inline">{item.label}</span>
             </Link>
-          ))}
+          ))} */}
           <Link
             to="/contato"
             className="bg-gradient-to-r from-[#C41414] to-[#F51919] text-white px-2.5 xl:px-4 py-1.5 text-[10px] xl:text-xs uppercase tracking-wider font-semibold hover:shadow-lg hover:shadow-red-500/40 transition-shadow whitespace-nowrap shrink-0"
