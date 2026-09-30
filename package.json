@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "build:prod": "vite build --mode production",
-    "preview": "vite preview --host 0.0.0.0 --port 4173"
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@fontsource/cabin": "^5.2.8",
@@ -40,7 +42,8 @@
     "typescript": "~7.0.2",
     "vite": "^8.1.5",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-sitemap": "^0.8.2"
+    "vite-plugin-sitemap": "^0.8.2",
+    "vitest": "^5.0.3"
   },
   "overrides": {
     "lodash": "^4.17.21"

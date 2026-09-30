@@ -9,7 +9,7 @@
  *  - Registrar logs de auditoria (sessionId, area, tempo de resposta)
  */
 
-import { N8N_CHAT_WEBHOOK_URL, N8N_TIMEOUT_MS } from "../config/n8n";
+import { N8N_CHAT_WEBHOOK_URL, N8N_TIMEOUT_MS, isN8NConfigured } from "../config/n8n";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -94,6 +94,13 @@ class N8NChatService {
    */
   async sendMessage(payload: N8NMessagePayload): Promise<N8NConversationalResponse> {
     const inicio = Date.now();
+
+    if (!isN8NConfigured()) {
+      console.error("[N8N] Webhook não configurado — nenhuma chamada realizada", {
+        sessionId: payload.sessionId,
+      });
+      return FALLBACK_RESPONSE;
+    }
 
     console.info("[N8N] Payload enviado", {
       sessionId: payload.sessionId,

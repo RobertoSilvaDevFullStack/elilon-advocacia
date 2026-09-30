@@ -26,13 +26,18 @@ export const N8N_CONVERSATIONAL_STATES: readonly string[] = [
  * Retorna true se o estado atual da FSM deve acionar o N8N.
  */
 export function shouldUseN8N(state: string): boolean {
-  if (!N8N_CHAT_WEBHOOK_URL) return false;
+  if (!isN8NConfigured()) return false;
   return N8N_CONVERSATIONAL_STATES.includes(state);
 }
 
 /**
- * Retorna true se o N8N está configurado (URL presente).
+ * Retorna true se o N8N está configurado com uma URL http(s) utilizável.
  */
 export function isN8NConfigured(): boolean {
-  return Boolean(N8N_CHAT_WEBHOOK_URL);
+  try {
+    const { protocol } = new URL(N8N_CHAT_WEBHOOK_URL);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
 }
