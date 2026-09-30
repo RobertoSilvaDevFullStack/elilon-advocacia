@@ -699,7 +699,7 @@ export const DiagnosticoTributario: React.FC = () => {
           <div className="container mx-auto px-4">
             <p className="text-neutral-400 text-sm mb-3">Precisa de atendimento imediato?</p>
             <a
-              href="https://wa.me/5538991376138?text=Olá!%20Quero%20saber%20mais%20sobre%20os%20impactos%20da%20Reforma%20Tributária."
+              href="https://wa.me/5531990150870?text=Olá!%20Quero%20saber%20mais%20sobre%20os%20impactos%20da%20Reforma%20Tributária."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-semibold text-sm rounded-xl hover:bg-[#20bd5a] transition-all hover:shadow-lg"

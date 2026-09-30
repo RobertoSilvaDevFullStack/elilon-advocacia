@@ -33,7 +33,7 @@ const BPCLandingPage: React.FC = () => {
 
       {/* Floating WhatsApp for Mobile/Global access */}
       <a
-        href="https://wa.me/5538991376138"
+        href="https://wa.me/5531990150870"
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => window.fbq?.("track", "Contact")}

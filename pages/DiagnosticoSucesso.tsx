@@ -52,7 +52,7 @@ export const DiagnosticoSucesso: React.FC = () => {
                 Voltar para Home
               </Link>
               <a
-                href="https://wa.me/5538991376138?text=Olá!%20Acabei%20de%20contratar%20o%20Diagnóstico%20Tributário%20Premium%20e%20gostaria%20de%20falar%20com%20um%20especialista."
+                href="https://wa.me/5531990150870?text=Olá!%20Acabei%20de%20contratar%20o%20Diagnóstico%20Tributário%20Premium%20e%20gostaria%20de%20falar%20com%20um%20especialista."
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 min-h-[44px] px-6 py-3 border border-neutral-200 text-neutral-700 font-semibold text-sm rounded-xl hover:bg-neutral-50 transition-all"

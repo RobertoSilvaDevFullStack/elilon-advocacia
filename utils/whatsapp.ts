@@ -1,6 +1,6 @@
 import { trackWhatsAppClick } from "./pixel";
 
-export const WHATSAPP_PHONE = "5538991376138";
+export const WHATSAPP_PHONE = "5531990150870";
 export const WHATSAPP_MESSAGE =
   "Olá! Vim pelo site. Quero falar com um advogado?";
 
