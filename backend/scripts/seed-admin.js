@@ -13,9 +13,10 @@ const path = require('path');
 const fs = require('fs');
 
 // Configurações
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@elilon.adv.br';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'Administrador';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || generateSecurePassword();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || process.env.ADMIN_INITIAL_PASSWORD || generateSecurePassword();
 
 /**
  * Gera senha segura aleatória
@@ -33,17 +34,27 @@ function generateSecurePassword(length = 12) {
  * Conecta ao banco (PostgreSQL ou SQLite)
  */
 async function connectDatabase() {
-  const dbType = process.env.DATABASE_TYPE || 'sqlite';
+  const isPostgres =
+    process.env.DATABASE_TYPE === 'postgres' ||
+    process.env.DATABASE_TYPE === 'postgresql' ||
+    Boolean(process.env.DATABASE_URL);
   
-  if (dbType === 'postgres' || process.env.DATABASE_URL) {
+  if (isPostgres) {
     console.log('🔌 Conectando ao PostgreSQL...');
-    return new Pool({
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 5432,
-      database: process.env.DB_NAME || 'elilon_advocacia_db',
-      user: process.env.DB_USER || 'elilon_db_user',
-      password: process.env.DB_PASSWORD || ''
-    });
+    const config = process.env.DATABASE_URL
+      ? {
+          connectionString: process.env.DATABASE_URL,
+          ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+        }
+      : {
+          host: process.env.DB_HOST || 'localhost',
+          port: process.env.DB_PORT || 5432,
+          database: process.env.DB_NAME || 'elilon_advocacia_db',
+          user: process.env.DB_USER || 'elilon_db_user',
+          password: process.env.DB_PASSWORD || '',
+          ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false,
+        };
+    return new Pool(config);
   } else {
     console.log('🔌 Conectando ao SQLite...');
     const dbPath = path.join(__dirname, '..', 'database.sqlite');
@@ -63,9 +74,9 @@ async function ensureUsersTable(db, isPostgres) {
   const createTableSQL = `
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      email TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE,
+      email TEXT UNIQUE,
       password TEXT NOT NULL,
-      name TEXT NOT NULL,
       role TEXT DEFAULT 'admin',
       approved INTEGER DEFAULT 1,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -84,14 +95,14 @@ async function ensureUsersTable(db, isPostgres) {
  * Verifica se usuário admin já existe
  */
 async function checkAdminExists(db, isPostgres) {
-  const query = 'SELECT id, email, created_at FROM users WHERE email = $1 OR email = ?';
-  
   if (isPostgres) {
-    const result = await db.query(query.replace('?', '$1'), [ADMIN_EMAIL]);
+    const query = 'SELECT id, username, email, created_at FROM users WHERE username = $1 OR email = $2';
+    const result = await db.query(query, [ADMIN_USERNAME, ADMIN_EMAIL]);
     return result.rows[0];
   } else {
+    const query = 'SELECT id, username, email, created_at FROM users WHERE username = ? OR email = ?';
     return new Promise((resolve, reject) => {
-      db.get(query, [ADMIN_EMAIL], (err, row) => {
+      db.get(query, [ADMIN_USERNAME, ADMIN_EMAIL], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
@@ -106,27 +117,27 @@ async function createAdmin(db, isPostgres) {
   const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
   
   const insertSQL = `
-    INSERT INTO users (email, password, name, role, approved, created_at)
-    VALUES ($1, $2, $3, 'admin', 1, NOW())
-    ON CONFLICT (email) DO NOTHING
-    RETURNING id, email, created_at
+    INSERT INTO users (username, email, password, role, approved, created_at)
+    VALUES ($1, $2, $3, 'admin', TRUE, CURRENT_TIMESTAMP)
+    ON CONFLICT (username) DO NOTHING
+    RETURNING id, username, email, created_at
   `;
   
   const insertSQLite = `
-    INSERT OR IGNORE INTO users (email, password, name, role, approved, created_at)
+    INSERT OR IGNORE INTO users (username, email, password, role, approved, created_at)
     VALUES (?, ?, ?, 'admin', 1, datetime('now'))
   `;
 
   if (isPostgres) {
-    const result = await db.query(insertSQL, [ADMIN_EMAIL, hashedPassword, ADMIN_NAME]);
+    const result = await db.query(insertSQL, [ADMIN_USERNAME, ADMIN_EMAIL, hashedPassword]);
     return result.rows[0];
   } else {
     return new Promise((resolve, reject) => {
-      db.run(insertSQLite, [ADMIN_EMAIL, hashedPassword, ADMIN_NAME], function(err) {
+      db.run(insertSQLite, [ADMIN_USERNAME, ADMIN_EMAIL, hashedPassword], function(err) {
         if (err) reject(err);
         else {
           // Buscar o registro criado
-          db.get('SELECT id, email, created_at FROM users WHERE email = ?', [ADMIN_EMAIL], (err, row) => {
+          db.get('SELECT id, username, email, created_at FROM users WHERE username = ?', [ADMIN_USERNAME], (err, row) => {
             if (err) reject(err);
             else resolve(row);
           });
@@ -145,7 +156,10 @@ async function main() {
   console.log('='.repeat(60));
   console.log();
 
-  const isPostgres = process.env.DATABASE_TYPE === 'postgres' || process.env.DATABASE_URL;
+  const isPostgres =
+    process.env.DATABASE_TYPE === 'postgres' ||
+    process.env.DATABASE_TYPE === 'postgresql' ||
+    Boolean(process.env.DATABASE_URL);
   let db;
 
   try {
@@ -156,8 +170,8 @@ async function main() {
       await ensureUsersTable(db, isPostgres);
     }
 
+    console.log(`👤 Username do admin: ${ADMIN_USERNAME}`);
     console.log(`📧 Email do admin: ${ADMIN_EMAIL}`);
-    console.log(`👤 Nome: ${ADMIN_NAME}`);
     console.log();
 
     // Verificar se já existe

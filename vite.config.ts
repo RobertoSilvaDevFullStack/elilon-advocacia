@@ -62,7 +62,7 @@ export default defineConfig(({ mode }) => {
     ],
     define: {
       "import.meta.env.VITE_API_URL": JSON.stringify(
-        env.VITE_API_URL || "http://localhost:5000/api",
+        env.VITE_API_URL || (isProd ? "/api" : "http://localhost:5000/api"),
       ),
     },
     resolve: {

@@ -322,6 +322,14 @@ const db = {
       }
     });
   },
+  close: () => {
+    return new Promise((resolve, reject) => {
+      sqliteDb.close((err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  },
 };
 
 module.exports = db;

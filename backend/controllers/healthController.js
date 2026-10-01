@@ -3,9 +3,9 @@
  * Endpoint para monitoramento de saúde do sistema
  */
 
-const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
+const db = require('../database/index');
 
 class HealthController {
   /**
@@ -63,60 +63,29 @@ class HealthController {
    */
   async checkDatabase() {
     const startTime = Date.now();
-    const dbType = process.env.DATABASE_TYPE || 'sqlite';
+    const isPostgres = Boolean(
+      process.env.DATABASE_URL ||
+      process.env.DATABASE_TYPE === 'postgres' ||
+      process.env.DATABASE_TYPE === 'postgresql'
+    );
+    const dbType = isPostgres ? 'postgresql' : 'sqlite';
     
     try {
-      if (dbType === 'postgres' || process.env.DATABASE_URL) {
-        // PostgreSQL
-        const pool = new Pool({
-          host: process.env.DB_HOST || 'localhost',
-          port: process.env.DB_PORT || 5432,
-          database: process.env.DB_NAME || 'elilon_advocacia_db',
-          user: process.env.DB_USER || 'elilon_db_user',
-          password: process.env.DB_PASSWORD || '',
-        });
+      await db.query('SELECT 1 as healthy');
 
-        const result = await pool.query('SELECT NOW() as time, COUNT(*) as connections FROM pg_stat_activity');
-        await pool.end();
-
-        return {
-          status: 'healthy',
-          type: 'postgresql',
-          responseTime: Date.now() - startTime,
-          message: `Conectado (${result.rows[0].connections} conexões ativas)`
-        };
-      } else {
-        // SQLite
-        const sqlite3 = require('sqlite3').verbose();
-        const dbPath = path.join(__dirname, '..', 'database.sqlite');
-        
-        return new Promise((resolve) => {
-          const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
-            if (err) {
-              resolve({
-                status: 'unhealthy',
-                type: 'sqlite',
-                responseTime: Date.now() - startTime,
-                message: `Erro: ${err.message}`
-              });
-            } else {
-              db.close();
-              resolve({
-                status: 'healthy',
-                type: 'sqlite',
-                responseTime: Date.now() - startTime,
-                message: 'Conectado'
-              });
-            }
-          });
-        });
-      }
+      return {
+        status: 'healthy',
+        type: dbType,
+        responseTime: Date.now() - startTime,
+        message: 'Conectado'
+      };
     } catch (error) {
+      console.error('❌ [HealthCheck] Falha na conexão com banco de dados');
       return {
         status: 'unhealthy',
         type: dbType,
         responseTime: Date.now() - startTime,
-        message: `Erro: ${error.message}`
+        message: 'Falha na conexão com o banco de dados'
       };
     }
   }
@@ -162,10 +131,10 @@ class HealthController {
         message: 'Sistema de arquivos operacional'
       };
     } catch (error) {
+      console.error('❌ [HealthCheck] Falha no sistema de arquivos:', error.message);
       return {
         status: 'unhealthy',
-        path: uploadsDir,
-        message: `Erro: ${error.message}`
+        message: 'Falha no acesso ao sistema de arquivos'
       };
     }
   }
