@@ -1,0 +1,36 @@
+# VCS and Agent metadata
+.git
+.github
+.agent
+.claude
+.vscode
+.idea
+
+# Dependencies
+node_modules
+coverage
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local logs and temporary files
+*.log
+logs
+npm-debug.log*
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Local uploads directory
+uploads
+
+# Test directories and files
+tests
+
+# Sensitive and credential artifacts
+admin-credentials.txt
+*admin-credentials*
