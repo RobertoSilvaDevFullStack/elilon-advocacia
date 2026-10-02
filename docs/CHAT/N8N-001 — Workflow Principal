@@ -1,0 +1,151 @@
+# N8N-001 — Workflow Principal
+
+## Workflow 01 — Atendimento
+
+Webhook
+
+↓
+
+Receber sessão
+
+↓
+
+Consultar sessão PostgreSQL
+
+↓
+
+Identificar estado atual
+
+↓
+
+Executar regra do estado
+
+↓
+
+Consultar Hermes
+
+↓
+
+Atualizar estado
+
+↓
+
+Salvar histórico
+
+↓
+
+Responder API
+
+---
+
+# Workflow 02 — Upload
+
+Receber arquivo
+
+↓
+
+Validar extensão
+
+↓
+
+Validar tamanho
+
+↓
+
+Enviar MinIO
+
+↓
+
+Salvar PostgreSQL
+
+↓
+
+Retornar URL
+
+---
+
+# Workflow 03 — Finalização
+
+Receber evento FINALIZAR
+
+↓
+
+Gerar protocolo
+
+↓
+
+Gerar resumo Hermes
+
+↓
+
+Salvar atendimento
+
+↓
+
+Enviar Kinbox
+
+↓
+
+Enviar e-mail
+
+↓
+
+Atualizar status
+
+↓
+
+Encerrar sessão
+
+---
+
+# Workflow 04 — Recuperação
+
+Usuário retorna
+
+↓
+
+Consultar Cookie
+
+↓
+
+Consultar sessão
+
+↓
+
+Retornar último estado
+
+---
+
+# Workflow 05 — Abandono
+
+Sem interação por 30 minutos
+
+↓
+
+Marcar abandonado
+
+↓
+
+Salvar timestamp
+
+↓
+
+Permitir retomada futura
+
+---
+
+# Workflow 06 — Notificação
+
+Novo atendimento
+
+↓
+
+Montar resumo
+
+↓
+
+Enviar e-mail
+
+↓
+
+Criar registro Kinbox

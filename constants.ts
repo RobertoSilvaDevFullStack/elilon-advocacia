@@ -1,63 +1,7 @@
-import { Professional, AreaOfPractice, BlogPost, NavItem } from "./types";
+import { Professional, BlogPost } from "./types";
 
-export const NAV_ITEMS: NavItem[] = [
-  { label: "Home", path: "/" },
-  {
-    label: "Sobre Nós",
-    path: "/sobre",
-    subItems: [
-      { label: "Entrega e Soluções", path: "/sobre/entrega" },
-      { label: "Pensamento Inovador", path: "/sobre/inovacao" },
-      { label: "Depoimentos", path: "/sobre/depoimentos" },
-    ],
-  },
-  { label: "Profissionais", path: "/profissionais" },
-  { label: "Áreas de Atuação", path: "/areas" },
-  { label: "Blog", path: "/blog" },
-];
-
-export const AREAS: AreaOfPractice[] = [
-  {
-    id: 1,
-    title: "Direito Trabalhista",
-    slug: "trabalhista",
-    description:
-      "Consultoria em rescisões, contratos e compliance trabalhista.",
-    image: "/images/direito-trabalhista.webp",
-  },
-  {
-    id: 3,
-    title: "Direito Previdenciário",
-    slug: "previdenciario",
-    description:
-      "Planejamento previdenciário e requerimento de benefícios do INSS.",
-    image: "/images/direito-previdenciario.webp",
-  },
-  {
-    id: 5,
-    title: "Direito Tributário",
-    slug: "tributario",
-    description:
-      "Planejamento tributário, defesa em autuações e recuperação de créditos.",
-    image: "/images/direito-tributario.webp",
-  },
-  {
-    id: 4,
-    title: "Direito Imobiliário",
-    slug: "imobiliario",
-    description:
-      "Assessoria em compra, venda, locação e regularização de imóveis.",
-    image: "/images/direito-imobiliario.webp",
-  },
-  {
-    id: 2,
-    title: "Direito Civil",
-    slug: "civil",
-    description:
-      "Soluções em contratos, responsabilidade civil, família e sucessões.",
-    image: "/images/direito-civil.webp",
-  },
-];
+export { AREAS } from "./constants/areas";
+export { NAV_ITEMS } from "./constants/nav";
 
 export const PROFESSIONALS: Professional[] = [
   {
@@ -179,7 +123,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
     title: "A importância do Compliance Trabalhista",
-    summary:
+    excerpt:
       "Saiba como adequar sua empresa às novas normas e evitar passivos judiciais.",
     date: "20 Out 2023",
     category: "Trabalhista",
@@ -215,7 +159,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     id: 2,
     title: "Reforma Tributária: O que muda?",
-    summary:
+    excerpt:
       "Uma análise profunda sobre os impactos da reforma para o setor de serviços.",
     date: "15 Out 2023",
     category: "Tributário",
@@ -241,8 +185,39 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     id: 3,
+    title: "Aposentadoria por Idade: Como se Planejar",
+    excerpt: "Dicas essenciais para garantir seu benefício previdenciário.",
+    date: "12 Out 2023",
+    category: "Previdenciário",
+    slug: "aposentadoria-planejamento",
+    image: "/images/direito-previdenciario.webp",
+    author: "Dra. Clara Marinho",
+    content: `
+      <p>O <strong>planejamento previdenciário</strong> é fundamental para garantir uma aposentadoria tranquila e sem surpresas. Muitos segurados do INSS deixam para se preocupar com isso apenas quando estão próximos da idade, perdendo oportunidades de maximizar seu benefício.</p>
+
+      <h3>Requisitos Básicos</h3>
+      <p>Para a aposentadoria por idade, o segurado precisa comprovar:</p>
+      <ul>
+        <li><strong>Tempo de Contribuição:</strong> 15 anos de trabalho com carteira assinada ou recolhimento como contribuinte individual.</li>
+        <li><strong>Idade:</strong> 65 anos para homens e 62 anos para mulheres.</li>
+      </ul>
+
+      <h3>Como Maximizar seu Benefício?</h3>
+      <p>O valor da aposentadoria é calculado com base na média de todos os salários de contribuição desde julho de 1994. Para obter o melhor benefício possível:</p>
+      <ol>
+        <li>Verifique se todas as suas contribuições estão corretamente registradas;</li>
+        <li>Considera fazer o recolhimento em atraso de períodos não computados;</li>
+        <li>Avalie a possibilidade de descontar períodos de baixa remuneração;</li>
+        <li>Planeje a data exata do requerimento.</li>
+      </ol>
+
+      <p>A assessoria de um advogado previdenciário pode fazer diferença significativa no valor do seu benefício. Entre em contato para uma análise personalizada.</p>
+    `,
+  },
+  {
+    id: 4,
     title: "LGPD no Agronegócio",
-    summary: "Desafios e soluções para a proteção de dados no campo.",
+    excerpt: "Desafios e soluções para a proteção de dados no campo.",
     date: "10 Out 2023",
     category: "Agronegócio",
     slug: "lgpd-agro",

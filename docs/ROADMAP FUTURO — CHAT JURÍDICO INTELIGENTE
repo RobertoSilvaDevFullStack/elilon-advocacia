@@ -1,0 +1,200 @@
+# ROADMAP FUTURO — CHAT JURÍDICO INTELIGENTE
+
+## Status Atual do Projeto
+
+Data: Junho/2026
+
+O sistema encontra-se funcional para utilização em ambiente real.
+
+### Funcionalidades Implementadas
+
+#### Captação
+
+* Chat Jurídico Inteligente
+* Diagnóstico Tributário
+* Landing Page BPC
+* Landing Page Isenção de IR
+* Formulário Institucional
+* Newsletter do Blog
+
+#### Qualificação
+
+* Área jurídica
+* Subárea jurídica
+* Dados pessoais
+* Descrição do caso
+* Upload de documentos
+
+#### Operação
+
+* Geração de protocolo
+* Persistência PostgreSQL
+* Dashboard Administrativo
+* Gestão de status
+* Histórico de atendimento
+
+#### Inteligência Artificial
+
+* Análise automática Hermes/OpenAI
+* Classificação de urgência
+* Classificação de complexidade
+* Resumo executivo
+* Extração de entidades
+
+#### Integrações
+
+* Webhook Chat Jurídico
+* Webhook Hermes
+* Tracking Meta Pixel
+* Auditoria de eventos
+* Logs estruturados
+
+#### Segurança
+
+* Rate Limiting
+* Validação de arquivos
+* Retry automático
+* Health Checks
+* Logs operacionais
+
+---
+
+# Próximas Evoluções (Opcional)
+
+As funcionalidades abaixo NÃO são obrigatórias para operação do sistema.
+
+Devem ser consideradas apenas quando houver necessidade operacional ou comercial.
+
+---
+
+## Sprint 3.11 — Central de Configurações
+
+Objetivo:
+
+Permitir gerenciamento de integrações sem acesso ao banco de dados.
+
+Possíveis recursos:
+
+* URL Webhook Chat
+* URL Webhook Hermes
+* URL Webhook Diagnóstico
+* WhatsApp do escritório
+* E-mail do escritório
+* Configurações OpenAI
+* Configurações Hermes
+
+Benefício:
+
+Reduz dependência técnica para ajustes operacionais.
+
+---
+
+## Sprint 3.12 — Integração N8N
+
+Objetivo:
+
+Automatizar notificações em tempo real.
+
+Fluxo:
+
+Chat Jurídico
+↓
+Webhook
+↓
+N8N
+↓
+Telegram
+↓
+Equipe Jurídica
+
+Benefício:
+
+Atendimento mais rápido aos novos leads.
+
+---
+
+## Sprint 3.13 — Alertas Inteligentes Hermes
+
+Objetivo:
+
+Priorizar atendimentos automaticamente.
+
+Exemplos:
+
+* Urgência alta
+* Prazo processual crítico
+* Alto potencial comercial
+
+Benefício:
+
+Melhor distribuição dos atendimentos.
+
+---
+
+## Sprint 3.14 — Pipeline Comercial
+
+Objetivo:
+
+Transformar o painel em um CRM Jurídico.
+
+Possíveis etapas:
+
+* Novo
+* Triagem
+* Em Contato
+* Proposta
+* Contrato
+* Convertido
+* Encerrado
+
+Benefício:
+
+Controle comercial completo.
+
+---
+
+## Sprint 4.0 — Analytics e BI
+
+Objetivo:
+
+Aumentar visibilidade sobre a operação.
+
+Possíveis integrações:
+
+* Google Analytics 4
+* Meta Conversions API
+* Relatórios de conversão
+* Dashboard executivo
+
+Benefício:
+
+Tomada de decisão baseada em dados.
+
+---
+
+## Sprint 4.1 — Plataforma Multi-Escritório
+
+Objetivo:
+
+Transformar a solução em produto comercial.
+
+Possíveis recursos:
+
+* Multi-tenant
+* Isolamento de dados
+* Configuração por escritório
+* Planos e assinaturas
+
+Benefício:
+
+Comercialização da plataforma para outros escritórios.
+
+---
+
+# Consideração Final
+
+O sistema atual já atende plenamente o objetivo inicial:
+
+Captar, qualificar, organizar e encaminhar atendimentos jurídicos de forma estruturada.
+
+As evoluções descritas neste documento devem ser tratadas como melhorias futuras e não como requisitos obrigatórios para entrada em produção.

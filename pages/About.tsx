@@ -1,9 +1,43 @@
 import React from "react";
 import { Layout } from "../components/Layout";
 import { Hero, SectionTitle, Button } from "../components/Components";
-import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { MobileSnapCarousel } from "../components/MobileSnapCarousel";
+import { WhatsAppLink } from "../components/WhatsAppLink";
+
+const VALUES = [
+  {
+    title: "Ética",
+    description:
+      "Atuamos com integridade e transparência em todas as nossas relações, respeitando rigorosamente os princípios éticos da advocacia.",
+  },
+  {
+    title: "Compromisso",
+    description:
+      "Dedicação total com os interesses de nossos clientes, trabalhando incansavelmente para alcançar os melhores resultados.",
+  },
+  {
+    title: "Excelência",
+    description:
+      "Buscamos constantemente a qualidade superior em nossos serviços, com técnica jurídica apurada e atualização permanente.",
+  },
+  {
+    title: "Empatia",
+    description:
+      "Compreendemos profundamente as necessidades de cada cliente, oferecendo um atendimento humanizado e próximo.",
+  },
+  {
+    title: "Inovação",
+    description:
+      "Utilizamos tecnologia e métodos modernos para otimizar processos e oferecer soluções jurídicas cada vez mais eficientes.",
+  },
+  {
+    title: "Colaboração",
+    description:
+      "Trabalhamos em equipe, valorizando as contribuições de todos e construindo parcerias duradouras com nossos clientes.",
+  },
+];
 
 export const About: React.FC = () => {
   return (
@@ -81,39 +115,8 @@ export const About: React.FC = () => {
         <div className="container mx-auto px-4">
           <SectionTitle title="Nossos Valores" subtitle="Princípios" centered />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 max-w-6xl mx-auto">
-            {[
-              {
-                title: "Ética",
-                description:
-                  "Atuamos com integridade e transparência em todas as nossas relações, respeitando rigorosamente os princípios éticos da advocacia.",
-              },
-              {
-                title: "Compromisso",
-                description:
-                  "Dedicação total com os interesses de nossos clientes, trabalhando incansavelmente para alcançar os melhores resultados.",
-              },
-              {
-                title: "Excelência",
-                description:
-                  "Buscamos constantemente a qualidade superior em nossos serviços, com técnica jurídica apurada e atualização permanente.",
-              },
-              {
-                title: "Empatia",
-                description:
-                  "Compreendemos profundamente as necessidades de cada cliente, oferecendo um atendimento humanizado e próximo.",
-              },
-              {
-                title: "Inovação",
-                description:
-                  "Utilizamos tecnologia e métodos modernos para otimizar processos e oferecer soluções jurídicas cada vez mais eficientes.",
-              },
-              {
-                title: "Colaboração",
-                description:
-                  "Trabalhamos em equipe, valorizando as contribuições de todos e construindo parcerias duradouras com nossos clientes.",
-              },
-            ].map((value, index) => (
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 max-w-6xl mx-auto">
+            {VALUES.map((value, index) => (
               <div
                 key={index}
                 className="bg-white p-6 border-t-4 border-accent-500 hover:shadow-lg transition-shadow duration-300"
@@ -127,6 +130,22 @@ export const About: React.FC = () => {
               </div>
             ))}
           </div>
+
+          <MobileSnapCarousel className="mt-12 max-w-6xl mx-auto">
+            {VALUES.map((value, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 border-t-4 border-accent-500 shadow-sm h-full"
+              >
+                <h4 className="text-xl font-headline font-bold text-neutral-900 mb-3">
+                  {value.title}
+                </h4>
+                <p className="text-neutral-600 text-sm leading-relaxed">
+                  {value.description}
+                </p>
+              </div>
+            ))}
+          </MobileSnapCarousel>
         </div>
       </section>
 
@@ -202,9 +221,9 @@ export const About: React.FC = () => {
           <h3 className="text-3xl font-headline mb-6">
             Pronto para conversarmos?
           </h3>
-          <Link to="/contato">
+          <WhatsAppLink ctaName="about_entre_em_contato">
             <Button>Entre em Contato</Button>
-          </Link>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>

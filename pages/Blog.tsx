@@ -4,9 +4,9 @@ import { Hero } from "../components/Components";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface BlogPost {
   id: number;
@@ -71,45 +71,42 @@ export const Blog: React.FC = () => {
 
       <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 md:gap-12">
             {currentPosts.map((post, index) => (
               <ScrollReveal
                 animation="fade-in-up"
                 delay={`delay-${Math.min((index % 3) * 100 + 100, 500)}` as any}
                 key={post.id}
               >
-                <article
-                  key={post.id}
-                  className="flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300"
-                >
+                <article className="flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300">
                   <Link
                     to={`/blog/${post.slug}`}
-                    className="h-60 overflow-hidden relative group"
+                    className="h-32 sm:h-40 md:h-60 overflow-hidden relative group"
                   >
                     <img
                       src={post.image}
                       alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
-                    <div className="absolute top-4 left-4 bg-accent-600 text-white text-xs font-bold uppercase px-3 py-1">
+                    <div className="absolute top-2 left-2 md:top-4 md:left-4 bg-accent-600 text-white text-[10px] md:text-xs font-bold uppercase px-2 py-0.5 md:px-3 md:py-1">
                       {post.category}
                     </div>
                   </Link>
-                  <div className="p-8 flex flex-col flex-grow">
-                    <span className="text-sm text-neutral-400 mb-2">
+                  <div className="p-3 sm:p-5 md:p-8 flex flex-col flex-grow">
+                    <span className="text-[10px] sm:text-sm text-neutral-400 mb-1 md:mb-2">
                       {new Date(post.created_at).toLocaleDateString("pt-BR")}
                     </span>
-                    <h3 className="text-2xl font-headline font-bold mb-3 hover:text-accent-600 transition-colors">
+                    <h3 className="text-sm sm:text-lg md:text-2xl font-headline font-bold mb-2 md:mb-3 hover:text-accent-600 transition-colors line-clamp-2">
                       <Link to={`/blog/${post.slug}`}>{post.title}</Link>
                     </h3>
-                    <p className="text-neutral-600 mb-6 flex-grow">
+                    <p className="text-neutral-600 text-xs sm:text-sm md:text-base mb-3 md:mb-6 flex-grow line-clamp-3 md:line-clamp-none">
                       {post.excerpt}
                     </p>
                     <Link
                       to={`/blog/${post.slug}`}
-                      className="text-accent-600 font-bold uppercase text-xs tracking-wider hover:text-neutral-900 transition-colors"
+                      className="text-accent-600 font-bold uppercase text-[10px] sm:text-xs tracking-wider hover:text-neutral-900 transition-colors"
                     >
-                      Ler artigo completo
+                      Ler artigo
                     </Link>
                   </div>
                 </article>
@@ -135,7 +132,7 @@ export const Blog: React.FC = () => {
                     >
                       {page}
                     </button>
-                  )
+                  ),
                 )}
               </div>
             )}

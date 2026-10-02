@@ -30,7 +30,7 @@ export interface AreaOfPractice {
 export interface BlogPost {
   id: number;
   title: string;
-  summary: string;
+  excerpt: string;
   date: string;
   category: string;
   image: string;
@@ -55,4 +55,5 @@ export interface NavItem {
   label: string;
   path: string;
   subItems?: { label: string; path: string }[];
+  highlight?: boolean;
 }

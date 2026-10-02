@@ -1,0 +1,343 @@
+# OPS-001 — Infraestrutura Docker
+
+## Objetivo
+
+Definir a arquitetura de infraestrutura necessária para execução do Assistente Jurídico Inteligente em ambiente de produção.
+
+---
+
+# Ambiente
+
+Servidor:
+
+Hostinger VPS
+
+Sistema Operacional:
+
+Ubuntu Server LTS
+
+Containerização:
+
+Docker
+
+Orquestração:
+
+Docker Compose
+
+Proxy Reverso:
+
+Traefik
+
+SSL:
+
+Let's Encrypt
+
+---
+
+# Arquitetura de Containers
+
+internet
+
+↓
+
+traefik
+
+↓
+
+frontend-widget
+
+↓
+
+api-atendimento
+
+↓
+
+n8n
+
+↓
+
+hermes
+
+↓
+
+postgres
+
+↓
+
+minio
+
+---
+
+# Containers
+
+## traefik
+
+Responsável por:
+
+* HTTPS
+* SSL
+* Proxy reverso
+* Roteamento
+
+Domínios:
+
+chat.escritorio.com.br
+
+api.escritorio.com.br
+
+n8n.escritorio.com.br
+
+---
+
+## frontend-widget
+
+Responsável por:
+
+* Interface do usuário
+
+Tecnologia:
+
+* Next.js
+
+Porta interna:
+
+3000
+
+---
+
+## api-atendimento
+
+Responsável por:
+
+* Endpoints REST
+* Sessões
+* Uploads
+
+Tecnologia:
+
+* Node.js
+* Express
+* TypeScript
+
+Porta:
+
+4000
+
+---
+
+## n8n
+
+Responsável por:
+
+* Fluxos
+* Integrações
+* Orquestração
+
+Porta:
+
+5678
+
+---
+
+## hermes
+
+Responsável por:
+
+* Agente Jurídico
+* Processamento IA
+
+Porta:
+
+8000
+
+---
+
+## postgres
+
+Responsável por:
+
+* Persistência
+
+Porta:
+
+5432
+
+Volume:
+
+postgres_data
+
+---
+
+## minio
+
+Responsável por:
+
+* Armazenamento de documentos
+
+Porta API:
+
+9000
+
+Porta Console:
+
+9001
+
+Volume:
+
+minio_data
+
+---
+
+# Rede Docker
+
+Nome:
+
+juridico-network
+
+Todos os containers devem utilizar a mesma rede.
+
+---
+
+# Volumes Persistentes
+
+postgres_data
+
+Armazenamento do banco.
+
+---
+
+minio_data
+
+Armazenamento dos documentos.
+
+---
+
+n8n_data
+
+Fluxos e credenciais.
+
+---
+
+hermes_data
+
+Memórias e configurações.
+
+---
+
+# Estrutura de Diretórios
+
+/opt/juridico
+
+├── docker-compose.yml
+
+├── traefik/
+
+├── frontend/
+
+├── api/
+
+├── n8n/
+
+├── postgres/
+
+├── minio/
+
+├── hermes/
+
+├── backups/
+
+└── logs/
+
+---
+
+# Backup
+
+## PostgreSQL
+
+Periodicidade:
+
+Diária
+
+Retenção:
+
+30 dias
+
+Destino:
+
+/backups/postgres
+
+---
+
+## MinIO
+
+Periodicidade:
+
+Diária
+
+Retenção:
+
+30 dias
+
+Destino:
+
+/backups/minio
+
+---
+
+## N8N
+
+Exportação automática dos workflows.
+
+Retenção:
+
+30 dias
+
+---
+
+# Monitoramento
+
+Ferramentas futuras:
+
+* Uptime Kuma
+* Grafana
+* Prometheus
+
+---
+
+# Logs
+
+Todos os containers devem registrar logs.
+
+Retenção:
+
+15 dias
+
+---
+
+# Escalabilidade Futura
+
+Preparado para:
+
+* Múltiplos escritórios
+* CRM Jurídico
+* WhatsApp
+* OCR
+* Dashboard administrativo
+* Multiagentes Hermes
+
+---
+
+# Disaster Recovery
+
+Em caso de falha:
+
+1. Restaurar VPS.
+2. Restaurar Docker Compose.
+3. Restaurar PostgreSQL.
+4. Restaurar MinIO.
+5. Restaurar N8N.
+6. Restaurar Hermes.
+
+Tempo alvo:
+
+Menor que 2 horas.

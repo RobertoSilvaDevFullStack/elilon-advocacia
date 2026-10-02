@@ -1,31 +1,19 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  MapPin,
-  Linkedin,
-  Instagram,
-  Facebook,
-  Phone,
-  MessageCircle,
-} from "lucide-react";
+import { MapPin, Phone, MessageCircle } from "lucide-react";
+import { Linkedin, Instagram, Facebook } from "./icons/SocialIcons";
 import Navbar from "./Navbar";
+import { BrandLogo } from "./BrandLogo";
 import { openWhatsApp } from "../utils/whatsapp";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
+    <footer className="bg-linear-to-r from-preto-500 to-vinho-900 text-white pt-20 pb-10">
       <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 border-b border-neutral-800 pb-12">
         {/* Brand */}
         <div>
-          <div className="flex items-center gap-3 mb-6">
-            <img
-              src="/images/logo-nova.png"
-              alt="Elilon Lopes Advogados Logo"
-              className="h-12 w-auto object-contain"
-            />
-            <h2 className="text-3xl font-headline font-bold text-vermelho-400">
-              Elilon Lopes Advogados
-            </h2>
+          <div className="mb-6">
+            <BrandLogo className="h-12 w-auto object-contain" />
           </div>
           <p className="text-neutral-400 text-sm leading-relaxed mb-6">
             Excelência jurídica com foco em resultados. Atuamos com integridade
@@ -36,7 +24,7 @@ const Footer: React.FC = () => {
               href="https://www.linkedin.com/in/elilon-lopes"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-200 hover:text-accent-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-200 hover:text-accent-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="LinkedIn"
             >
               <Linkedin size={24} />
@@ -45,7 +33,7 @@ const Footer: React.FC = () => {
               href="https://www.instagram.com/elilonlopesadvogados"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="Instagram"
             >
               <Instagram size={24} />
@@ -54,7 +42,7 @@ const Footer: React.FC = () => {
               href="https://www.facebook.com/elilon.lopesdeabreu"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="text-neutral-400 hover:text-gold-400 transition-colors p-2 min-w-[48px] min-h-[48px] flex items-center justify-center"
               aria-label="Facebook"
             >
               <Facebook size={24} />
@@ -197,7 +185,8 @@ const Footer: React.FC = () => {
 const FloatingWhatsApp: React.FC = () => (
   <button
     onClick={() => openWhatsApp("global_floating_whatsapp")}
-    className="fixed bottom-6 right-6 z-50 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center min-w-[56px] min-h-[56px] cursor-pointer"
+    className="fixed z-40 bg-green-600 text-white p-4 rounded-full shadow-lg hover:bg-green-500 transition-transform hover:scale-110 flex items-center justify-center min-w-[56px] min-h-[56px] cursor-pointer"
+    style={{ bottom: "30px", right: "24px" }}
     aria-label="Fale conosco no WhatsApp"
   >
     <svg
@@ -218,7 +207,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({
   return (
     <div className="flex flex-col min-h-screen font-sans text-neutral-900 bg-neutral-50">
       <Navbar />
-      <main className="flex-grow">{children}</main>
+      <main id="conteudo-principal" className="grow">
+        {children}
+      </main>
       <Footer />
       <FloatingWhatsApp />
     </div>

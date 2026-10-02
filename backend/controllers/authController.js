@@ -1,9 +1,10 @@
 const db = require("../database/index");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { getJwtSecret } = require("../config/jwtSecret");
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your_jwt_secret_key_change_this_in_prod";
+const JWT_SECRET = getJwtSecret();
+const BCRYPT_ROUNDS = 12;
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
@@ -13,23 +14,20 @@ exports.login = async (req, res) => {
       username,
     ]);
 
-    if (result.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Usuário não encontrado" });
-    }
-
     const user = result.rows[0];
-    const passwordIsValid = bcrypt.compareSync(password, user.password);
+    const passwordIsValid =
+      result.rows.length > 0 && bcrypt.compareSync(password, user.password);
 
     if (!passwordIsValid) {
-      return res
-        .status(401)
-        .json({ success: false, token: null, message: "Senha inválida" });
+      return res.status(401).json({
+        success: false,
+        token: null,
+        message: "Credenciais inválidas.",
+      });
     }
 
     // Check if user is approved
-    if (!user.approved) {
+    if (user.approved === false || user.approved === 0 || user.approved === 'false') {
       return res.status(403).json({
         success: false,
         code: "PENDING_APPROVAL",
@@ -104,7 +102,7 @@ exports.register = async (req, res) => {
     }
 
     // Hash password
-    const hashedPassword = bcrypt.hashSync(password, 8);
+    const hashedPassword = bcrypt.hashSync(password, BCRYPT_ROUNDS);
 
     // Insert new user with approved = false and role = 'editor'
     const result = await db.query(
@@ -112,7 +110,7 @@ exports.register = async (req, res) => {
       [username, email, hashedPassword, 'editor', false]
     );
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       message: "Cadastro realizado com sucesso! Aguarde a aprovação do administrador para acessar o sistema.",
       user: result.rows[0]
@@ -150,7 +148,7 @@ exports.changePassword = async (req, res) => {
         .json({ success: false, message: "Current password incorrect" });
     }
 
-    const hashedNewPassword = bcrypt.hashSync(newPassword, 8);
+    const hashedNewPassword = bcrypt.hashSync(newPassword, BCRYPT_ROUNDS);
     await db.query("UPDATE users SET password = $1 WHERE id = $2", [
       hashedNewPassword,
       userId,

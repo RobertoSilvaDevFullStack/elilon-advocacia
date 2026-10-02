@@ -1,0 +1,499 @@
+{
+  "name": "Elilon — Chat Jurídico Conversacional v1",
+  "nodes": [
+
+    {
+      "id": "1_webhook_entrada",
+      "name": "01 · Webhook Entrada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [180, 400],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chat-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "notes": "Ponto de entrada. Recebe cada mensagem do ChatWidget via POST. A FSM continua sendo a fonte da verdade — o N8N nunca muda estados, apenas gera respostas inteligentes."
+    },
+
+    {
+      "id": "2_normalizar_payload",
+      "name": "02 · Normalizar Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 400],
+      "parameters": {
+        "jsCode": "// ─── Normalizar Payload ────────────────────────────────────────────────\n// Extrai e valida os campos do body, aplicando defaults seguros.\n// O N8N nunca modifica estados — apenas lê o currentState da FSM.\n\nconst body = $input.item.json.body || $input.item.json;\n\n// Campos obrigatórios\nconst sessionId     = body.sessionId || null;\nconst currentState  = body.currentState || 'UNKNOWN';\nconst area          = body.area || null;\nconst subarea       = body.subarea || null;\nconst message       = (body.message || '').trim();\n\n// Campos opcionais\nconst dadosColetados = body.dadosColetados || {};\nconst documentos     = body.documentos || [];\nconst protocolo      = body.protocolo || null;\n\n// Validação mínima\nconst erros = [];\nif (!sessionId) erros.push('sessionId obrigatório');\nif (!message)   erros.push('message obrigatório');\nif (!area)      erros.push('area obrigatório');\n\nif (erros.length > 0) {\n  return [{ json: { _valido: false, erros, sessionId } }];\n}\n\n// Estados da FSM que chegam ao N8N (pós-coleta de dados básicos)\nconst ESTADOS_CONVERSACIONAIS = [\n  'AWAITING_CASE_DESCRIPTION',\n  'CASE_DESCRIPTION_COLLECTED',\n  'AWAITING_DOCUMENT_UPLOAD_OPTION',\n  'DOCUMENT_UPLOAD_OPTION_SELECTED',\n  'DOCUMENTS_UPLOADED',\n  'QUALIFICATION_COMPLETE',\n  'READY_TO_CLOSE'\n];\n\nconst ehEstadoConversacional = ESTADOS_CONVERSACIONAIS.includes(currentState);\n\nreturn [{\n  json: {\n    _valido: true,\n    sessionId,\n    currentState,\n    area,\n    subarea: subarea || '',\n    message,\n    dadosColetados,\n    documentos,\n    protocolo,\n    ehEstadoConversacional,\n    temDocumentos: documentos.length > 0,\n    qualificacaoCompleta: currentState === 'QUALIFICATION_COMPLETE' || currentState === 'READY_TO_CLOSE',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "3_if_valido",
+      "name": "03 · IF Payload Válido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [660, 400],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "id": "cond_valido",
+              "leftValue": "={{ $json._valido }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+
+    {
+      "id": "4_resposta_erro",
+      "name": "04 · Resposta Erro Validação",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [900, 600],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ sucesso: false, resposta: 'Dados inválidos. Por favor, recarregue o chat.', erros: $json.erros }) }}",
+        "options": { "responseCode": 400 }
+      }
+    },
+
+    {
+      "id": "5_recuperar_contexto",
+      "name": "05 · Recuperar Contexto (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [900, 400],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  session_id,\n  area,\n  subarea,\n  historico_mensagens,\n  perguntas_respondidas,\n  documentos_solicitados,\n  resumo_parcial,\n  turno,\n  criado_em,\n  atualizado_em\nFROM n8n_chat_contexto\nWHERE session_id = '{{ $json.sessionId }}'\nORDER BY atualizado_em DESC\nLIMIT 1",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "pg_cred", "name": "PostgreSQL Elilon" }
+      },
+      "notes": "Busca o contexto conversacional acumulado da sessão. Se não existir ainda, o node seguinte inicializa o contexto do zero."
+    },
+
+    {
+      "id": "6_construir_contexto",
+      "name": "06 · Construir / Mesclar Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1140, 400],
+      "parameters": {
+        "jsCode": "// ─── Construir / Mesclar Contexto ──────────────────────────────────────\n// Mescla contexto salvo no Postgres com os dados da mensagem atual.\n// Se não houver contexto salvo, inicializa um novo.\n\nconst payload = $('02 · Normalizar Payload').item.json;\nconst dbRows  = $input.all();\n\n// Linha salva no banco (pode estar vazia se for a primeira mensagem)\nconst dbCtx = dbRows.length > 0 && dbRows[0].json?.session_id\n  ? dbRows[0].json\n  : null;\n\nlet historico = [];\nlet perguntasRespondidas = {};\nlet documentosSolicitados = [];\nlet turno = 1;\nlet resumoParcial = null;\n\nif (dbCtx) {\n  try { historico = JSON.parse(dbCtx.historico_mensagens || '[]'); } catch { historico = []; }\n  try { perguntasRespondidas = JSON.parse(dbCtx.perguntas_respondidas || '{}'); } catch { perguntasRespondidas = {}; }\n  try { documentosSolicitados = JSON.parse(dbCtx.documentos_solicitados || '[]'); } catch { documentosSolicitados = []; }\n  turno = (dbCtx.turno || 0) + 1;\n  resumoParcial = dbCtx.resumo_parcial || null;\n}\n\n// Adicionar a mensagem atual ao histórico\nhistorico.push({\n  turno,\n  role: 'user',\n  content: payload.message,\n  timestamp: payload.timestamp,\n  state: payload.currentState\n});\n\n// Limitar histórico a últimas 20 mensagens (evita tokens excessivos)\nif (historico.length > 20) historico = historico.slice(-20);\n\n// Montar histórico formatado para o prompt OpenAI\nconst historicoFormatado = historico\n  .map(m => `[${m.role === 'user' ? 'CLIENTE' : 'AGENTE'}]: ${m.content}`)\n  .join('\\n');\n\nreturn [{\n  json: {\n    ...payload,\n    contexto: {\n      sessionId:             payload.sessionId,\n      area:                  payload.area,\n      subarea:               payload.subarea,\n      turno,\n      historico,\n      historicoFormatado,\n      perguntasRespondidas,\n      documentosSolicitados,\n      resumoParcial,\n      dadosColetados:        payload.dadosColetados,\n      documentos:            payload.documentos,\n      qualificacaoCompleta:  payload.qualificacaoCompleta,\n      temDocumentos:         payload.temDocumentos\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "7_if_qualificacao_completa",
+      "name": "07 · IF Qualificação Completa?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1380, 400],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "id": "cond_qual",
+              "leftValue": "={{ $json.qualificacaoCompleta }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "notes": "Bifurca: se qualificação completa → fluxo de encerramento. Caso contrário → roteamento por área para continuar a coleta conversacional."
+    },
+
+    {
+      "id": "8_switch_area",
+      "name": "08 · Switch Área Jurídica",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1620, 560],
+      "parameters": {
+        "mode": "rules",
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [{ "leftValue": "={{ $json.area }}", "rightValue": "Previdenciário", "operator": { "type": "string", "operation": "equals" } }]
+              },
+              "renameOutput": true,
+              "outputKey": "Previdenciário"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [{ "leftValue": "={{ $json.area }}", "rightValue": "Trabalhista", "operator": { "type": "string", "operation": "equals" } }]
+              },
+              "renameOutput": true,
+              "outputKey": "Trabalhista"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [{ "leftValue": "={{ $json.area }}", "rightValue": "Tributário", "operator": { "type": "string", "operation": "equals" } }]
+              },
+              "renameOutput": true,
+              "outputKey": "Tributário"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false },
+                "conditions": [{ "leftValue": "={{ $json.area }}", "rightValue": "Cível", "operator": { "type": "string", "operation": "equals" } }]
+              },
+              "renameOutput": true,
+              "outputKey": "Cível"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      }
+    },
+
+    {
+      "id": "9_agente_previdenciario",
+      "name": "09 · Agente Previdenciário",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 200],
+      "parameters": {
+        "jsCode": "// ─── Agente Previdenciário ─────────────────────────────────────────────\n// Monta o system prompt especializado em Direito Previdenciário.\n// Subáreas: BPC/LOAS, Aposentadoria, Auxílio-doença, Pensão, Revisão.\n\nconst ctx = $json.contexto;\nconst subarea = ctx.subarea;\n\nconst DOCUMENTOS_POR_SUBAREA = {\n  'BPC/LOAS':       ['RG e CPF do requerente e responsável', 'Laudo médico atualizado (menos de 90 dias)', 'Comprovante CadÚnico', 'Comprovante de renda familiar'],\n  'Aposentadoria':  ['CTPS física ou digital', 'Extrato do CNIS (Meu INSS)', 'Documentos de períodos especiais (se houver)', 'PPP — Perfil Profissiográfico Previdenciário'],\n  'Auxílio-doença': ['Laudo médico atualizado (menos de 30 dias)', 'Exames complementares recentes', 'Atestado médico com CID', 'Extrato do CNIS'],\n  'Pensão':         ['Certidão de óbito', 'RG e CPF do falecido e dependente', 'Documentos que comprovem dependência econômica', 'Certidão de casamento ou comprovante de união'],\n  'Revisão':        ['Carta de concessão do benefício original', 'Número do NB (Número do Benefício)', 'Documentos do período a revisar', 'Extrato do CNIS']\n};\n\nconst documentosSolicitados = DOCUMENTOS_POR_SUBAREA[subarea] || ['RG e CPF', 'Comprovante de residência', 'Documentos relacionados ao benefício'];\n\nconst systemPrompt = `Você é um assistente jurídico especializado em Direito Previdenciário do escritório Elilon Lopes Advogados.\n\nSua função é qualificar o atendimento do cliente, coletando informações essenciais de forma humanizada e empática.\n\nSubárea atual: ${subarea || 'Previdenciário (geral)'}\n\nREGRAS OBRIGATÓRIAS:\n- Nunca prometa resultado, prazo ou valor\n- Nunca emita parecer jurídico\n- Use linguagem simples, acessível e acolhedora\n- Faça no máximo 3 perguntas por mensagem\n- Seja objetivo e direto\n- Se o cliente já respondeu algo, não repita a pergunta\n\nINFORMAÇÕES JÁ COLETADAS PELA FSM:\n${JSON.stringify(ctx.dadosColetados, null, 2)}\n\nHISTÓRICO DA CONVERSA:\n${ctx.historicoFormatado || '(sem histórico anterior)'}\n\nDOCUMENTOS NECESSÁRIOS PARA ESTA SUBÁREA:\n${documentosSolicitados.map((d, i) => `${i + 1}. ${d}`).join('\\n')}\n\nDocumentos já enviados pelo cliente: ${ctx.documentos.length} arquivo(s)\n\nResponda APENAS com JSON válido (sem markdown):\n{\n  \"resposta\": \"sua mensagem humanizada para o cliente (máx 3 perguntas)\",\n  \"perguntas_feitas\": [\"lista das perguntas feitas nesta mensagem\"],\n  \"documentos_solicitados\": [\"documentos pedidos nesta mensagem\"],\n  \"informacoes_coletadas\": {\"chave\": \"valor\"},\n  \"qualificacao_suficiente\": false\n}`;\n\nreturn [{\n  json: {\n    ...($json),\n    agente: {\n      area: 'Previdenciário',\n      subarea,\n      systemPrompt,\n      documentosSolicitados\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "10_agente_trabalhista",
+      "name": "10 · Agente Trabalhista",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 440],
+      "parameters": {
+        "jsCode": "const ctx = $json.contexto;\nconst subarea = ctx.subarea;\n\nconst DOCUMENTOS_POR_SUBAREA = {\n  'Rescisão':              ['CTPS física ou digital', 'Termo de Rescisão (TRCT)', 'Contracheques dos últimos 3 meses', 'Extrato do FGTS'],\n  'FGTS':                  ['CTPS', 'Extrato do FGTS (Caixa Econômica)', 'Contracheques', 'Contrato de trabalho (se houver)'],\n  'Horas Extras':          ['Cartão de ponto ou espelho de ponto', 'Contracheques dos últimos 6 meses', 'CTPS', 'Mensagens ou e-mails sobre jornada (se houver)'],\n  'Assédio':               ['Print de mensagens ou e-mails (se houver)', 'Declaração de testemunhas (se houver)', 'Atestados ou laudos médicos', 'Boletim de Ocorrência (se houver)'],\n  'Acidente de Trabalho':  ['CAT — Comunicação de Acidente de Trabalho', 'Laudo médico do acidente', 'CTPS', 'Boletim de Ocorrência (se houver)']\n};\n\nconst documentosSolicitados = DOCUMENTOS_POR_SUBAREA[subarea] || ['CTPS', 'Contracheques', 'Documentos relacionados ao caso'];\n\nconst systemPrompt = `Você é um assistente jurídico especializado em Direito do Trabalho do escritório Elilon Lopes Advogados.\n\nSubárea atual: ${subarea || 'Trabalhista (geral)'}\n\nREGRAS OBRIGATÓRIAS:\n- Nunca prometa resultado, prazo ou valor\n- Nunca emita parecer jurídico\n- Use linguagem simples, acessível e empática\n- Faça no máximo 3 perguntas por mensagem\n- Se o cliente já respondeu algo, não repita a pergunta\n\nINFORMAÇÕES JÁ COLETADAS:\n${JSON.stringify(ctx.dadosColetados, null, 2)}\n\nHISTÓRICO:\n${ctx.historicoFormatado || '(sem histórico)'}\n\nDOCUMENTOS NECESSÁRIOS:\n${documentosSolicitados.map((d, i) => `${i + 1}. ${d}`).join('\\n')}\n\nDocumentos enviados: ${ctx.documentos.length} arquivo(s)\n\nResponda APENAS com JSON válido:\n{\n  \"resposta\": \"mensagem humanizada (máx 3 perguntas)\",\n  \"perguntas_feitas\": [],\n  \"documentos_solicitados\": [],\n  \"informacoes_coletadas\": {},\n  \"qualificacao_suficiente\": false\n}`;\n\nreturn [{ json: { ...($json), agente: { area: 'Trabalhista', subarea, systemPrompt, documentosSolicitados } } }];"
+      }
+    },
+
+    {
+      "id": "11_agente_tributario",
+      "name": "11 · Agente Tributário",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 680],
+      "parameters": {
+        "jsCode": "const ctx = $json.contexto;\nconst subarea = ctx.subarea;\n\nconst DOCUMENTOS_POR_SUBAREA = {\n  'Impostos':                  ['CNPJ e Contrato Social', 'Guias de pagamento (DARF, DAS)', 'Declarações fiscais (IRPJ, SPED)', 'Auto de infração (se houver)'],\n  'Planejamento Tributário':   ['Balanço patrimonial último exercício', 'DRE — Demonstração de Resultado', 'CNPJ e Contrato Social', 'Faturamento dos últimos 12 meses'],\n  'Restituição':               ['CPF ou CNPJ', 'Declaração do exercício em questão', 'Comprovantes de pagamento indevido', 'Extrato de conta (para crédito da restituição)'],\n  'Execução Fiscal':           ['CDA — Certidão de Dívida Ativa', 'CNPJ ou CPF', 'Documentos de bens (penhora)', 'Comprovantes de pagamento anteriores']\n};\n\nconst documentosSolicitados = DOCUMENTOS_POR_SUBAREA[subarea] || ['CNPJ ou CPF', 'Documentação fiscal pertinente'];\n\nconst systemPrompt = `Você é um assistente jurídico especializado em Direito Tributário do escritório Elilon Lopes Advogados.\n\nSubárea atual: ${subarea || 'Tributário (geral)'}\n\nREGRAS OBRIGATÓRIAS:\n- Nunca prometa resultado, prazo ou valor\n- Nunca emita parecer jurídico\n- Use linguagem simples e técnica apenas quando necessário\n- Faça no máximo 3 perguntas por mensagem\n\nINFORMAÇÕES JÁ COLETADAS:\n${JSON.stringify(ctx.dadosColetados, null, 2)}\n\nHISTÓRICO:\n${ctx.historicoFormatado || '(sem histórico)'}\n\nDOCUMENTOS NECESSÁRIOS:\n${documentosSolicitados.map((d, i) => `${i + 1}. ${d}`).join('\\n')}\n\nDocumentos enviados: ${ctx.documentos.length} arquivo(s)\n\nResponda APENAS com JSON válido:\n{\n  \"resposta\": \"mensagem humanizada (máx 3 perguntas)\",\n  \"perguntas_feitas\": [],\n  \"documentos_solicitados\": [],\n  \"informacoes_coletadas\": {},\n  \"qualificacao_suficiente\": false\n}`;\n\nreturn [{ json: { ...($json), agente: { area: 'Tributário', subarea, systemPrompt, documentosSolicitados } } }];"
+      }
+    },
+
+    {
+      "id": "12_agente_civel",
+      "name": "12 · Agente Cível",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 920],
+      "parameters": {
+        "jsCode": "const ctx = $json.contexto;\nconst subarea = ctx.subarea;\n\nconst DOCUMENTOS_POR_SUBAREA = {\n  'Contratos':    ['Contrato assinado e rubricado', 'Comprovantes de pagamento', 'Comunicações sobre o descumprimento', 'Nota fiscal ou recibo (se houver)'],\n  'Consumidor':   ['Nota fiscal ou comprovante de compra', 'Print do SAC ou protocolo Procon', 'Foto ou documentação do defeito/problema', 'RG e CPF'],\n  'Família':      ['RG e CPF de todos os envolvidos', 'Certidão de casamento (ou nascimento para guarda)', 'Documentos de bens (se partilha)', 'Comprovante de renda (se alimentos)'],\n  'Indenização':  ['Boletim de Ocorrência (se houver)', 'Laudos médicos ou periciais', 'Documentação do dano (fotos, notas fiscais)', 'Dados do responsável pelo dano']\n};\n\nconst documentosSolicitados = DOCUMENTOS_POR_SUBAREA[subarea] || ['RG e CPF', 'Documentação relacionada ao caso'];\n\nconst systemPrompt = `Você é um assistente jurídico especializado em Direito Civil do escritório Elilon Lopes Advogados.\n\nSubárea atual: ${subarea || 'Cível (geral)'}\n\nREGRAS OBRIGATÓRIAS:\n- Nunca prometa resultado, prazo ou valor\n- Nunca emita parecer jurídico\n- Use linguagem acessível e empática\n- Faça no máximo 3 perguntas por mensagem\n\nINFORMAÇÕES JÁ COLETADAS:\n${JSON.stringify(ctx.dadosColetados, null, 2)}\n\nHISTÓRICO:\n${ctx.historicoFormatado || '(sem histórico)'}\n\nDOCUMENTOS NECESSÁRIOS:\n${documentosSolicitados.map((d, i) => `${i + 1}. ${d}`).join('\\n')}\n\nDocumentos enviados: ${ctx.documentos.length} arquivo(s)\n\nResponda APENAS com JSON válido:\n{\n  \"resposta\": \"mensagem humanizada (máx 3 perguntas)\",\n  \"perguntas_feitas\": [],\n  \"documentos_solicitados\": [],\n  \"informacoes_coletadas\": {},\n  \"qualificacao_suficiente\": false\n}`;\n\nreturn [{ json: { ...($json), agente: { area: 'Cível', subarea, systemPrompt, documentosSolicitados } } }];"
+      }
+    },
+
+    {
+      "id": "13_openai_conversacional",
+      "name": "13 · OpenAI — Resposta Conversacional",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2100, 560],
+      "parameters": {
+        "jsCode": "// ─── Chamada OpenAI via HTTP ─────────────────────────────────────────────\n// Usa httpRequest interno ao Code node via $helpers — compatível com\n// N8N Community Edition sem instalar nodes langchain.\n// O agente já montou systemPrompt no node anterior.\n\nconst ctx   = $json.contexto;\nconst agente = $json.agente;\n\n// Mensagens para o modelo\nconst mensagens = [\n  { role: 'system', content: agente.systemPrompt },\n  { role: 'user',   content: ctx.message || $json.message }\n];\n\n// Resposta de fallback (se OpenAI falhar)\nconst fallbackResposta = {\n  resposta: 'Entendi sua situação. Para darmos continuidade ao seu atendimento, preciso confirmar algumas informações. Você pode me descrever melhor o que aconteceu?',\n  perguntas_feitas: [],\n  documentos_solicitados: agente.documentosSolicitados.slice(0, 2),\n  informacoes_coletadas: {},\n  qualificacao_suficiente: false\n};\n\nlet analiseIA = fallbackResposta;\n\ntry {\n  const apiKey = process.env.OPENAI_API_KEY;\n  if (!apiKey) throw new Error('OPENAI_API_KEY não configurada');\n\n  const response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.openai.com/v1/chat/completions',\n    headers: {\n      'Authorization': `Bearer ${apiKey}`,\n      'Content-Type': 'application/json'\n    },\n    body: JSON.stringify({\n      model: 'gpt-4o-mini',\n      messages: mensagens,\n      temperature: 0.4,\n      max_tokens: 800,\n      response_format: { type: 'json_object' }\n    }),\n    returnFullResponse: false\n  });\n\n  const content = response?.choices?.[0]?.message?.content || '{}';\n  analiseIA = JSON.parse(content);\n\n  // Garantir campos obrigatórios\n  if (!analiseIA.resposta) analiseIA.resposta = fallbackResposta.resposta;\n  if (!Array.isArray(analiseIA.perguntas_feitas)) analiseIA.perguntas_feitas = [];\n  if (!Array.isArray(analiseIA.documentos_solicitados)) analiseIA.documentos_solicitados = [];\n  if (!analiseIA.informacoes_coletadas) analiseIA.informacoes_coletadas = {};\n\n} catch (e) {\n  console.error('[N8N OpenAI] Falha:', e.message);\n  analiseIA = fallbackResposta;\n}\n\nreturn [{\n  json: {\n    ...($json),\n    analiseIA,\n    openai_ok: analiseIA !== fallbackResposta\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "14_atualizar_contexto",
+      "name": "14 · Atualizar Contexto (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2340, 560],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_contexto (\n  session_id,\n  area,\n  subarea,\n  historico_mensagens,\n  perguntas_respondidas,\n  documentos_solicitados,\n  resumo_parcial,\n  turno,\n  atualizado_em\n) VALUES (\n  '{{ $json.sessionId }}',\n  '{{ $json.area }}',\n  '{{ $json.subarea }}',\n  '{{ JSON.stringify($json.contexto.historico) }}',\n  '{{ JSON.stringify($json.analiseIA.informacoes_coletadas) }}',\n  '{{ JSON.stringify($json.analiseIA.documentos_solicitados) }}',\n  null,\n  {{ $json.contexto.turno }},\n  NOW()\n)\nON CONFLICT (session_id) DO UPDATE SET\n  historico_mensagens   = EXCLUDED.historico_mensagens,\n  perguntas_respondidas = EXCLUDED.perguntas_respondidas,\n  documentos_solicitados = EXCLUDED.documentos_solicitados,\n  turno                 = EXCLUDED.turno,\n  atualizado_em         = NOW()",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "pg_cred", "name": "PostgreSQL Elilon" }
+      }
+    },
+
+    {
+      "id": "15_retorno_frontend",
+      "name": "15 · Retorno para Frontend",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2580, 560],
+      "parameters": {
+        "jsCode": "// ─── Montar Resposta para o ChatWidget ───────────────────────────────────\n// A FSM recebe este objeto e exibe a resposta como mensagem do BOT.\n// A FSM decide se avança de estado ou não — o N8N não interfere.\n\nconst analise = $json.analiseIA;\nconst ctx     = $json.contexto;\n\nreturn [{\n  json: {\n    sucesso: true,\n    sessionId: $json.sessionId,\n    resposta: analise.resposta,\n    proximaAcao: 'CONTINUAR_COLETA',\n    perguntasAdicionais: analise.perguntas_feitas || [],\n    documentosSolicitados: analise.documentos_solicitados || [],\n    informacoesColetadas: analise.informacoes_coletadas || {},\n    qualificacaoSuficiente: analise.qualificacao_suficiente || false,\n    turno: ctx.turno,\n    _meta: {\n      area: ctx.area,\n      subarea: ctx.subarea,\n      openai_ok: $json.openai_ok\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "16_resposta_conversacional",
+      "name": "16 · Resposta Webhook — Conversacional",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2820, 560],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      }
+    },
+
+    {
+      "id": "17_gerar_resumo",
+      "name": "17 · Gerar Resumo Executivo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1620, 260],
+      "parameters": {
+        "jsCode": "// ─── Gerar Resumo Executivo Final ────────────────────────────────────────\n// Executado quando qualificacaoCompleta = true.\n// Consolida todos os dados para persistência e encaminhamento.\n\nconst ctx  = $json.contexto;\nconst body = $json;\n\nconst dados = ctx.dadosColetados || {};\n\n// Consolidar tudo que foi coletado ao longo da conversa\nconst resumo = {\n  protocolo:    body.protocolo || null,\n  gerado_em:    new Date().toISOString(),\n\n  cliente: {\n    nome:      dados.nome     || dados.name || '',\n    telefone:  dados.telefone || dados.phone || '',\n    email:     dados.email    || '',\n    cidade:    dados.cidade   || dados.city || '',\n    estado:    dados.estado   || dados.state || ''\n  },\n\n  juridico: {\n    area:          ctx.area,\n    subarea:       ctx.subarea,\n    descricao_caso: dados.descricaoCaso || dados.descricao || body.message || ''\n  },\n\n  qualificacao: {\n    historico_turnos: ctx.historico.length,\n    informacoes_extras: ctx.perguntasRespondidas,\n    documentos_solicitados: ctx.documentosSolicitados\n  },\n\n  documentos: {\n    count: ctx.documentos.length,\n    lista: ctx.documentos.map(d => ({\n      nome: d.original_name || d.nome || d.fileName || '',\n      tipo: d.mime_type     || d.tipo || '',\n      tam:  d.file_size     || d.size || 0\n    }))\n  },\n\n  resumo_narrativo: [\n    `Cliente ${dados.nome || 'não identificado'} (${dados.cidade || ''}/${dados.estado || ''})`,\n    `Área: ${ctx.area} — Subárea: ${ctx.subarea}`,\n    `Descrição: ${(dados.descricaoCaso || '').slice(0, 300)}`,\n    `Documentos enviados: ${ctx.documentos.length}`,\n    `Turnos de conversa: ${ctx.historico.length}`\n  ].join('. ')\n};\n\nreturn [{\n  json: {\n    ...body,\n    resumo,\n    _etapa: 'ENCERRAMENTO'\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "18_confirmar_informacoes",
+      "name": "18 · Montar Tela de Confirmação",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 260],
+      "parameters": {
+        "jsCode": "// ─── Montar Mensagem de Confirmação ──────────────────────────────────────\n// Gera a mensagem de confirmação que o ChatWidget exibirá ao cliente.\n// O cliente confirma via FSM — o N8N apenas prepara o texto.\n\nconst resumo = $json.resumo;\nconst cli    = resumo.cliente;\nconst jur    = resumo.juridico;\nconst docs   = resumo.documentos;\n\nconst textoConfirmacao = [\n  '📋 *Revisão das Informações*',\n  '',\n  `👤 *Nome:* ${cli.nome || 'Não informado'}`,\n  `📞 *Telefone:* ${cli.telefone || 'Não informado'}`,\n  `✉️ *E-mail:* ${cli.email || 'Não informado'}`,\n  `📍 *Cidade/Estado:* ${cli.cidade || ''}/${cli.estado || ''}`,\n  '',\n  `⚖️ *Área Jurídica:* ${jur.area}`,\n  `🔖 *Subárea:* ${jur.subarea}`,\n  '',\n  `📁 *Documentos enviados:* ${docs.count} arquivo(s)`,\n  '',\n  '---',\n  '*Está tudo correto?*',\n  'Confirme para finalizar seu atendimento ou solicite alteração.'\n].join('\\n');\n\nreturn [{\n  json: {\n    ...($json),\n    confirmacao: {\n      mensagem: textoConfirmacao,\n      dados: resumo\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "19_salvar_dados",
+      "name": "19 · Salvar Dados (Postgres)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2100, 260],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Atualizar resumo na tabela de contexto N8N com o resumo final\nINSERT INTO n8n_chat_contexto (\n  session_id, area, subarea,\n  historico_mensagens, perguntas_respondidas,\n  documentos_solicitados, resumo_parcial,\n  turno, atualizado_em\n) VALUES (\n  '{{ $json.sessionId }}',\n  '{{ $json.resumo.juridico.area }}',\n  '{{ $json.resumo.juridico.subarea }}',\n  '{{ JSON.stringify($json.contexto.historico) }}',\n  '{{ JSON.stringify($json.contexto.perguntasRespondidas) }}',\n  '{{ JSON.stringify($json.contexto.documentosSolicitados) }}',\n  '{{ $json.resumo.resumo_narrativo }}',\n  {{ $json.contexto.turno }},\n  NOW()\n)\nON CONFLICT (session_id) DO UPDATE SET\n  resumo_parcial     = EXCLUDED.resumo_parcial,\n  atualizado_em      = NOW()",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "pg_cred", "name": "PostgreSQL Elilon" }
+      },
+      "notes": "Persiste o resumo final em n8n_chat_contexto. O backend (ChatLeadController) já salvou em chat_pre_atendimentos via FSM — este node só complementa o contexto N8N."
+    },
+
+    {
+      "id": "20_disparar_hermes",
+      "name": "20 · Disparar Hermes Analysis",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2340, 260],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_URL || 'http://localhost:3001' }}/api/admin/chat/analysis/{{ $json.protocolo || 'unknown' }}/reprocess",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "Bearer {{ $env.ADMIN_JWT_TOKEN }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {
+          "timeout": 30000,
+          "ignoreResponseCode": true,
+          "response": {
+            "response": { "neverError": true }
+          }
+        }
+      },
+      "notes": "Aciona HermesAnalysisService no backend para análise automática. Se falhar, o fluxo continua (ignoreResponseCode: true)."
+    },
+
+    {
+      "id": "21_disparar_webhooks",
+      "name": "21 · Disparar Webhooks (chat_finalizado)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2580, 260],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_URL || 'http://localhost:3001' }}/api/admin/chat/webhook-logs/{{ $json.protocolo || '' }}/reenviar",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "Bearer {{ $env.ADMIN_JWT_TOKEN }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {
+          "timeout": 10000,
+          "ignoreResponseCode": true,
+          "response": {
+            "response": { "neverError": true }
+          }
+        }
+      },
+      "notes": "Dispara o evento chat_finalizado via ChatWebhookService do backend. Falha silenciosa."
+    },
+
+    {
+      "id": "22_encerrar_atendimento",
+      "name": "22 · Encerrar Atendimento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2820, 260],
+      "parameters": {
+        "jsCode": "// ─── Encerrar Atendimento ────────────────────────────────────────────────\n// Monta a resposta final para a FSM.\n// A FSM exibe a mensagem de encerramento e transiciona para CLOSED.\n\nconst resumo = $json.resumo;\nconst cli    = resumo?.cliente || {};\n\nconst mensagemFinal = [\n  `✅ *Atendimento registrado com sucesso!*`,\n  '',\n  resumo?.protocolo\n    ? `📌 *Protocolo:* ${resumo.protocolo}`\n    : '📌 Protocolo será gerado em instantes.',\n  '',\n  `Nossa equipe jurídica analisará seu caso e entrará em contato em breve.`,\n  '',\n  `📞 Se preferir, ligue: **(11) 0000-0000**`,\n  `✉️ Ou envie e-mail: **contato@elilon.com.br**`\n].join('\\n');\n\nreturn [{\n  json: {\n    sucesso: true,\n    sessionId: $json.sessionId,\n    resposta: mensagemFinal,\n    proximaAcao: 'ENCERRAR',\n    protocolo: resumo?.protocolo || null,\n    resumo_final: resumo,\n    _meta: {\n      workflow: 'chat-juridico-conversacional-v1',\n      sprint: '4.0.1',\n      etapa: 'encerramento'\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "23_resposta_encerramento",
+      "name": "23 · Resposta Webhook — Encerramento",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [3060, 260],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      }
+    },
+
+    {
+      "id": "24_migration_context",
+      "name": "24 · [SETUP] Migration n8n_chat_contexto",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [180, 700],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS n8n_chat_contexto (\n  session_id             TEXT        PRIMARY KEY,\n  area                   TEXT,\n  subarea                TEXT,\n  historico_mensagens    JSONB       DEFAULT '[]',\n  perguntas_respondidas  JSONB       DEFAULT '{}',\n  documentos_solicitados JSONB       DEFAULT '[]',\n  resumo_parcial         TEXT,\n  turno                  INTEGER     DEFAULT 1,\n  criado_em              TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,\n  atualizado_em          TIMESTAMP   DEFAULT CURRENT_TIMESTAMP\n);\n\nCREATE INDEX IF NOT EXISTS idx_n8n_chat_contexto_session_id ON n8n_chat_contexto (session_id);\nCREATE INDEX IF NOT EXISTS idx_n8n_chat_contexto_area      ON n8n_chat_contexto (area);\n\nSELECT 'n8n_chat_contexto OK' AS status;",
+        "options": {}
+      },
+      "credentials": {
+        "postgres": { "id": "pg_cred", "name": "PostgreSQL Elilon" }
+      },
+      "notes": "Execute este node UMA VEZ para criar a tabela de contexto. Após isso, desative ou delete este node."
+    }
+
+  ],
+
+  "connections": {
+    "01 · Webhook Entrada": {
+      "main": [[{ "node": "02 · Normalizar Payload", "type": "main", "index": 0 }]]
+    },
+    "02 · Normalizar Payload": {
+      "main": [[{ "node": "03 · IF Payload Válido", "type": "main", "index": 0 }]]
+    },
+    "03 · IF Payload Válido": {
+      "main": [
+        [{ "node": "05 · Recuperar Contexto (Postgres)", "type": "main", "index": 0 }],
+        [{ "node": "04 · Resposta Erro Validação", "type": "main", "index": 0 }]
+      ]
+    },
+    "05 · Recuperar Contexto (Postgres)": {
+      "main": [[{ "node": "06 · Construir / Mesclar Contexto", "type": "main", "index": 0 }]]
+    },
+    "06 · Construir / Mesclar Contexto": {
+      "main": [[{ "node": "07 · IF Qualificação Completa?", "type": "main", "index": 0 }]]
+    },
+    "07 · IF Qualificação Completa?": {
+      "main": [
+        [{ "node": "17 · Gerar Resumo Executivo", "type": "main", "index": 0 }],
+        [{ "node": "08 · Switch Área Jurídica", "type": "main", "index": 0 }]
+      ]
+    },
+    "08 · Switch Área Jurídica": {
+      "main": [
+        [{ "node": "09 · Agente Previdenciário", "type": "main", "index": 0 }],
+        [{ "node": "10 · Agente Trabalhista",    "type": "main", "index": 0 }],
+        [{ "node": "11 · Agente Tributário",     "type": "main", "index": 0 }],
+        [{ "node": "12 · Agente Cível",          "type": "main", "index": 0 }]
+      ]
+    },
+    "09 · Agente Previdenciário": {
+      "main": [[{ "node": "13 · OpenAI — Resposta Conversacional", "type": "main", "index": 0 }]]
+    },
+    "10 · Agente Trabalhista": {
+      "main": [[{ "node": "13 · OpenAI — Resposta Conversacional", "type": "main", "index": 0 }]]
+    },
+    "11 · Agente Tributário": {
+      "main": [[{ "node": "13 · OpenAI — Resposta Conversacional", "type": "main", "index": 0 }]]
+    },
+    "12 · Agente Cível": {
+      "main": [[{ "node": "13 · OpenAI — Resposta Conversacional", "type": "main", "index": 0 }]]
+    },
+    "13 · OpenAI — Resposta Conversacional": {
+      "main": [[{ "node": "14 · Atualizar Contexto (Postgres)", "type": "main", "index": 0 }]]
+    },
+    "14 · Atualizar Contexto (Postgres)": {
+      "main": [[{ "node": "15 · Retorno para Frontend", "type": "main", "index": 0 }]]
+    },
+    "15 · Retorno para Frontend": {
+      "main": [[{ "node": "16 · Resposta Webhook — Conversacional", "type": "main", "index": 0 }]]
+    },
+    "17 · Gerar Resumo Executivo": {
+      "main": [[{ "node": "18 · Montar Tela de Confirmação", "type": "main", "index": 0 }]]
+    },
+    "18 · Montar Tela de Confirmação": {
+      "main": [[{ "node": "19 · Salvar Dados (Postgres)", "type": "main", "index": 0 }]]
+    },
+    "19 · Salvar Dados (Postgres)": {
+      "main": [[{ "node": "20 · Disparar Hermes Analysis", "type": "main", "index": 0 }]]
+    },
+    "20 · Disparar Hermes Analysis": {
+      "main": [[{ "node": "21 · Disparar Webhooks (chat_finalizado)", "type": "main", "index": 0 }]]
+    },
+    "21 · Disparar Webhooks (chat_finalizado)": {
+      "main": [[{ "node": "22 · Encerrar Atendimento", "type": "main", "index": 0 }]]
+    },
+    "22 · Encerrar Atendimento": {
+      "main": [[{ "node": "23 · Resposta Webhook — Encerramento", "type": "main", "index": 0 }]]
+    }
+  },
+
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Sao_Paulo",
+    "errorWorkflow": ""
+  },
+
+  "staticData": null,
+  "pinData": {},
+
+  "tags": [
+    { "id": "tag_elilon",     "name": "elilon-advocacia" },
+    { "id": "tag_sprint401",  "name": "sprint-4.0.1" },
+    { "id": "tag_chat",       "name": "chat-juridico" },
+    { "id": "tag_conversacional", "name": "conversacional" }
+  ],
+
+  "versionId": "sprint-4.0.1"
+}

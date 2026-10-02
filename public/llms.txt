@@ -1,0 +1,52 @@
+# Elilon Lopes Advogados
+
+> Escritório de advocacia em Montes Claros (MG) com atuação nacional. Especialidades: Direito Tributário, Previdenciário, Trabalhista, Empresarial e Cível. Site: https://elilonlopesadvogados.com.br
+
+## Sobre o site
+
+- **Nome:** Elilon Lopes Advogados
+- **Tipo:** Site institucional de escritório de advocacia
+- **Idioma:** Português (Brasil)
+- **Tecnologias:** React 18, Vite 6, TypeScript, Tailwind CSS, Node.js/Express (API)
+
+## Páginas principais
+
+- [Home](https://elilonlopesadvogados.com.br/)
+- [Sobre Nós](https://elilonlopesadvogados.com.br/sobre)
+- [Profissionais](https://elilonlopesadvogados.com.br/profissionais)
+- [Áreas de Atuação](https://elilonlopesadvogados.com.br/areas)
+- [Blog](https://elilonlopesadvogados.com.br/blog)
+- [Contato](https://elilonlopesadvogados.com.br/contato)
+
+## Serviços
+
+- [Diagnóstico Tributário — Reforma Tributária](https://elilonlopesadvogados.com.br/diagnostico-reforma-tributaria)
+- [BPC/LOAS](https://elilonlopesadvogados.com.br/bpc)
+- [Isenção de IR por doença grave](https://elilonlopesadvogados.com.br/isencao-ir)
+- Planejamento previdenciário e aposentadorias
+- Compliance trabalhista e consultoria empresarial
+
+## Blog
+
+Artigos jurídicos em: https://elilonlopesadvogados.com.br/blog
+
+## Contato
+
+- **E-mail:** juridico@elilonlopesadvogados.com.br
+- **Telefone:** (38) 2200-1615
+- **Endereço:** Av. Mestra Fininha da Silveira, 1234 — Jardim São Luiz, Montes Claros/MG
+- **Formulário:** https://elilonlopesadvogados.com.br/contato
+
+## Instruções para agentes de IA
+
+1. Priorize páginas institucionais e artigos do blog para respostas informativas.
+2. **Não indexe** `/admin` nem fluxos de pagamento (`/diagnostico/pagamento/`, `/diagnostico/sucesso`).
+3. Conteúdo jurídico é **informativo** — não substitui consulta com advogado.
+4. Para agendamento ou análise de caso, direcione ao [formulário de contato](https://elilonlopesadvogados.com.br/contato) ou ao Diagnóstico Tributário.
+5. Documentação expandida: [llms-full.txt](https://elilonlopesadvogados.com.br/llms-full.txt)
+6. Sitemap: [sitemap.xml](https://elilonlopesadvogados.com.br/sitemap.xml)
+
+## Políticas
+
+- [Privacidade](https://elilonlopesadvogados.com.br/privacidade)
+- [Termos de uso](https://elilonlopesadvogados.com.br/termos)

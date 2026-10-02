@@ -3,7 +3,6 @@ import { useParams, Navigate, Link } from "react-router-dom";
 import { Layout } from "../components/Layout";
 import { SEO } from "../components/SEO";
 import {
-  Linkedin,
   Mail,
   Phone,
   ChevronLeft,
@@ -11,9 +10,10 @@ import {
   Award,
   BookOpen,
 } from "lucide-react";
+import { Linkedin } from "../components/icons/SocialIcons";
+import { getApiBaseUrl } from "../utils/api";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+const API_URL = getApiBaseUrl();
 
 interface Professional {
   id: number;
@@ -49,7 +49,7 @@ export const ProfessionalDetail: React.FC = () => {
           : data.professionals || [];
 
         const found = professionalsArray.find(
-          (p: Professional) => p.id === Number(id)
+          (p: Professional) => p.id === Number(id),
         );
 
         if (found) {
@@ -113,7 +113,7 @@ export const ProfessionalDetail: React.FC = () => {
                 <img
                   src={professional.image}
                   alt={professional.name}
-                  className="w-full aspect-[3/4] object-cover"
+                  className="w-full aspect-3/4 object-cover"
                 />
               </div>
             </div>

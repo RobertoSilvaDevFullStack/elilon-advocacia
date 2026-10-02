@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Lead, BlogPost, Professional } from "../types";
 import { BLOG_POSTS, PROFESSIONALS } from "../constants";
 import {
@@ -14,15 +14,67 @@ import {
   BarChart2,
   Settings,
   Shield,
+  Headphones,
+  Filter,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Phone,
+  MapPin,
+  Calendar,
+  FileSearch,
+  Download,
+  FileType,
+  Paperclip,
+  Loader2,
+  X,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "../components/Components";
+import AIAnalysisPanel from "../components/AIAnalysisPanel";
+import DiagnosticoAdminView from "../components/DiagnosticoAdminView";
+import DiagnosticoPremiumAdminView from "../components/DiagnosticoPremiumAdminView";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { getApiBaseUrl } from "../utils/api";
 
-// TEMPORARY: Hardcoded API URL for production
-// Cache buster: 2025-12-17-10:40 UTC-3
-const PRODUCTION_API_URL = "https://api.elilonlopesadvogados.com.br/api";
-const API_URL = import.meta.env.VITE_API_URL || PRODUCTION_API_URL;
+const API_URL = getApiBaseUrl();
+
+async function downloadAdminDocument(docId: string, fileName: string, mode: "download" | "view" = "download") {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    alert("Sessão expirada. Faça login novamente.");
+    return;
+  }
+
+  const response = await fetch(`${API_URL}/admin/chat/documents/download/${docId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    alert(data.error || data.message || "Erro ao baixar documento");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  if (mode === "view") {
+    window.open(url, "_blank");
+    setTimeout(() => window.URL.revokeObjectURL(url), 60000);
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+}
 
 type ViewState =
   | "dashboard"
@@ -30,16 +82,48 @@ type ViewState =
   | "blog"
   | "professionals"
   | "users"
-  | "settings";
+  | "settings"
+  | "preAtendimentos" // Sprint 3.3
+  | "diagnosticoLeads" // Sprint 3.6
+  | "diagnosticoPremium"; // Sprint 3.11
+
+const ADMIN_VIEWS: ViewState[] = [
+  "dashboard",
+  "leads",
+  "blog",
+  "professionals",
+  "users",
+  "settings",
+  "preAtendimentos",
+  "diagnosticoLeads",
+  "diagnosticoPremium",
+];
+
+function parseAdminView(value: string | null): ViewState {
+  if (value && ADMIN_VIEWS.includes(value as ViewState)) {
+    return value as ViewState;
+  }
+  return "dashboard";
+}
 
 export const Admin: React.FC = () => {
   // DEBUG: Log API URL to verify correct endpoint
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentView = parseAdminView(searchParams.get("view"));
+
+  const navigateToView = (view: ViewState) => {
+    if (view === "dashboard") {
+      setSearchParams({}, { replace: false });
+    } else {
+      setSearchParams({ view }, { replace: false });
+    }
+  };
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Prevent login screen flash
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [currentView, setCurrentView] = useState<ViewState>("dashboard");
 
   // Data States
   const [stats, setStats] = useState<any>(null);
@@ -48,6 +132,40 @@ export const Admin: React.FC = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]); // Load from API
   const [users, setUsers] = useState<any[]>([]);
   const [webhookUrl, setWebhookUrl] = useState("");
+
+  // Sprint 3.7: Leads source filter
+  const [leadsSourceFilter, setLeadsSourceFilter] = useState("");
+
+  // Sprint 3.3: Pre-Atendimentos States
+  const [preAtendimentos, setPreAtendimentos] = useState<any[]>([]);
+  const [preAtendimentosStats, setPreAtendimentosStats] = useState<any>(null);
+  const [preAtendimentoSearch, setPreAtendimentoSearch] = useState("");
+  const [preAtendimentoFilters, setPreAtendimentoFilters] = useState({
+    status: "",
+    area: "",
+    subarea: "",
+    dataInicio: "",
+    dataFim: "",
+  });
+  const [areasList, setAreasList] = useState<string[]>([]);
+  const [subareasList, setSubareasList] = useState<string[]>([]);
+  const [selectedPreAtendimento, setSelectedPreAtendimento] = useState<any>(null);
+  const [showPreAtendimentoModal, setShowPreAtendimentoModal] = useState(false);
+  const [preAtendimentoPage, setPreAtendimentoPage] = useState(1);
+  const [preAtendimentoTotalPages, setPreAtendimentoTotalPages] = useState(1);
+
+  // Sprint 3.4.1: Estados para documentos
+  const [preAtendimentoDocumentos, setPreAtendimentoDocumentos] = useState<any[]>([]);
+  const [loadingDocumentos, setLoadingDocumentos] = useState(false);
+
+  // Sprint 3.9: Estados para logs de webhook
+  const [webhookLogs, setWebhookLogs] = useState<{ pre_atendimento: any; logs: any[] } | null>(null);
+  const [loadingWebhookLogs, setLoadingWebhookLogs] = useState(false);
+
+  // Sprint 3.10: Estados para logs de webhook Hermes
+  const [hermesWebhookLogs, setHermesWebhookLogs] = useState<{ analysis: any; logs: any[] } | null>(null);
+  const [loadingHermesWebhookLogs, setLoadingHermesWebhookLogs] = useState(false);
+  const [hermesActionLoading, setHermesActionLoading] = useState<"reprocess" | "reenviar" | null>(null);
 
   // Loading States
   const [loading, setLoading] = useState(false);
@@ -112,6 +230,11 @@ export const Admin: React.FC = () => {
         body: JSON.stringify({ username, password }),
       });
 
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Resposta inesperada do servidor");
+      }
+
       const data = await response.json();
 
       if (data.success) {
@@ -129,7 +252,7 @@ export const Admin: React.FC = () => {
     } catch (error) {
       console.error("Login failed", error);
       alert(
-        "Erro de conexão com o servidor. Verifique se o backend está rodando."
+        "Erro de conexão com o servidor. Verifique se o backend está rodando.",
       );
     }
   };
@@ -139,7 +262,11 @@ export const Admin: React.FC = () => {
     e.preventDefault();
 
     // Validations
-    if (!registerForm.username || !registerForm.email || !registerForm.password) {
+    if (
+      !registerForm.username ||
+      !registerForm.email ||
+      !registerForm.password
+    ) {
       return alert("Preencha todos os campos");
     }
 
@@ -161,6 +288,11 @@ export const Admin: React.FC = () => {
           password: registerForm.password,
         }),
       });
+
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        throw new Error("Resposta inesperada do servidor");
+      }
 
       const data = await response.json();
 
@@ -250,7 +382,7 @@ export const Admin: React.FC = () => {
       const data = await response.json();
       if (data.success) {
         alert(
-          editingItem ? "Profissional atualizado!" : "Profissional criado!"
+          editingItem ? "Profissional atualizado!" : "Profissional criado!",
         );
         setShowProfessionalModal(false);
         setProfessionalForm({
@@ -263,6 +395,9 @@ export const Admin: React.FC = () => {
           email: "",
           linkedin: "",
           phone: "",
+          location: "",
+          education: [],
+          specializations: [],
         });
         fetchDashboardData();
       } else {
@@ -300,7 +435,7 @@ export const Admin: React.FC = () => {
       if (data.success) {
         alert(editingItem ? "Usuário atualizado!" : "Usuário criado!");
         setShowUserModal(false);
-        setUserForm({ username: "", password: "", role: "editor" });
+        setUserForm({ username: "", email: "", password: "", role: "editor", approved: false });
         fetchDashboardData();
       } else {
         alert(data.message || "Erro ao salvar usuário");
@@ -312,16 +447,71 @@ export const Admin: React.FC = () => {
     }
   };
 
+  // Sprint 3.4.1: Buscar documentos do pré-atendimento
+  const fetchDocumentos = async (preAtendimentoId: string) => {
+    setLoadingDocumentos(true);
+    console.log("📋 Buscando documentos para pré-atendimento:", preAtendimentoId);
+    
+    try {
+      const response = await fetch(
+        `${API_URL}/chat/documents/${preAtendimentoId}`
+      );
+      const data = await response.json();
+      
+      if (data.success) {
+        setPreAtendimentoDocumentos(data.data.documents);
+        console.log(`✅ ${data.data.documents.length} documento(s) encontrado(s)`);
+      } else {
+        setPreAtendimentoDocumentos([]);
+        console.log("⚠️ Nenhum documento encontrado");
+      }
+    } catch (error) {
+      console.error("❌ Erro ao buscar documentos:", error);
+      setPreAtendimentoDocumentos([]);
+    } finally {
+      setLoadingDocumentos(false);
+    }
+  };
+
+  // Helper para formatar tamanho de arquivo
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Helper para obter ícone por tipo de arquivo
+  const getFileIcon = (extension: string) => {
+    const ext = extension?.toUpperCase();
+    if (ext === "PDF") return <FileText className="w-5 h-5 text-red-500" />;
+    if (["JPG", "JPEG", "PNG"].includes(ext)) return <FileType className="w-5 h-5 text-blue-500" />;
+    if (ext === "DOCX") return <FileType className="w-5 h-5 text-blue-700" />;
+    return <Paperclip className="w-5 h-5 text-gray-500" />;
+  };
+
   // FETCH DATA
   const fetchDashboardData = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
+
+    const handleAuthFailure = (status: number) => {
+      if (status === 401 || status === 403) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("lastActivity");
+        setIsLoggedIn(false);
+        return true;
+      }
+      return false;
+    };
 
     try {
       // Dashboard Stats
       const resStats = await fetch(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resStats.status)) return;
       const dataStats = await resStats.json();
       if (dataStats.success) setStats(dataStats.stats);
 
@@ -329,6 +519,7 @@ export const Admin: React.FC = () => {
       const resSettings = await fetch(`${API_URL}/settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resSettings.status)) return;
       const dataSettings = await resSettings.json();
       setWebhookUrl(dataSettings.webhook_url || "");
 
@@ -336,6 +527,7 @@ export const Admin: React.FC = () => {
       const resUsers = await fetch(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resUsers.status)) return;
       const dataUsers = await resUsers.json();
       setUsers(Array.isArray(dataUsers) ? dataUsers : []);
 
@@ -343,6 +535,7 @@ export const Admin: React.FC = () => {
       const resLeads = await fetch(`${API_URL}/leads`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resLeads.status)) return;
       const dataLeads = await resLeads.json();
       if (Array.isArray(dataLeads)) {
         setLeads(dataLeads);
@@ -354,6 +547,7 @@ export const Admin: React.FC = () => {
       const resProfessionals = await fetch(`${API_URL}/professionals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resProfessionals.status)) return;
       const dataProfessionals = await resProfessionals.json();
       if (Array.isArray(dataProfessionals)) {
         setProfessionals(dataProfessionals);
@@ -363,6 +557,7 @@ export const Admin: React.FC = () => {
       const resPosts = await fetch(`${API_URL}/posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (handleAuthFailure(resPosts.status)) return;
       const dataPosts = await resPosts.json();
       if (Array.isArray(dataPosts)) {
         setPosts(dataPosts);
@@ -389,32 +584,50 @@ export const Admin: React.FC = () => {
     }
   };
 
-  // Check for existing token on mount (persistent login)
+  // Check for existing token on mount (validate with backend)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const lastActivity = localStorage.getItem("lastActivity");
+    const validateSession = async () => {
+      const token = localStorage.getItem("token");
+      const lastActivity = localStorage.getItem("lastActivity");
 
-    if (token) {
-      // Check if token is still valid (30 minutes = 1800000ms)
+      if (!token) {
+        setIsCheckingAuth(false);
+        return;
+      }
+
       const now = Date.now();
-      const lastActivityTime = lastActivity ? parseInt(lastActivity) : now;
+      const lastActivityTime = lastActivity ? parseInt(lastActivity, 10) : now;
       const inactiveTime = now - lastActivityTime;
-      const THIRTY_MINUTES = 30 * 60 * 1000; // 30 minutos em ms
+      const THIRTY_MINUTES = 30 * 60 * 1000;
 
-      if (inactiveTime < THIRTY_MINUTES) {
-        // Token válido e dentro do período de inatividade
-        setIsLoggedIn(true);
-        localStorage.setItem("lastActivity", now.toString());
-      } else {
-        // Token expirou por inatividade
+      if (inactiveTime >= THIRTY_MINUTES) {
         localStorage.removeItem("token");
         localStorage.removeItem("lastActivity");
         setIsLoggedIn(false);
+        setIsCheckingAuth(false);
+        return;
       }
-    }
 
-    // Finish checking auth (prevents login screen flash)
-    setIsCheckingAuth(false);
+      try {
+        const res = await fetch(`${API_URL}/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          setIsLoggedIn(true);
+          localStorage.setItem("lastActivity", now.toString());
+        } else {
+          localStorage.removeItem("token");
+          localStorage.removeItem("lastActivity");
+          setIsLoggedIn(false);
+        }
+      } catch {
+        setIsLoggedIn(false);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+
+    validateSession();
   }, []);
 
   // Track user activity and auto-logout after 30 minutes of inactivity
@@ -426,8 +639,8 @@ export const Admin: React.FC = () => {
     };
 
     // Update activity on these events
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
-    events.forEach(event => {
+    const events = ["mousedown", "keydown", "scroll", "touchstart", "click"];
+    events.forEach((event) => {
       window.addEventListener(event, updateActivity);
     });
 
@@ -451,7 +664,7 @@ export const Admin: React.FC = () => {
 
     // Cleanup
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         window.removeEventListener(event, updateActivity);
       });
       clearInterval(inactivityInterval);
@@ -461,6 +674,83 @@ export const Admin: React.FC = () => {
   useEffect(() => {
     if (isLoggedIn) fetchDashboardData();
   }, [isLoggedIn]);
+
+  // Sprint 3.4.1: Carregar documentos quando o modal abrir
+  useEffect(() => {
+    if (showPreAtendimentoModal && selectedPreAtendimento?.id) {
+      console.log("📂 Modal de pré-atendimento aberto:", selectedPreAtendimento.protocolo);
+      fetchDocumentos(selectedPreAtendimento.id);
+    }
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
+
+  // Sprint 3.9: Carregar logs de webhook quando o modal abrir
+  useEffect(() => {
+    if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
+    setLoadingWebhookLogs(true);
+    fetch(`${API_URL}/admin/chat/webhook-logs/${selectedPreAtendimento.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setWebhookLogs(d.data); })
+      .catch(() => {})
+      .finally(() => setLoadingWebhookLogs(false));
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
+
+  // Sprint 3.10: Carregar logs de webhook Hermes quando o modal abrir
+  useEffect(() => {
+    if (!showPreAtendimentoModal || !selectedPreAtendimento?.id) return;
+    setLoadingHermesWebhookLogs(true);
+    fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+    })
+      .then((r) => r.json())
+      .then((d) => { if (d.success) setHermesWebhookLogs(d.data); })
+      .catch(() => {})
+      .finally(() => setLoadingHermesWebhookLogs(false));
+  }, [showPreAtendimentoModal, selectedPreAtendimento]);
+
+  // Sprint 3.10: Reprocessar Hermes
+  const handleHermesReprocess = async () => {
+    if (!selectedPreAtendimento?.id) return;
+    setHermesActionLoading("reprocess");
+    try {
+      const r = await fetch(
+        `${API_URL}/admin/chat/analysis/${selectedPreAtendimento.id}/reprocess`,
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      const d = await r.json();
+      alert(d.success ? "Hermes reprocessado com sucesso!" : `Erro: ${d.error}`);
+      if (d.success) {
+        setHermesWebhookLogs(null);
+        setLoadingHermesWebhookLogs(true);
+        fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
+      }
+    } catch { alert("Erro ao reprocessar."); }
+    finally { setHermesActionLoading(null); }
+  };
+
+  // Sprint 3.10: Reenviar Evento Hermes
+  const handleHermesReenviar = async () => {
+    if (!selectedPreAtendimento?.id) return;
+    setHermesActionLoading("reenviar");
+    try {
+      const r = await fetch(
+        `${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}/reenviar`,
+        { method: "POST", headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      const d = await r.json();
+      alert(d.success ? "Evento Hermes reenviado!" : `Erro: ${d.error}`);
+      if (d.success) {
+        setLoadingHermesWebhookLogs(true);
+        fetch(`${API_URL}/admin/chat/hermes-webhook-logs/${selectedPreAtendimento.id}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }).then((r2) => r2.json()).then((d2) => { if (d2.success) setHermesWebhookLogs(d2.data); }).finally(() => setLoadingHermesWebhookLogs(false));
+      }
+    } catch { alert("Erro ao reenviar."); }
+    finally { setHermesActionLoading(null); }
+  };
 
   // Show loading while checking authentication (prevents login screen flash)
   if (isCheckingAuth) {
@@ -514,7 +804,8 @@ export const Admin: React.FC = () => {
               onClick={() => setShowRegisterModal(true)}
               className="w-full text-sm text-neutral-600 hover:text-accent-600 mt-2"
             >
-              Não tem uma conta? <span className="font-semibold text-accent-600">Cadastre-se</span>
+              Não tem uma conta?{" "}
+              <span className="font-semibold text-accent-600">Cadastre-se</span>
             </button>
           </form>
 
@@ -524,7 +815,9 @@ export const Admin: React.FC = () => {
               <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full mx-4">
                 {registerMessage ? (
                   <>
-                    <h3 className="text-xl font-bold mb-4 text-green-600">✅ Cadastro Realizado!</h3>
+                    <h3 className="text-xl font-bold mb-4 text-green-600">
+                      ✅ Cadastro Realizado!
+                    </h3>
                     <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-4">
                       {registerMessage}
                     </div>
@@ -552,7 +845,12 @@ export const Admin: React.FC = () => {
                         <input
                           type="text"
                           value={registerForm.username}
-                          onChange={(e) => setRegisterForm({ ...registerForm, username: e.target.value })}
+                          onChange={(e) =>
+                            setRegisterForm({
+                              ...registerForm,
+                              username: e.target.value,
+                            })
+                          }
                           className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
                           required
                         />
@@ -565,7 +863,12 @@ export const Admin: React.FC = () => {
                         <input
                           type="email"
                           value={registerForm.email}
-                          onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                          onChange={(e) =>
+                            setRegisterForm({
+                              ...registerForm,
+                              email: e.target.value,
+                            })
+                          }
                           className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
                           required
                         />
@@ -578,12 +881,19 @@ export const Admin: React.FC = () => {
                         <input
                           type="password"
                           value={registerForm.password}
-                          onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                          onChange={(e) =>
+                            setRegisterForm({
+                              ...registerForm,
+                              password: e.target.value,
+                            })
+                          }
                           className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
                           required
                           minLength={6}
                         />
-                        <p className="text-xs text-neutral-500 mt-1">Mínimo 6 caracteres</p>
+                        <p className="text-xs text-neutral-500 mt-1">
+                          Mínimo 6 caracteres
+                        </p>
                       </div>
 
                       <div>
@@ -593,7 +903,12 @@ export const Admin: React.FC = () => {
                         <input
                           type="password"
                           value={registerForm.confirmPassword}
-                          onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                          onChange={(e) =>
+                            setRegisterForm({
+                              ...registerForm,
+                              confirmPassword: e.target.value,
+                            })
+                          }
                           className="w-full border border-neutral-300 p-2 rounded focus:border-accent-500 outline-none"
                           required
                         />
@@ -610,7 +925,12 @@ export const Admin: React.FC = () => {
                           type="button"
                           onClick={() => {
                             setShowRegisterModal(false);
-                            setRegisterForm({ username: "", email: "", password: "", confirmPassword: "" });
+                            setRegisterForm({
+                              username: "",
+                              email: "",
+                              password: "",
+                              confirmPassword: "",
+                            });
                           }}
                           className="flex-1 border border-neutral-300 py-2 rounded hover:bg-neutral-50"
                         >
@@ -687,12 +1007,14 @@ export const Admin: React.FC = () => {
 
   const NavButton = ({ view, icon: Icon, label }: any) => (
     <button
-      onClick={() => setCurrentView(view)}
-      className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"
-        } px-4 py-3 rounded transition-colors ${currentView === view
+      onClick={() => navigateToView(view)}
+      className={`w-full flex items-center ${
+        sidebarCollapsed ? "justify-center" : "space-x-3"
+      } px-4 py-3 rounded transition-colors ${
+        currentView === view
           ? "bg-accent-600 text-white"
           : "text-neutral-400 hover:bg-neutral-800 hover:text-white"
-        }`}
+      }`}
       title={sidebarCollapsed ? label : undefined}
     >
       <Icon size={20} />
@@ -704,13 +1026,15 @@ export const Admin: React.FC = () => {
     <div className="min-h-screen bg-neutral-50 flex font-sans">
       {/* Sidebar */}
       <aside
-        className={`${sidebarCollapsed ? "w-20" : "w-64"
-          } bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300`}
+        className={`${
+          sidebarCollapsed ? "w-20" : "w-64"
+        } bg-neutral-900 text-white flex-shrink-0 hidden md:flex flex-col transition-all duration-300`}
       >
         <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
           <span
-            className={`text-lg font-headline font-bold tracking-widest text-accent-500 ${sidebarCollapsed ? "hidden" : ""
-              }`}
+            className={`text-lg font-headline font-bold tracking-widest text-accent-500 ${
+              sidebarCollapsed ? "hidden" : ""
+            }`}
           >
             ADMIN
           </span>
@@ -729,8 +1053,9 @@ export const Admin: React.FC = () => {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={`transition-transform ${sidebarCollapsed ? "rotate-180" : ""
-                }`}
+              className={`transition-transform ${
+                sidebarCollapsed ? "rotate-180" : ""
+              }`}
             >
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -741,6 +1066,9 @@ export const Admin: React.FC = () => {
           <NavButton view="leads" icon={MessageSquare} label="Leads" />
           <NavButton view="blog" icon={FileText} label="Blog" />
           <NavButton view="professionals" icon={Users} label="Profissionais" />
+          <NavButton view="preAtendimentos" icon={Headphones} label="Pré-Atendimentos" />
+          <NavButton view="diagnosticoLeads" icon={BarChart2} label="Diagnóstico Trib." />
+          <NavButton view="diagnosticoPremium" icon={DollarSign} label="Diag. Premium" />
 
           <div className="my-4 border-t border-neutral-800"></div>
 
@@ -754,8 +1082,9 @@ export const Admin: React.FC = () => {
               localStorage.removeItem("lastActivity");
               setIsLoggedIn(false);
             }}
-            className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "space-x-3"
-              } px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors`}
+            className={`w-full flex items-center ${
+              sidebarCollapsed ? "justify-center" : "space-x-3"
+            } px-4 py-3 text-red-400 hover:bg-neutral-800 rounded transition-colors`}
           >
             <LogOut size={20} />
             {!sidebarCollapsed && <span>Sair</span>}
@@ -768,11 +1097,13 @@ export const Admin: React.FC = () => {
         {/* Mobile Header */}
         <header className="md:hidden bg-neutral-900 text-white p-4 flex justify-between items-center shadow-md">
           <span className="font-headline font-bold text-accent-500">ADMIN</span>
-          <button onClick={() => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("lastActivity");
-            setIsLoggedIn(false);
-          }}>
+          <button
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("lastActivity");
+              setIsLoggedIn(false);
+            }}
+          >
             <LogOut size={20} />
           </button>
         </header>
@@ -787,39 +1118,98 @@ export const Admin: React.FC = () => {
               </h2>
               {!stats ? (
                 <div className="text-neutral-500">
-                  Carregando estatísticas... (Verifique se o servidor backend
-                  está rodando)
+                  Carregando estatísticas...
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-accent-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Leads Totais
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.leads}
-                    </p>
+                <>
+                  {/* Cards Principais */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-accent-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Leads Totais
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.leads}
+                      </p>
+                    </div>
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-blue-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Artigos Publicados
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.posts}
+                      </p>
+                    </div>
+                    <div className="bg-white p-6 rounded shadow border-l-4 border-green-500">
+                      <h3 className="text-neutral-500 text-sm uppercase font-bold">
+                        Profissionais
+                      </h3>
+                      <p className="text-4xl font-bold text-neutral-800 mt-2">
+                        {stats.professionals}
+                      </p>
+                    </div>
                   </div>
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-blue-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Artigos Publicados
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.posts}
-                    </p>
-                  </div>
-                  <div className="bg-white p-6 rounded shadow border-l-4 border-green-500">
-                    <h3 className="text-neutral-500 text-sm uppercase font-bold">
-                      Profissionais
-                    </h3>
-                    <p className="text-4xl font-bold text-neutral-800 mt-2">
-                      {stats.professionals}
-                    </p>
-                  </div>
-                </div>
+
+                  {/* Sprint 3.3: Cards de Pré-Atendimentos */}
+                  <h3 className="text-xl font-bold text-neutral-800 mb-4">
+                    Pré-Atendimentos Chat Jurídico
+                  </h3>
+                  {!preAtendimentosStats ? (
+                    <div className="text-neutral-500 mb-8">
+                      Carregando estatísticas de pré-atendimentos...
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-purple-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Hoje
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.hoje || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-indigo-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Mês
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.mes || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Novos
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.novos || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-orange-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Em Análise
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.em_analise || 0}
+                        </p>
+                      </div>
+                      <div className="bg-white p-4 rounded shadow border-l-4 border-teal-500">
+                        <h4 className="text-neutral-500 text-xs uppercase font-bold">
+                          Convertidos
+                        </h4>
+                        <p className="text-3xl font-bold text-neutral-800 mt-1">
+                          {preAtendimentosStats.convertidos || 0}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
+
+          {/* DIAGNÓSTICO TRIBUTÁRIO VIEW — Sprint 3.6 */}
+          {currentView === "diagnosticoLeads" && <DiagnosticoAdminView />}
+          {currentView === "diagnosticoPremium" && <DiagnosticoPremiumAdminView />}
 
           {/* SETTINGS VIEW */}
           {currentView === "settings" && (
@@ -910,21 +1300,23 @@ export const Admin: React.FC = () => {
                           <td className="p-4 text-sm">{user.email || "-"}</td>
                           <td className="p-4">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-bold uppercase ${user.role === "admin" ||
+                              className={`px-2 py-1 rounded text-xs font-bold uppercase ${
+                                user.role === "admin" ||
                                 user.role === "superadmin"
-                                ? "bg-purple-100 text-purple-800"
-                                : "bg-gray-100 text-gray-800"
-                                }`}
+                                  ? "bg-purple-100 text-purple-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
                             >
                               {user.role}
                             </span>
                           </td>
                           <td className="p-4">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-bold ${user.approved
-                                ? "bg-green-100 text-green-800"
-                                : "bg-yellow-100 text-yellow-800"
-                                }`}
+                              className={`px-2 py-1 rounded text-xs font-bold ${
+                                user.approved
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
                             >
                               {user.approved ? "Aprovado" : "Pendente"}
                             </span>
@@ -954,13 +1346,22 @@ export const Admin: React.FC = () => {
                               <button
                                 className="text-green-600 hover:underline text-xs font-semibold"
                                 onClick={async () => {
-                                  if (confirm(`Aprovar cadastro de ${user.username}?`)) {
+                                  if (
+                                    confirm(
+                                      `Aprovar cadastro de ${user.username}?`,
+                                    )
+                                  ) {
                                     const token = localStorage.getItem("token");
                                     try {
-                                      const response = await fetch(`${API_URL}/users/${user.id}/approve`, {
-                                        method: "PUT",
-                                        headers: { Authorization: `Bearer ${token}` },
-                                      });
+                                      const response = await fetch(
+                                        `${API_URL}/users/${user.id}/approve`,
+                                        {
+                                          method: "PUT",
+                                          headers: {
+                                            Authorization: `Bearer ${token}`,
+                                          },
+                                        },
+                                      );
                                       const data = await response.json();
                                       if (data.success) {
                                         alert("✅ " + data.message);
@@ -982,13 +1383,22 @@ export const Admin: React.FC = () => {
                               <button
                                 className="text-red-600 hover:underline text-xs"
                                 onClick={async () => {
-                                  if (confirm(`Rejeitar cadastro de ${user.username}? Esta ação não pode ser desfeita.`)) {
+                                  if (
+                                    confirm(
+                                      `Rejeitar cadastro de ${user.username}? Esta ação não pode ser desfeita.`,
+                                    )
+                                  ) {
                                     const token = localStorage.getItem("token");
                                     try {
-                                      const response = await fetch(`${API_URL}/users/${user.id}/reject`, {
-                                        method: "DELETE",
-                                        headers: { Authorization: `Bearer ${token}` },
-                                      });
+                                      const response = await fetch(
+                                        `${API_URL}/users/${user.id}/reject`,
+                                        {
+                                          method: "DELETE",
+                                          headers: {
+                                            Authorization: `Bearer ${token}`,
+                                          },
+                                        },
+                                      );
                                       const data = await response.json();
                                       if (data.success) {
                                         alert(data.message);
@@ -1009,13 +1419,20 @@ export const Admin: React.FC = () => {
                             <button
                               className="text-red-600 hover:underline text-xs"
                               onClick={async () => {
-                                if (confirm(`Deletar usuário ${user.username}?`)) {
+                                if (
+                                  confirm(`Deletar usuário ${user.username}?`)
+                                ) {
                                   const token = localStorage.getItem("token");
                                   try {
-                                    const response = await fetch(`${API_URL}/users/${user.id}`, {
-                                      method: "DELETE",
-                                      headers: { Authorization: `Bearer ${token}` },
-                                    });
+                                    const response = await fetch(
+                                      `${API_URL}/users/${user.id}`,
+                                      {
+                                        method: "DELETE",
+                                        headers: {
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                      },
+                                    );
                                     if (response.ok) {
                                       alert("Usuário excluído com sucesso!");
                                       fetchDashboardData();
@@ -1024,7 +1441,9 @@ export const Admin: React.FC = () => {
                                     }
                                   } catch (error: any) {
                                     console.error("Delete error:", error);
-                                    alert(`Erro ao excluir usuário: ${error.message}`);
+                                    alert(
+                                      `Erro ao excluir usuário: ${error.message}`,
+                                    );
                                   }
                                 }
                               }}
@@ -1051,9 +1470,19 @@ export const Admin: React.FC = () => {
           )}
 
           {/* LEADS VIEW */}
-          {currentView === "leads" && (
+          {currentView === "leads" && (() => {
+            const filteredLeads = leadsSourceFilter
+              ? leads.filter((l: any) => (l.source || "site") === leadsSourceFilter)
+              : leads;
+            const sourceLabel: Record<string, string> = {
+              site: "Site (geral)",
+              landing_bpc: "Landing BPC",
+              landing_ir: "Landing IR",
+              blog_newsletter: "Newsletter Blog",
+            };
+            return (
             <div>
-              <div className="flex justify-between items-center mb-8">
+              <div className="flex flex-wrap justify-between items-start gap-4 mb-8">
                 <div>
                   <h2 className="text-2xl font-bold text-neutral-800">
                     Leads Recebidos
@@ -1062,57 +1491,55 @@ export const Admin: React.FC = () => {
                     Gerencie os contatos recebidos pelo site.
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  className="text-xs"
-                  onClick={() => {
-                    // CSV Header
-                    const headers = [
-                      "Nome",
-                      "Email",
-                      "Telefone",
-                      "Cidade",
-                      "Área de Interesse",
-                      "Mensagem",
-                      "Status",
-                      "Data",
-                    ];
-
-                    // CSV Rows
-                    const rows = leads.map((lead) => [
-                      lead.name || "",
-                      lead.email || "",
-                      lead.phone || "",
-                      lead.city || "",
-                      lead.interest || "",
-                      lead.message
-                        ? `"${lead.message.replace(/"/g, '""')}"`
-                        : "",
-                      lead.status || "Novo",
-                      lead.created_at
-                        ? new Date(lead.created_at).toLocaleDateString("pt-BR")
-                        : "",
-                    ]);
-
-                    // Build CSV
-                    const csv = [headers, ...rows]
-                      .map((row) => row.join(","))
-                      .join("\n");
-
-                    // Download
-                    const blob = new Blob(["\uFEFF" + csv], {
-                      type: "text/csv;charset=utf-8;",
-                    });
-                    const link = document.createElement("a");
-                    link.href = URL.createObjectURL(blob);
-                    link.download = `leads_${new Date().toISOString().split("T")[0]
-                      }.csv`;
-                    link.click();
-                  }}
-                >
-                  Exportar CSV
-                </Button>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Filtro por canal — Sprint 3.7 */}
+                  <select
+                    value={leadsSourceFilter}
+                    onChange={(e) => setLeadsSourceFilter(e.target.value)}
+                    className="border border-neutral-200 rounded px-3 py-2 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-accent-400"
+                  >
+                    <option value="">Todos os canais</option>
+                    <option value="site">Site (geral)</option>
+                    <option value="landing_bpc">Landing BPC</option>
+                    <option value="landing_ir">Landing IR</option>
+                    <option value="blog_newsletter">Newsletter Blog</option>
+                  </select>
+                  <Button
+                    variant="outline"
+                    className="text-xs"
+                    onClick={() => {
+                      const headers = ["Nome","Email","Telefone","Cidade","Área de Interesse","Mensagem","Canal","Status","Data"];
+                      const rows = filteredLeads.map((lead: any) => [
+                        lead.name || "",
+                        lead.email || "",
+                        lead.phone || "",
+                        lead.city || "",
+                        lead.interest || "",
+                        lead.message ? `"${lead.message.replace(/"/g, '""')}"` : "",
+                        sourceLabel[lead.source] || lead.source || "site",
+                        lead.status || "Novo",
+                        lead.created_at ? new Date(lead.created_at).toLocaleDateString("pt-BR") : "",
+                      ]);
+                      const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+                      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = `leads_${leadsSourceFilter || "todos"}_${new Date().toISOString().split("T")[0]}.csv`;
+                      link.click();
+                    }}
+                  >
+                    Exportar CSV
+                  </Button>
+                </div>
               </div>
+
+              {leadsSourceFilter && (
+                <div className="mb-4 flex items-center gap-2 text-sm text-accent-700 bg-accent-50 border border-accent-200 px-4 py-2 rounded">
+                  <Filter size={14} />
+                  Filtrado por: <strong>{sourceLabel[leadsSourceFilter] || leadsSourceFilter}</strong>
+                  <span className="ml-2 text-neutral-500">({filteredLeads.length} leads)</span>
+                </div>
+              )}
 
               <div className="bg-white rounded shadow overflow-hidden">
                 <table className="w-full text-left border-collapse">
@@ -1120,18 +1547,15 @@ export const Admin: React.FC = () => {
                     <tr className="bg-neutral-100 text-neutral-600 text-sm uppercase tracking-wider">
                       <th className="p-4 border-b">Nome</th>
                       <th className="p-4 border-b">Contato</th>
-                      <th className="p-4 border-b hidden md:table-cell">
-                        Interesse
-                      </th>
+                      <th className="p-4 border-b hidden md:table-cell">Canal</th>
+                      <th className="p-4 border-b hidden md:table-cell">Interesse</th>
                       <th className="p-4 border-b">Status</th>
-                      <th className="p-4 border-b hidden md:table-cell">
-                        Data
-                      </th>
+                      <th className="p-4 border-b hidden md:table-cell">Data</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm text-neutral-700">
-                    {leads.length > 0 ? (
-                      leads.map((lead) => (
+                    {filteredLeads.length > 0 ? (
+                      filteredLeads.map((lead: any) => (
                         <tr
                           key={lead.id}
                           className="border-b last:border-0 hover:bg-neutral-50"
@@ -1140,21 +1564,24 @@ export const Admin: React.FC = () => {
                           <td className="p-4">
                             <div className="text-xs">
                               <div>{lead.email}</div>
-                              <div className="text-neutral-500">
-                                {lead.phone}
-                              </div>
+                              <div className="text-neutral-500">{lead.phone}</div>
                             </div>
                           </td>
                           <td className="p-4 hidden md:table-cell">
+                            <span className={`px-2 py-1 text-xs rounded font-bold ${
+                              lead.source === "landing_bpc" ? "bg-blue-100 text-blue-800" :
+                              lead.source === "landing_ir" ? "bg-purple-100 text-purple-800" :
+                              lead.source === "blog_newsletter" ? "bg-green-100 text-green-800" :
+                              "bg-neutral-100 text-neutral-600"
+                            }`}>
+                              {sourceLabel[lead.source] || lead.source || "site"}
+                            </span>
+                          </td>
+                          <td className="p-4 hidden md:table-cell">
                             <div className="text-xs">
-                              <div className="font-semibold">
-                                {lead.interest || "Não especificado"}
-                              </div>
+                              <div className="font-semibold">{lead.interest || "Não especificado"}</div>
                               {lead.message && (
-                                <div
-                                  className="text-neutral-500 mt-1 truncate max-w-xs"
-                                  title={lead.message}
-                                >
+                                <div className="text-neutral-500 mt-1 truncate max-w-xs" title={lead.message}>
                                   {lead.message}
                                 </div>
                               )}
@@ -1166,19 +1593,14 @@ export const Admin: React.FC = () => {
                             </span>
                           </td>
                           <td className="p-4 hidden md:table-cell text-xs text-neutral-500">
-                            {new Date(lead.created_at).toLocaleDateString(
-                              "pt-BR"
-                            )}
+                            {new Date(lead.created_at).toLocaleDateString("pt-BR")}
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td
-                          colSpan={5}
-                          className="p-8 text-center text-neutral-500"
-                        >
-                          Nenhum lead cadastrado ainda.
+                        <td colSpan={6} className="p-8 text-center text-neutral-500">
+                          {leadsSourceFilter ? `Nenhum lead do canal “${sourceLabel[leadsSourceFilter]}”.` : "Nenhum lead cadastrado ainda."}
                         </td>
                       </tr>
                     )}
@@ -1186,7 +1608,8 @@ export const Admin: React.FC = () => {
                 </table>
               </div>
             </div>
-          )}
+            );
+          })()}
 
           {/* BLOG VIEW */}
           {currentView === "blog" && (
@@ -1267,7 +1690,7 @@ export const Admin: React.FC = () => {
                           onClick={async () => {
                             if (
                               !confirm(
-                                "Tem certeza que deseja excluir este artigo?"
+                                "Tem certeza que deseja excluir este artigo?",
                               )
                             )
                               return;
@@ -1279,12 +1702,12 @@ export const Admin: React.FC = () => {
                                 {
                                   method: "DELETE",
                                   headers: { Authorization: `Bearer ${token}` },
-                                }
+                                },
                               );
 
                               if (!res.ok) {
                                 throw new Error(
-                                  `HTTP error! status: ${res.status}`
+                                  `HTTP error! status: ${res.status}`,
                                 );
                               }
 
@@ -1294,7 +1717,7 @@ export const Admin: React.FC = () => {
                                 fetchDashboardData();
                               } else {
                                 throw new Error(
-                                  data.message || "Erro ao excluir"
+                                  data.message || "Erro ao excluir",
                                 );
                               }
                             } catch (error: any) {
@@ -1395,7 +1818,7 @@ export const Admin: React.FC = () => {
                                 ? prof.education
                                 : [],
                               specializations: Array.isArray(
-                                prof.specializations
+                                prof.specializations,
                               )
                                 ? prof.specializations
                                 : [],
@@ -1410,7 +1833,7 @@ export const Admin: React.FC = () => {
                           onClick={async () => {
                             if (
                               !window.confirm(
-                                `Deseja realmente excluir ${prof.name}?`
+                                `Deseja realmente excluir ${prof.name}?`,
                               )
                             )
                               return;
@@ -1422,12 +1845,12 @@ export const Admin: React.FC = () => {
                                 {
                                   method: "DELETE",
                                   headers: { Authorization: `Bearer ${token}` },
-                                }
+                                },
                               );
 
                               if (!res.ok) {
                                 throw new Error(
-                                  `HTTP ${res.status}: ${res.statusText}`
+                                  `HTTP ${res.status}: ${res.statusText}`,
                                 );
                               }
 
@@ -1437,19 +1860,20 @@ export const Admin: React.FC = () => {
                                 fetchDashboardData();
                               } else {
                                 alert(
-                                  `Erro: ${data.message || "Falha ao excluir"}`
+                                  `Erro: ${data.message || "Falha ao excluir"}`,
                                 );
                               }
                             } catch (error) {
                               console.error(
                                 "Error deleting professional:",
-                                error
+                                error,
                               );
                               alert(
-                                `Erro ao excluir profissional: ${error instanceof Error
-                                  ? error.message
-                                  : "Erro desconhecido"
-                                }`
+                                `Erro ao excluir profissional: ${
+                                  error instanceof Error
+                                    ? error.message
+                                    : "Erro desconhecido"
+                                }`,
                               );
                             }
                           }}
@@ -1463,717 +1887,1165 @@ export const Admin: React.FC = () => {
               </div>
             </div>
           )}
+
+          {/* PRE-ATENDIMENTOS VIEW */}
+          {currentView === "preAtendimentos" && (
+            <div>
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold text-neutral-800">
+                    Pré-Atendimentos Chat Jurídico
+                  </h2>
+                  <p className="text-neutral-500 text-sm">
+                    {preAtendimentos?.length || 0} pré-atendimentos registrados.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabela de Pré-Atendimentos */}
+              <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-neutral-50 border-b">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Protocolo
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Data
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Nome
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Área / Subárea
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase">
+                          Ações
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {preAtendimentos?.map((pa: any) => (
+                        <tr key={pa.id} className="hover:bg-neutral-50">
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-sm font-medium text-accent-600">
+                              {pa.protocolo}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {new Date(pa.created_at).toLocaleDateString("pt-BR")}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm font-medium text-neutral-800">
+                              {pa.nome}
+                            </div>
+                            <div className="text-xs text-neutral-500">
+                              {pa.email}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-neutral-600">
+                            {pa.area} / {pa.subarea}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              pa.status === "novo" ? "bg-yellow-100 text-yellow-800" :
+                              pa.status === "em_analise" ? "bg-blue-100 text-blue-800" :
+                              pa.status === "convertido" ? "bg-green-100 text-green-800" :
+                              "bg-gray-100 text-gray-800"
+                            }`}>
+                              {pa.status?.replace("_", " ")}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => {
+                                setSelectedPreAtendimento(pa);
+                                setShowPreAtendimentoModal(true);
+                                console.log("📋 Modal aberto para pré-atendimento:", pa.protocolo);
+                              }}
+                              className="text-xs bg-accent-600 text-white px-3 py-1 rounded hover:bg-accent-700 transition"
+                            >
+                              Ver Detalhes
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginação */}
+                {preAtendimentoTotalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2 p-4 border-t">
+                    <button
+                      onClick={() => setPreAtendimentoPage(p => Math.max(1, p - 1))}
+                      disabled={preAtendimentoPage === 1}
+                      className="px-3 py-1 rounded border disabled:opacity-50"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-sm text-neutral-600">
+                      Página {preAtendimentoPage} de {preAtendimentoTotalPages}
+                    </span>
+                    <button
+                      onClick={() => setPreAtendimentoPage(p => Math.min(preAtendimentoTotalPages, p + 1))}
+                      disabled={preAtendimentoPage === preAtendimentoTotalPages}
+                      className="px-3 py-1 rounded border disabled:opacity-50"
+                    >
+                      Próxima
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* POST FORM MODAL */}
-        {
-          showPostModal && (
+        {showPostModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowPostModal(false)}
+          >
             <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setShowPostModal(false)}
+              className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div
-                className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">
-                    {editingItem ? "Editar Artigo" : "Novo Artigo"}
-                  </h2>
-                  <form onSubmit={handlePostSubmit} className="space-y-4">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-6">
+                  {editingItem ? "Editar Artigo" : "Novo Artigo"}
+                </h2>
+                <form onSubmit={handlePostSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Título *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={postForm.title}
+                      onChange={(e) =>
+                        setPostForm({ ...postForm, title: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Categoria *
+                    </label>
+                    <select
+                      required
+                      value={postForm.category}
+                      onChange={(e) =>
+                        setPostForm({ ...postForm, category: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="TRABALHISTA">Trabalhista</option>
+                      <option value="TRIBUTÁRIO">Tributário</option>
+                      <option value="PREVIDENCIÁRIO">Previdenciário</option>
+                      <option value="AGRONEGÓCIO">Agronegócio</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Slug
+                    </label>
+                    <input
+                      type="text"
+                      value={postForm.slug}
+                      onChange={(e) =>
+                        setPostForm({ ...postForm, slug: e.target.value })
+                      }
+                      placeholder="auto-gerado do título"
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Imagem de Capa
+                    </label>
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                              const canvas = document.createElement("canvas");
+                              const maxWidth = 800;
+                              const maxHeight = 600;
+                              let width = img.width;
+                              let height = img.height;
+
+                              if (width > height) {
+                                if (width > maxWidth) {
+                                  height *= maxWidth / width;
+                                  width = maxWidth;
+                                }
+                              } else {
+                                if (height > maxHeight) {
+                                  width *= maxHeight / height;
+                                  height = maxHeight;
+                                }
+                              }
+
+                              canvas.width = width;
+                              canvas.height = height;
+                              const ctx = canvas.getContext("2d");
+                              ctx?.drawImage(img, 0, 0, width, height);
+                              const base64 = canvas.toDataURL(
+                                "image/jpeg",
+                                0.85,
+                              );
+                              setPostForm({ ...postForm, image: base64 });
+                            };
+                            img.src = event.target?.result as string;
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                      {postForm.image && (
+                        <img
+                          src={postForm.image}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded"
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Resumo
+                    </label>
+                    <textarea
+                      value={postForm.excerpt}
+                      onChange={(e) =>
+                        setPostForm({ ...postForm, excerpt: e.target.value })
+                      }
+                      rows={2}
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    ></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Conteúdo *
+                    </label>
+                    <ReactQuill
+                      theme="snow"
+                      value={postForm.content}
+                      onChange={(value) =>
+                        setPostForm({ ...postForm, content: value })
+                      }
+                      modules={{
+                        toolbar: [
+                          [{ header: [1, 2, 3, false] }],
+                          ["bold", "italic", "underline", "strike"],
+                          [{ list: "ordered" }, { list: "bullet" }],
+                          ["blockquote", "code-block"],
+                          [{ align: [] }],
+                          ["link"],
+                          ["clean"],
+                        ],
+                      }}
+                      className="bg-white"
+                      style={{ height: "300px", marginBottom: "50px" }}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                    >
+                      {loading ? "Salvando..." : "Salvar"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowPostModal(false)}
+                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showProfessionalModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowProfessionalModal(false)}
+          >
+            <div
+              className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-6">
+                  {editingItem ? "Editar Profissional" : "Novo Profissional"}
+                </h2>
+                <form onSubmit={handleProfessionalSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Título *
+                        Nome *
                       </label>
                       <input
                         type="text"
                         required
-                        value={postForm.title}
+                        value={professionalForm.name}
                         onChange={(e) =>
-                          setPostForm({ ...postForm, title: e.target.value })
+                          setProfessionalForm({
+                            ...professionalForm,
+                            name: e.target.value,
+                          })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Categoria *
-                      </label>
-                      <select
-                        required
-                        value={postForm.category}
-                        onChange={(e) =>
-                          setPostForm({ ...postForm, category: e.target.value })
-                        }
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      >
-                        <option value="">Selecione...</option>
-                        <option value="TRABALHISTA">Trabalhista</option>
-                        <option value="TRIBUTÁRIO">Tributário</option>
-                        <option value="AGRONEGÓCIO">Agronegócio</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Slug
+                        Cargo *
                       </label>
                       <input
                         type="text"
-                        value={postForm.slug}
+                        required
+                        value={professionalForm.role}
                         onChange={(e) =>
-                          setPostForm({ ...postForm, slug: e.target.value })
+                          setProfessionalForm({
+                            ...professionalForm,
+                            role: e.target.value,
+                          })
                         }
-                        placeholder="auto-gerado do título"
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        OAB
+                      </label>
+                      <input
+                        type="text"
+                        value={professionalForm.oab}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            oab: e.target.value,
+                          })
+                        }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Imagem de Capa
+                        Área
                       </label>
-                      <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={professionalForm.area}
+                        onChange={(e) =>
+                          setProfessionalForm({
+                            ...professionalForm,
+                            area: e.target.value,
+                          })
+                        }
+                        className="w-full border border-neutral-300 rounded px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Bio
+                    </label>
+                    <textarea
+                      value={professionalForm.bio}
+                      onChange={(e) =>
+                        setProfessionalForm({
+                          ...professionalForm,
+                          bio: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    ></textarea>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Foto do Profissional
+                    </label>
+
+                    {/* Preview da imagem */}
+                    {professionalForm.image && (
+                      <div className="mb-3 flex justify-center">
+                        <img
+                          src={professionalForm.image}
+                          alt="Preview"
+                          className="w-32 h-32 object-cover rounded border-2 border-neutral-300"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      {/* Botão para upload local */}
+                      <label className="flex-1 cursor-pointer">
+                        <div className="w-full bg-primary-600 text-white text-center px-4 py-2 rounded hover:bg-primary-700 transition text-sm font-medium">
+                          📤 Upload Local
+                        </div>
                         <input
                           type="file"
                           accept="image/*"
+                          className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
 
+                            // Criar preview e redimensionar
                             const reader = new FileReader();
                             reader.onload = (event) => {
                               const img = new Image();
                               img.onload = () => {
+                                // Redimensionar para 400x400
                                 const canvas = document.createElement("canvas");
-                                const maxWidth = 800;
-                                const maxHeight = 600;
-                                let width = img.width;
-                                let height = img.height;
-
-                                if (width > height) {
-                                  if (width > maxWidth) {
-                                    height *= maxWidth / width;
-                                    width = maxWidth;
-                                  }
-                                } else {
-                                  if (height > maxHeight) {
-                                    width *= maxHeight / height;
-                                    height = maxHeight;
-                                  }
-                                }
-
-                                canvas.width = width;
-                                canvas.height = height;
                                 const ctx = canvas.getContext("2d");
-                                ctx?.drawImage(img, 0, 0, width, height);
-                                const base64 = canvas.toDataURL(
-                                  "image/jpeg",
-                                  0.85
+
+                                const size = 400;
+                                canvas.width = size;
+                                canvas.height = size;
+
+                                // Calcular crop para manter proporção
+                                const scale = Math.max(
+                                  size / img.width,
+                                  size / img.height,
                                 );
-                                setPostForm({ ...postForm, image: base64 });
+                                const x = size / 2 - (img.width / 2) * scale;
+                                const y = size / 2 - (img.height / 2) * scale;
+
+                                ctx?.drawImage(
+                                  img,
+                                  x,
+                                  y,
+                                  img.width * scale,
+                                  img.height * scale,
+                                );
+
+                                // Converter para base64
+                                const resizedBase64 = canvas.toDataURL(
+                                  "image/jpeg",
+                                  0.85,
+                                );
+
+                                setProfessionalForm({
+                                  ...professionalForm,
+                                  image: resizedBase64,
+                                });
                               };
                               img.src = event.target?.result as string;
                             };
                             reader.readAsDataURL(file);
                           }}
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
                         />
-                        {postForm.image && (
-                          <img
-                            src={postForm.image}
-                            alt="Preview"
-                            className="w-full h-48 object-cover rounded"
-                          />
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Resumo
-                      </label>
-                      <textarea
-                        value={postForm.excerpt}
-                        onChange={(e) =>
-                          setPostForm({ ...postForm, excerpt: e.target.value })
-                        }
-                        rows={2}
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      ></textarea>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Conteúdo *
-                      </label>
-                      <ReactQuill
-                        theme="snow"
-                        value={postForm.content}
-                        onChange={(value) =>
-                          setPostForm({ ...postForm, content: value })
-                        }
-                        modules={{
-                          toolbar: [
-                            [{ header: [1, 2, 3, false] }],
-                            ["bold", "italic", "underline", "strike"],
-                            [{ list: "ordered" }, { list: "bullet" }],
-                            ["blockquote", "code-block"],
-                            [{ align: [] }],
-                            ["link"],
-                            ["clean"],
-                          ],
-                        }}
-                        className="bg-white"
-                        style={{ height: "300px", marginBottom: "50px" }}
-                      />
-                    </div>
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                      >
-                        {loading ? "Salvando..." : "Salvar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowPostModal(false)}
-                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        {
-          showProfessionalModal && (
-            <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setShowProfessionalModal(false)}
-            >
-              <div
-                className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">
-                    {editingItem ? "Editar Profissional" : "Novo Profissional"}
-                  </h2>
-                  <form onSubmit={handleProfessionalSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Nome *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={professionalForm.name}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              name: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Cargo *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          value={professionalForm.role}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              role: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          OAB
-                        </label>
-                        <input
-                          type="text"
-                          value={professionalForm.oab}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              oab: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Área
-                        </label>
-                        <input
-                          type="text"
-                          value={professionalForm.area}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              area: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Bio
-                      </label>
-                      <textarea
-                        value={professionalForm.bio}
-                        onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            bio: e.target.value,
-                          })
-                        }
-                        rows={3}
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      ></textarea>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Foto do Profissional
                       </label>
 
-                      {/* Preview da imagem */}
-                      {professionalForm.image && (
-                        <div className="mb-3 flex justify-center">
-                          <img
-                            src={professionalForm.image}
-                            alt="Preview"
-                            className="w-32 h-32 object-cover rounded border-2 border-neutral-300"
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex gap-2">
-                        {/* Botão para upload local */}
-                        <label className="flex-1 cursor-pointer">
-                          <div className="w-full bg-primary-600 text-white text-center px-4 py-2 rounded hover:bg-primary-700 transition text-sm font-medium">
-                            📤 Upload Local
-                          </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (!file) return;
-
-                              // Criar preview e redimensionar
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                const img = new Image();
-                                img.onload = () => {
-                                  // Redimensionar para 400x400
-                                  const canvas = document.createElement("canvas");
-                                  const ctx = canvas.getContext("2d");
-
-                                  const size = 400;
-                                  canvas.width = size;
-                                  canvas.height = size;
-
-                                  // Calcular crop para manter proporção
-                                  const scale = Math.max(
-                                    size / img.width,
-                                    size / img.height
-                                  );
-                                  const x = size / 2 - (img.width / 2) * scale;
-                                  const y = size / 2 - (img.height / 2) * scale;
-
-                                  ctx?.drawImage(
-                                    img,
-                                    x,
-                                    y,
-                                    img.width * scale,
-                                    img.height * scale
-                                  );
-
-                                  // Converter para base64
-                                  const resizedBase64 = canvas.toDataURL(
-                                    "image/jpeg",
-                                    0.85
-                                  );
-
-                                  setProfessionalForm({
-                                    ...professionalForm,
-                                    image: resizedBase64,
-                                  });
-                                };
-                                img.src = event.target?.result as string;
-                              };
-                              reader.readAsDataURL(file);
-                            }}
-                          />
-                        </label>
-
-                        {/* Botão para URL externa */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const url = prompt("Cole a URL da imagem:");
-                            if (url) {
-                              setProfessionalForm({
-                                ...professionalForm,
-                                image: url,
-                              });
-                            }
-                          }}
-                          className="flex-1 bg-neutral-200 text-neutral-700 px-4 py-2 rounded hover:bg-neutral-300 transition text-sm font-medium"
-                        >
-                          🔗 URL Externa
-                        </button>
-                      </div>
-
-                      {/* Input manual (opcional) */}
-                      <input
-                        type="text"
-                        value={professionalForm.image}
-                        onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            image: e.target.value,
-                          })
-                        }
-                        placeholder="Ou cole a URL/Base64 manualmente"
-                        className="w-full border border-neutral-300 rounded px-3 py-2 mt-2 text-xs text-neutral-500"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          value={professionalForm.email}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              email: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Telefone
-                        </label>
-                        <input
-                          type="tel"
-                          value={professionalForm.phone}
-                          onChange={(e) =>
-                            setProfessionalForm({
-                              ...professionalForm,
-                              phone: e.target.value,
-                            })
-                          }
-                          className="w-full border border-neutral-300 rounded px-3 py-2"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        LinkedIn
-                      </label>
-                      <input
-                        type="url"
-                        value={professionalForm.linkedin}
-                        onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            linkedin: e.target.value,
-                          })
-                        }
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
-                    </div>
-
-                    {/* Location */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Localização
-                      </label>
-                      <input
-                        type="text"
-                        value={professionalForm.location}
-                        onChange={(e) =>
-                          setProfessionalForm({
-                            ...professionalForm,
-                            location: e.target.value,
-                          })
-                        }
-                        placeholder="Ex: Belo Horizonte - MG"
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
-                    </div>
-
-                    {/* Education (Array) */}
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Formação Acadêmica
-                      </label>
-                      {professionalForm.education.map((edu, index) => (
-                        <div key={index} className="flex gap-2 mb-2">
-                          <input
-                            type="text"
-                            value={edu}
-                            onChange={(e) => {
-                              const newEducation = [
-                                ...professionalForm.education,
-                              ];
-                              newEducation[index] = e.target.value;
-                              setProfessionalForm({
-                                ...professionalForm,
-                                education: newEducation,
-                              });
-                            }}
-                            placeholder="Ex: Direito - UFMG"
-                            className="flex-1 border border-neutral-300 rounded px-3 py-2"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newEducation =
-                                professionalForm.education.filter(
-                                  (_, i) => i !== index
-                                );
-                              setProfessionalForm({
-                                ...professionalForm,
-                                education: newEducation,
-                              });
-                            }}
-                            className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
+                      {/* Botão para URL externa */}
                       <button
                         type="button"
                         onClick={() => {
-                          setProfessionalForm({
-                            ...professionalForm,
-                            education: [...professionalForm.education, ""],
-                          });
+                          const url = prompt("Cole a URL da imagem:");
+                          if (url) {
+                            setProfessionalForm({
+                              ...professionalForm,
+                              image: url,
+                            });
+                          }
                         }}
-                        className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                        className="flex-1 bg-neutral-200 text-neutral-700 px-4 py-2 rounded hover:bg-neutral-300 transition text-sm font-medium"
                       >
-                        + Adicionar Formação
+                        🔗 URL Externa
                       </button>
                     </div>
 
-                    {/* Specializations (Array) */}
+                    {/* Input manual (opcional) */}
+                    <input
+                      type="text"
+                      value={professionalForm.image}
+                      onChange={(e) =>
+                        setProfessionalForm({
+                          ...professionalForm,
+                          image: e.target.value,
+                        })
+                      }
+                      placeholder="Ou cole a URL/Base64 manualmente"
+                      className="w-full border border-neutral-300 rounded px-3 py-2 mt-2 text-xs text-neutral-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Especializações
-                      </label>
-                      {professionalForm.specializations.map((spec, index) => (
-                        <div key={index} className="flex gap-2 mb-2">
-                          <input
-                            type="text"
-                            value={spec}
-                            onChange={(e) => {
-                              const newSpecs = [
-                                ...professionalForm.specializations,
-                              ];
-                              newSpecs[index] = e.target.value;
-                              setProfessionalForm({
-                                ...professionalForm,
-                                specializations: newSpecs,
-                              });
-                            }}
-                            placeholder="Ex: Direito Trabalhista"
-                            className="flex-1 border border-neutral-300 rounded px-3 py-2"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newSpecs =
-                                professionalForm.specializations.filter(
-                                  (_, i) => i !== index
-                                );
-                              setProfessionalForm({
-                                ...professionalForm,
-                                specializations: newSpecs,
-                              });
-                            }}
-                            className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProfessionalForm({
-                            ...professionalForm,
-                            specializations: [
-                              ...professionalForm.specializations,
-                              "",
-                            ],
-                          });
-                        }}
-                        className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
-                      >
-                        + Adicionar Especialização
-                      </button>
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                      >
-                        {loading ? "Salvando..." : "Salvar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowProfessionalModal(false)}
-                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )
-        }
-
-        {
-          showUserModal && (
-            <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-              onClick={() => setShowUserModal(false)}
-            >
-              <div
-                className="bg-white rounded-lg max-w-md w-full"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-6">
-                    {editingItem ? "Editar Usuário" : "Novo Usuário"}
-                  </h2>
-                  <form onSubmit={handleUserSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Username *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={userForm.username}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, username: e.target.value })
-                        }
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Email *
+                        Email
                       </label>
                       <input
                         type="email"
-                        required
-                        value={userForm.email}
+                        value={professionalForm.email}
                         onChange={(e) =>
-                          setUserForm({ ...userForm, email: e.target.value })
+                          setProfessionalForm({
+                            ...professionalForm,
+                            email: e.target.value,
+                          })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-1">
-                        Password{" "}
-                        {editingItem ? "(deixe vazio para não alterar)" : "*"}
+                        Telefone
                       </label>
                       <input
-                        type="password"
-                        required={!editingItem}
-                        value={userForm.password}
+                        type="tel"
+                        value={professionalForm.phone}
                         onChange={(e) =>
-                          setUserForm({ ...userForm, password: e.target.value })
+                          setProfessionalForm({
+                            ...professionalForm,
+                            phone: e.target.value,
+                          })
                         }
                         className="w-full border border-neutral-300 rounded px-3 py-2"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Role *
-                      </label>
-                      <select
-                        required
-                        value={userForm.role}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, role: e.target.value })
-                        }
-                        className="w-full border border-neutral-300 rounded px-3 py-2"
-                      >
-                        <option value="editor">Editor</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="approved"
-                        checked={userForm.approved}
-                        onChange={(e) =>
-                          setUserForm({ ...userForm, approved: e.target.checked })
-                        }
-                        className="w-4 h-4"
-                      />
-                      <label htmlFor="approved" className="text-sm font-medium">
-                        Usuário Aprovado
-                      </label>
-                    </div>
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
-                      >
-                        {loading ? "Salvando..." : "Salvar"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowUserModal(false)}
-                        className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      LinkedIn
+                    </label>
+                    <input
+                      type="url"
+                      value={professionalForm.linkedin}
+                      onChange={(e) =>
+                        setProfessionalForm({
+                          ...professionalForm,
+                          linkedin: e.target.value,
+                        })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Localização
+                    </label>
+                    <input
+                      type="text"
+                      value={professionalForm.location}
+                      onChange={(e) =>
+                        setProfessionalForm({
+                          ...professionalForm,
+                          location: e.target.value,
+                        })
+                      }
+                      placeholder="Ex: Belo Horizonte - MG"
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+
+                  {/* Education (Array) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Formação Acadêmica
+                    </label>
+                    {professionalForm.education.map((edu, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={edu}
+                          onChange={(e) => {
+                            const newEducation = [
+                              ...professionalForm.education,
+                            ];
+                            newEducation[index] = e.target.value;
+                            setProfessionalForm({
+                              ...professionalForm,
+                              education: newEducation,
+                            });
+                          }}
+                          placeholder="Ex: Direito - UFMG"
+                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newEducation =
+                              professionalForm.education.filter(
+                                (_, i) => i !== index,
+                              );
+                            setProfessionalForm({
+                              ...professionalForm,
+                              education: newEducation,
+                            });
+                          }}
+                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfessionalForm({
+                          ...professionalForm,
+                          education: [...professionalForm.education, ""],
+                        });
+                      }}
+                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                    >
+                      + Adicionar Formação
+                    </button>
+                  </div>
+
+                  {/* Specializations (Array) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Especializações
+                    </label>
+                    {professionalForm.specializations.map((spec, index) => (
+                      <div key={index} className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={spec}
+                          onChange={(e) => {
+                            const newSpecs = [
+                              ...professionalForm.specializations,
+                            ];
+                            newSpecs[index] = e.target.value;
+                            setProfessionalForm({
+                              ...professionalForm,
+                              specializations: newSpecs,
+                            });
+                          }}
+                          placeholder="Ex: Direito Trabalhista"
+                          className="flex-1 border border-neutral-300 rounded px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newSpecs =
+                              professionalForm.specializations.filter(
+                                (_, i) => i !== index,
+                              );
+                            setProfessionalForm({
+                              ...professionalForm,
+                              specializations: newSpecs,
+                            });
+                          }}
+                          className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfessionalForm({
+                          ...professionalForm,
+                          specializations: [
+                            ...professionalForm.specializations,
+                            "",
+                          ],
+                        });
+                      }}
+                      className="w-full border-2 border-dashed border-neutral-300 rounded px-3 py-2 text-neutral-600 hover:border-primary-500 hover:text-primary-600 transition"
+                    >
+                      + Adicionar Especialização
+                    </button>
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                    >
+                      {loading ? "Salvando..." : "Salvar"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowProfessionalModal(false)}
+                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
-          )
-        }
-      </main >
-    </div >
+          </div>
+        )}
+
+        {showUserModal && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowUserModal(false)}
+          >
+            <div
+              className="bg-white rounded-lg max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-6">
+                  {editingItem ? "Editar Usuário" : "Novo Usuário"}
+                </h2>
+                <form onSubmit={handleUserSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Username *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={userForm.username}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, username: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={userForm.email}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, email: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Password{" "}
+                      {editingItem ? "(deixe vazio para não alterar)" : "*"}
+                    </label>
+                    <input
+                      type="password"
+                      required={!editingItem}
+                      value={userForm.password}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, password: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Role *
+                    </label>
+                    <select
+                      required
+                      value={userForm.role}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, role: e.target.value })
+                      }
+                      className="w-full border border-neutral-300 rounded px-3 py-2"
+                    >
+                      <option value="editor">Editor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="approved"
+                      checked={userForm.approved}
+                      onChange={(e) =>
+                        setUserForm({ ...userForm, approved: e.target.checked })
+                      }
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="approved" className="text-sm font-medium">
+                      Usuário Aprovado
+                    </label>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 bg-accent-600 text-white py-2 rounded hover:bg-accent-700 disabled:opacity-50"
+                    >
+                      {loading ? "Salvando..." : "Salvar"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowUserModal(false)}
+                      className="px-6 border border-neutral-300 rounded hover:bg-neutral-50"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sprint 3.4.1: Modal de Detalhes do Pré-Atendimento */}
+        {showPreAtendimentoModal && selectedPreAtendimento && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-accent-600 to-accent-700 px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h3 className="text-white font-bold text-lg">
+                    Pré-Atendimento {selectedPreAtendimento.protocolo}
+                  </h3>
+                  <p className="text-white/80 text-sm">
+                    {new Date(selectedPreAtendimento.created_at).toLocaleString("pt-BR")}
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    console.log("❌ Modal fechado");
+                    setShowPreAtendimentoModal(false);
+                    setPreAtendimentoDocumentos([]);
+                    setWebhookLogs(null);
+                    setHermesWebhookLogs(null);
+                    setHermesActionLoading(null);
+                  }}
+                  className="text-white/80 hover:text-white transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6 overflow-y-auto flex-1">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Coluna 1: Informações do Cliente */}
+                  <div className="space-y-6">
+                    {/* Dados Pessoais */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Users size={18} className="text-accent-600" />
+                        Dados do Cliente
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-neutral-500">Nome:</span>
+                          <span className="ml-2 font-medium">{selectedPreAtendimento.nome}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Email:</span>
+                          <span className="ml-2">{selectedPreAtendimento.email}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Telefone:</span>
+                          <span className="ml-2">{selectedPreAtendimento.telefone}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Cidade/UF:</span>
+                          <span className="ml-2">{selectedPreAtendimento.cidade}, {selectedPreAtendimento.estado}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Área e Subárea */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Shield size={18} className="text-accent-600" />
+                        Classificação
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div>
+                          <span className="text-neutral-500">Área:</span>
+                          <span className="ml-2 font-medium">{selectedPreAtendimento.area}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Subárea:</span>
+                          <span className="ml-2">{selectedPreAtendimento.subarea}</span>
+                        </div>
+                        <div>
+                          <span className="text-neutral-500">Status:</span>
+                          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                            selectedPreAtendimento.status === "novo" ? "bg-yellow-100 text-yellow-800" :
+                            selectedPreAtendimento.status === "em_analise" ? "bg-blue-100 text-blue-800" :
+                            selectedPreAtendimento.status === "convertido" ? "bg-green-100 text-green-800" :
+                            "bg-gray-100 text-gray-800"
+                          }`}>
+                            {selectedPreAtendimento.status?.replace("_", " ")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Descrição do Caso */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <FileText size={18} className="text-accent-600" />
+                        Descrição do Caso
+                      </h4>
+                      <div className="text-sm text-neutral-700 max-h-40 overflow-y-auto whitespace-pre-wrap">
+                        {selectedPreAtendimento.descricao_caso}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Coluna 2: Documentos e Hermes */}
+                  <div className="space-y-6">
+                    {/* Documentos Anexados */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <Paperclip size={18} className="text-accent-600" />
+                        📎 Documentos Anexados
+                        {preAtendimentoDocumentos.length > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-accent-100 text-accent-700 rounded-full text-xs">
+                            {preAtendimentoDocumentos.length}
+                          </span>
+                        )}
+                      </h4>
+
+                      {/* Loading */}
+                      {loadingDocumentos && (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2 className="w-6 h-6 animate-spin text-accent-600" />
+                          <span className="ml-2 text-sm text-neutral-500">Carregando documentos...</span>
+                        </div>
+                      )}
+
+                      {/* Empty State */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length === 0 && (
+                        <div className="text-center py-8 text-neutral-500">
+                          <Paperclip className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p className="text-sm">Nenhum documento anexado.</p>
+                        </div>
+                      )}
+
+                      {/* Lista de Documentos */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length > 0 && (
+                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                          {preAtendimentoDocumentos.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className="flex items-center justify-between p-3 bg-white rounded-lg border hover:border-accent-300 transition group"
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                {getFileIcon(doc.extension)}
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-neutral-800 truncate">
+                                    {doc.original_name}
+                                  </p>
+                                  <p className="text-xs text-neutral-500">
+                                    {doc.extension} • {formatFileSize(doc.size_bytes)} • {new Date(doc.uploaded_at).toLocaleDateString("pt-BR")}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                                {/* Visualizar */}
+                                <button
+                                  onClick={() => {
+                                    console.log("👁 Visualizando documento:", doc.id);
+                                    downloadAdminDocument(doc.id, doc.original_name, "view");
+                                  }}
+                                  className="p-1.5 text-neutral-500 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                                  title="Visualizar"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                {/* Download */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    console.log("⬇ Download documento:", doc.id);
+                                    downloadAdminDocument(doc.id, doc.original_name);
+                                  }}
+                                  className="p-1.5 text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition"
+                                  title="Download"
+                                >
+                                  <Download size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Metadados */}
+                      {!loadingDocumentos && preAtendimentoDocumentos.length > 0 && (
+                        <div className="mt-3 pt-3 border-t text-xs text-neutral-500">
+                          <p>Total: {preAtendimentoDocumentos.length} documento(s)</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sprint 3.5: Hermes Analysis Engine */}
+                    <AIAnalysisPanel preAtendimentoId={selectedPreAtendimento.id} />
+
+                    {/* Sprint 3.10: Ações e Status Hermes Webhook */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <span className="text-base">🤖</span>
+                        Hermes — Ações
+                      </h4>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <button
+                          onClick={handleHermesReprocess}
+                          disabled={hermesActionLoading !== null}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50 transition"
+                        >
+                          {hermesActionLoading === "reprocess" ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <span>🔄</span>
+                          )}
+                          Reprocessar Hermes
+                        </button>
+                        <button
+                          onClick={handleHermesReenviar}
+                          disabled={hermesActionLoading !== null}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50 transition"
+                        >
+                          {hermesActionLoading === "reenviar" ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <span>📤</span>
+                          )}
+                          Reenviar Evento Hermes
+                        </button>
+                      </div>
+                      {loadingHermesWebhookLogs && (
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Carregando status...
+                        </div>
+                      )}
+                      {!loadingHermesWebhookLogs && hermesWebhookLogs && (() => {
+                        const hs = hermesWebhookLogs.analysis?.hermes_webhook_status ?? "pendente";
+                        const sentAt = hermesWebhookLogs.analysis?.hermes_webhook_sent_at;
+                        const lastLog = hermesWebhookLogs.logs[0];
+                        const badge =
+                          hs === "enviado" ? "🟢 Enviado" :
+                          hs === "falhou"  ? "🔴 Falhou"  :
+                                            "🟡 Pendente";
+                        const badgeClass =
+                          hs === "enviado" ? "bg-green-100 text-green-800" :
+                          hs === "falhou"  ? "bg-red-100 text-red-800"    :
+                                            "bg-yellow-100 text-yellow-800";
+                        return (
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>{badge}</span>
+                              <span className="text-neutral-400 text-xs">{hermesWebhookLogs.logs.length} log(s)</span>
+                            </div>
+                            {sentAt && (
+                              <div className="text-xs text-neutral-500">Enviado em: {new Date(sentAt).toLocaleString("pt-BR")}</div>
+                            )}
+                            {lastLog && (
+                              <div className="text-xs text-neutral-500">
+                                Última tentativa: {new Date(lastLog.created_at).toLocaleString("pt-BR")}
+                                {lastLog.status_code && ` — HTTP ${lastLog.status_code}`}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Sprint 3.9: Webhook Status */}
+                    <div className="bg-neutral-50 rounded-lg p-4">
+                      <h4 className="font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                        <span className="text-base">🔗</span>
+                        Webhook Status
+                      </h4>
+                      {loadingWebhookLogs && (
+                        <div className="flex items-center gap-2 text-sm text-neutral-500">
+                          <Loader2 className="w-4 h-4 animate-spin" /> Carregando...
+                        </div>
+                      )}
+                      {!loadingWebhookLogs && webhookLogs && (() => {
+                        const ws = webhookLogs.pre_atendimento?.webhook_status ?? "pendente";
+                        const sentAt = webhookLogs.pre_atendimento?.webhook_sent_at;
+                        const attempts = webhookLogs.pre_atendimento?.webhook_attempts ?? 0;
+                        const lastLog = webhookLogs.logs[0];
+                        const badge =
+                          ws === "enviado" ? "🟢 Enviado" :
+                          ws === "falhou"  ? "🔴 Falhou"  :
+                                            "🟡 Pendente";
+                        const badgeClass =
+                          ws === "enviado" ? "bg-green-100 text-green-800" :
+                          ws === "falhou"  ? "bg-red-100 text-red-800"    :
+                                            "bg-yellow-100 text-yellow-800";
+                        return (
+                          <div className="space-y-2 text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${badgeClass}`}>
+                                {badge}
+                              </span>
+                              <span className="text-neutral-500 text-xs">{attempts} tentativa(s)</span>
+                            </div>
+                            {sentAt && (
+                              <div className="text-xs text-neutral-500">
+                                Enviado em: {new Date(sentAt).toLocaleString("pt-BR")}
+                              </div>
+                            )}
+                            {lastLog && (
+                              <div className="text-xs text-neutral-500">
+                                Última tentativa: {new Date(lastLog.created_at).toLocaleString("pt-BR")}
+                                {lastLog.status_code && ` — HTTP ${lastLog.status_code}`}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      {!loadingWebhookLogs && !webhookLogs && (
+                        <p className="text-xs text-neutral-400">Nenhum dado de webhook disponível.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 py-4 bg-neutral-50 border-t flex justify-between items-center">
+                <div className="text-xs text-neutral-500">
+                  ID: {selectedPreAtendimento.id}
+                </div>
+                <button
+                  onClick={() => {
+                    console.log("❌ Modal fechado");
+                    setShowPreAtendimentoModal(false);
+                    setPreAtendimentoDocumentos([]);
+                    setWebhookLogs(null);
+                    setHermesWebhookLogs(null);
+                    setHermesActionLoading(null);
+                  }}
+                  className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded hover:bg-neutral-300 transition"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
   );
 };

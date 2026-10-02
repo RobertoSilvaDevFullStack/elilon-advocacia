@@ -1,0 +1,38 @@
+# VCS and Agent metadata
+.git
+.github
+.agent
+.claude
+.vscode
+.idea
+
+# Dependencies and build outputs
+node_modules
+dist
+dist-ssr
+coverage
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Local logs and temporary files
+*.log
+logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Backend directory (frontend context only needs root/src/public)
+backend
+
+# Sensitive and credential artifacts
+admin-credentials.txt
+*admin-credentials*

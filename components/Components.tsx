@@ -1,76 +1,16 @@
 import React from "react";
-import { ArrowRight } from "lucide-react";
+import OptimizedImage from "./OptimizedImage";
 import { Link } from "react-router-dom";
-import { AREAS } from "../constants";
+import { AREAS } from "../constants/areas";
+import { getApiBaseUrl } from "../utils/api";
+import { trackLead } from "../utils/tracking";
+import { Button } from "./ui/Button";
+import { SectionTitle } from "./ui/SectionTitle";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://api.elilonlopesadvogados.com.br/api";
+export { Button };
+export { SectionTitle };
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "outline" | "text";
-}
-
-export const Button: React.FC<ButtonProps> = ({
-  className = "",
-  variant = "primary",
-  children,
-  ...props
-}) => {
-  const baseStyle =
-    "inline-flex items-center justify-center px-8 py-3 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group min-h-[44px]";
-
-  const variants = {
-    primary:
-      "bg-gradient-to-r from-accent-600 to-accent-500 text-white hover:shadow-lg hover:shadow-accent-500/50 hover:scale-105 transform",
-    outline:
-      "border-2 border-accent-500 text-accent-500 hover:bg-accent-500 hover:text-white hover:shadow-lg",
-    text: "text-neutral-900 hover:text-accent-600 p-0",
-  };
-
-  return (
-    <button
-      className={`${baseStyle} ${variants[variant]} ${className}`}
-      {...props}
-    >
-      {children}
-      {variant !== "text" && (
-        <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-      )}
-    </button>
-  );
-};
-
-export const SectionTitle: React.FC<{
-  title: string;
-  subtitle?: string;
-  centered?: boolean;
-  light?: boolean;
-}> = ({ title, subtitle, centered, light }) => (
-  <div className={`mb-12 ${centered ? "text-center" : ""}`}>
-    {subtitle && (
-      <span
-        className={`block text-xs font-bold uppercase tracking-[0.2em] mb-3 ${
-          light ? "text-accent-400" : "text-accent-600"
-        }`}
-      >
-        {subtitle}
-      </span>
-    )}
-    <h2
-      className={`text-3xl md:text-4xl font-headline font-medium ${
-        light ? "text-white" : "text-neutral-900"
-      }`}
-    >
-      {title}
-    </h2>
-    <div
-      className={`h-1 w-20 bg-gradient-to-r from-accent-500 to-navy-500 mt-4 ${
-        centered ? "mx-auto" : ""
-      }`}
-    />
-  </div>
-);
-
+const API_URL = getApiBaseUrl();
 export const ContactForm: React.FC<{ source?: string }> = ({
   source = "General",
 }) => {
@@ -84,6 +24,7 @@ export const ContactForm: React.FC<{ source?: string }> = ({
     setError("");
 
     const formData = new FormData(e.currentTarget);
+    const params = new URLSearchParams(window.location.search);
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
@@ -92,6 +33,9 @@ export const ContactForm: React.FC<{ source?: string }> = ({
       interest: formData.get("area"),
       message: formData.get("message"),
       source,
+      utm_source: params.get("utm_source") || "",
+      utm_medium: params.get("utm_medium") || "",
+      utm_campaign: params.get("utm_campaign") || "",
     };
 
     try {
@@ -107,6 +51,8 @@ export const ContactForm: React.FC<{ source?: string }> = ({
         throw new Error("Erro ao enviar mensagem");
       }
 
+      // Sprint 3.8: dispara Lead apenas após persistência confirmada
+      trackLead(source);
       setSubmitted(true);
     } catch {
       setError("Erro ao enviar mensagem. Por favor, tente novamente.");
@@ -242,11 +188,15 @@ export const Hero: React.FC<{
       className={`relative ${heightClass} flex items-center justify-center overflow-hidden bg-neutral-900`}
     >
       <div className="absolute inset-0 z-0 opacity-50">
-        <img
+        <OptimizedImage
           src={image}
-          alt={title}
+          alt=""
+          role="presentation"
           className="w-full h-full object-cover"
           style={{ objectPosition: imagePosition }}
+          priority
+          width={1920}
+          height={1080}
         />
       </div>
       <div className="container relative z-10 px-4 text-center text-white pt-20 md:pt-0">

@@ -41,6 +41,9 @@ const ProfessionalDetail = React.lazy(() =>
 const Areas = React.lazy(() =>
   import("./pages/Areas").then((module) => ({ default: module.Areas })),
 );
+const AreaDetail = React.lazy(() =>
+  import("./pages/AreaDetail").then((module) => ({ default: module.AreaDetail })),
+);
 const Blog = React.lazy(() =>
   import("./pages/Blog").then((module) => ({ default: module.Blog })),
 );
@@ -69,9 +72,24 @@ const TermsOfUse = React.lazy(() =>
 // Landing Pages
 const BPCLandingPage = React.lazy(() => import("./pages/BPCLandingPage"));
 const IRLandingPage = React.lazy(() => import("./pages/IRLandingPage"));
+const DiagnosticoTributario = React.lazy(() =>
+  import("./pages/DiagnosticoTributario").then((m) => ({ default: m.DiagnosticoTributario })),
+);
+const DiagnosticoPagamento = React.lazy(() =>
+  import("./pages/DiagnosticoPagamento").then((m) => ({ default: m.DiagnosticoPagamento })),
+);
+const DiagnosticoSucesso = React.lazy(() =>
+  import("./pages/DiagnosticoSucesso").then((m) => ({ default: m.DiagnosticoSucesso })),
+);
 
-// Components
-import MetaPixel from "./components/MetaPixel";
+// Components — carregados sob demanda (não bloqueiam LCP)
+const MetaPixel = React.lazy(() => import("./components/MetaPixel"));
+import { isChatEnabled } from "./src/config/chat";
+
+const ENABLE_CHAT = isChatEnabled();
+const ChatWidget = ENABLE_CHAT
+  ? React.lazy(() => import("./src/modules/chat").then((m) => ({ default: m.ChatWidget })))
+  : null;
 
 // Default exports
 const ResetPassword = React.lazy(() => import("./pages/ResetPassword"));
@@ -94,6 +112,22 @@ const ScrollToTop = () => {
   return null;
 };
 
+/** Widgets públicos (chat, popup) — ocultos no painel admin */
+const PublicWidgets: React.FC = () => {
+  const { pathname } = useLocation();
+  if (pathname.startsWith("/admin")) return null;
+
+  return (
+    <>
+      {ENABLE_CHAT && ChatWidget && (
+        <Suspense fallback={null}>
+          <ChatWidget />
+        </Suspense>
+      )}
+    </>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <HelmetProvider>
@@ -106,6 +140,9 @@ const App: React.FC = () => {
             {/* Landing Pages */}
             <Route path="/bpc" element={<BPCLandingPage />} />
             <Route path="/isencao-ir" element={<IRLandingPage />} />
+            <Route path="/diagnostico-reforma-tributaria" element={<DiagnosticoTributario />} />
+            <Route path="/diagnostico/pagamento/:id" element={<DiagnosticoPagamento />} />
+            <Route path="/diagnostico/sucesso" element={<DiagnosticoSucesso />} />
 
             {/* About Routes */}
             <Route path="/sobre" element={<About />} />
@@ -116,6 +153,7 @@ const App: React.FC = () => {
             <Route path="/profissionais" element={<Professionals />} />
             <Route path="/profissionais/:id" element={<ProfessionalDetail />} />
             <Route path="/areas" element={<Areas />} />
+            <Route path="/areas/:slug" element={<AreaDetail />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPostDetail />} />
             <Route path="/contato" element={<Contact />} />
@@ -127,7 +165,10 @@ const App: React.FC = () => {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <MetaPixel />
+          <Suspense fallback={null}>
+            <MetaPixel />
+          </Suspense>
+          <PublicWidgets />
         </Suspense>
       </Router>
     </HelmetProvider>

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "TC001",
+    "title": "postapiauthregistercreatesnewuser",
+    "description": "Verify that POST /api/auth/register with valid admin authentication and unique user details successfully creates a new user and returns a 201 status.",
+    "file": "TC001_postapiauthregistercreatesnewuser.py"
+  },
+  {
+    "id": "TC002",
+    "title": "get_api_posts_returns_list",
+    "description": "Verify that GET /api/posts returns HTTP 200 and a JSON array (public endpoint, no auth required).",
+    "file": "TC002_get_api_posts_returns_list.py"
+  },
+  {
+    "id": "TC003",
+    "title": "crud_api_posts_admin",
+    "description": "Verify that an authenticated admin can create, update, and delete a blog post via POST/PUT/DELETE /api/posts.",
+    "file": "TC003_crud_api_posts_admin.py"
+  },
+  {
+    "id": "TC004",
+    "title": "crud_api_professionals",
+    "description": "Verify GET /api/professionals is public, and admin can create, update, and delete professionals via CRUD endpoints.",
+    "file": "TC004_crud_api_professionals.py"
+  },
+  {
+    "id": "TC005",
+    "title": "api_leads_flow",
+    "description": "Verify public lead creation (POST /api/leads), admin listing (GET /api/leads), and status update (PUT /api/leads/:id/status).",
+    "file": "TC005_api_leads_flow.py"
+  },
+  {
+    "id": "TC006",
+    "title": "dashboard_settings_track",
+    "description": "Verify GET /api/dashboard returns stats, POST/GET /api/settings saves and retrieves webhook URL, and POST /api/track records a visit.",
+    "file": "TC006_dashboard_settings_track.py"
+  },
+  {
+    "id": "TC007",
+    "title": "user_management_crud",
+    "description": "Verify admin can create, list, update, approve, reject, and delete users via user management endpoints.",
+    "file": "TC007_user_management_crud.py"
+  },
+  {
+    "id": "TC008",
+    "title": "security_unauthorized_access",
+    "description": "Verify that all protected routes return 401/403 without a valid token, and login rejects wrong credentials.",
+    "file": "TC008_security_unauthorized_access.py"
+  }
+]

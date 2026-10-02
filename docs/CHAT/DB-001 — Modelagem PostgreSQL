@@ -1,0 +1,110 @@
+# DB-001 — Modelagem PostgreSQL
+
+## Tabela clientes
+
+CREATE TABLE clientes (
+id UUID PRIMARY KEY,
+nome VARCHAR(255),
+telefone VARCHAR(50),
+email VARCHAR(255),
+cidade VARCHAR(100),
+estado VARCHAR(100),
+created_at TIMESTAMP,
+updated_at TIMESTAMP
+);
+
+---
+
+## Tabela atendimentos
+
+CREATE TABLE atendimentos (
+id UUID PRIMARY KEY,
+protocolo VARCHAR(50),
+cliente_id UUID,
+area VARCHAR(100),
+subarea VARCHAR(100),
+resumo TEXT,
+status VARCHAR(50),
+created_at TIMESTAMP,
+updated_at TIMESTAMP
+);
+
+---
+
+## Tabela sessoes
+
+CREATE TABLE sessoes (
+id UUID PRIMARY KEY,
+session_id VARCHAR(255),
+estado_atual VARCHAR(100),
+atendimento_id UUID,
+ultima_interacao TIMESTAMP,
+created_at TIMESTAMP
+);
+
+---
+
+## Tabela mensagens
+
+CREATE TABLE mensagens (
+id UUID PRIMARY KEY,
+atendimento_id UUID,
+remetente VARCHAR(50),
+mensagem TEXT,
+created_at TIMESTAMP
+);
+
+---
+
+## Tabela documentos
+
+CREATE TABLE documentos (
+id UUID PRIMARY KEY,
+atendimento_id UUID,
+nome VARCHAR(255),
+tipo VARCHAR(50),
+url TEXT,
+created_at TIMESTAMP
+);
+
+---
+
+# Relacionamentos
+
+clientes
+│
+└── atendimentos
+│
+└── mensagens
+│
+└── documentos
+
+sessoes
+│
+└── atendimentos
+
+---
+
+# Índices
+
+CREATE INDEX idx_cliente_email ON clientes(email);
+
+CREATE INDEX idx_cliente_telefone ON clientes(telefone);
+
+CREATE INDEX idx_protocolo ON atendimentos(protocolo);
+
+CREATE INDEX idx_session ON sessoes(session_id);
+
+---
+
+# Status do Atendimento
+
+ABERTO
+
+EM_ANALISE
+
+AGUARDANDO_CONTATO
+
+FINALIZADO
+
+CANCELADO

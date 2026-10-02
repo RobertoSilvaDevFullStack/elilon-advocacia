@@ -1,0 +1,574 @@
+[
+  {
+    "id": "TC001",
+    "title": "Home page loads primary firm overview content",
+    "description": "Verifies the home page renders its main overview and service highlights content for visitors.",
+    "category": "Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the firm overview content is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify service highlights are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Home page navigation to Practice Areas works",
+    "description": "Verifies a visitor can use site navigation from the home page to reach the Practice Areas page.",
+    "category": "Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to view practice areas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the practice areas content is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Home page navigation to Blog works",
+    "description": "Verifies a visitor can use site navigation from the home page to reach the blog listing.",
+    "category": "Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to view the blog"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of articles is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Home page navigation to Contact works",
+    "description": "Verifies a visitor can use site navigation from the home page to reach the contact page.",
+    "category": "Home Page",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to contact the firm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Home page displays fallback when primary content is missing",
+    "description": "Verifies the home page shows an error or fallback message if the main content is unavailable.",
+    "category": "Home Page",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the page to finish loading"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either the primary firm overview content is displayed or an error/fallback message is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Practice Areas page loads list of areas and descriptions",
+    "description": "Verifies the Practice Areas page renders practice areas content for prospective clients.",
+    "category": "Practice Areas",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /areas"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of practice areas is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify practice area descriptions are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Practice Areas page navigation to Contact works",
+    "description": "Verifies a visitor can proceed from Practice Areas to the contact page using navigation.",
+    "category": "Practice Areas",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /areas"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to contact the firm"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Practice Areas page navigation to Blog works",
+    "description": "Verifies a visitor can proceed from Practice Areas to browse related blog content using navigation.",
+    "category": "Practice Areas",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /areas"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation link to view the blog"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of articles is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Practice Areas shows message when content is unavailable",
+    "description": "Verifies the Practice Areas page indicates content is unavailable when the practice area content is missing.",
+    "category": "Practice Areas",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /areas"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the page to finish loading"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either the practice areas content is displayed or a content-unavailable message is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Blog listing loads and displays article summaries",
+    "description": "Verifies the blog listing page renders a list of articles with summary information.",
+    "category": "Blog Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /blog"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of articles is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify article summary information is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Open an article from the blog list and read full content",
+    "description": "Verifies a visitor can open an article from the blog list and see the full article content.",
+    "category": "Blog Browsing",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /blog"
+      },
+      {
+        "type": "action",
+        "description": "Click an article in the list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full article content is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Return from an opened article to continue browsing",
+    "description": "Verifies a visitor can navigate from an opened article back to the blog listing using in-app navigation.",
+    "category": "Blog Browsing",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /blog"
+      },
+      {
+        "type": "action",
+        "description": "Click an article in the list"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation control to return to the blog list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of articles is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Blog listing shows error or retry UI when articles fail to load",
+    "description": "Verifies the blog listing presents an error state or retry affordance if the article list cannot be loaded.",
+    "category": "Blog Browsing",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /blog"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the page to finish loading"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify either a list of articles is displayed or an error/retry message is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Submit contact form successfully",
+    "description": "Verifies a visitor can submit the contact form and sees a submission acknowledgement.",
+    "category": "Contact & Lead Capture",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid name into the name field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid email into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid phone number into the phone field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a short inquiry into the message field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the contact form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a submission confirmation and acknowledgement is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Contact form required-field validation",
+    "description": "Verifies submitting the contact form with missing required fields shows validation errors and does not submit.",
+    "category": "Contact & Lead Capture",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "action",
+        "description": "Submit the contact form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors are visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is still displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Contact form invalid email validation",
+    "description": "Verifies the contact form prevents submission when the email format is invalid.",
+    "category": "Contact & Lead Capture",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid name into the name field"
+      },
+      {
+        "type": "action",
+        "description": "Fill invalid-email into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a short inquiry into the message field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the contact form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an email validation error is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Contact form message length validation (empty message)",
+    "description": "Verifies the contact form prevents submission when the message is empty.",
+    "category": "Contact & Lead Capture",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid name into the name field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid email into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the contact form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a message validation error is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Contact page loads primary content",
+    "description": "Verifies the contact page loads and displays its main contact information and form.",
+    "category": "Contact & Lead Capture",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify contact information is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Contact form clears or remains in a post-submit state after successful submission",
+    "description": "Verifies the UI transitions to a clear post-submit state after submitting the contact form.",
+    "category": "Contact & Lead Capture",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /contato"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid name into the name field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid email into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a short inquiry into the message field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the contact form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a submission confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is no longer editable or is reset for a new submission"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Public navigation across core pages",
+    "description": "Verifies users can navigate from home to areas, blog, and contact via the site navigation.",
+    "category": "Navigation View",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the practice areas page"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the blog page"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the contact page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact page primary content is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Home page loads and navbar is usable",
+    "description": "Verifies the home page loads and the primary navigation is present for switching pages.",
+    "category": "Navigation View",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify home page primary content is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the site navigation is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Navigate to practice areas page via navbar",
+    "description": "Verifies the navbar can take the user to the practice areas page and content is shown.",
+    "category": "Navigation View",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the practice areas page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify practice areas content is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Navigate to blog page via navbar",
+    "description": "Verifies the navbar can take the user to the blog page and content is shown.",
+    "category": "Navigation View",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the blog page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of articles is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Navigate to contact page via navbar",
+    "description": "Verifies the navbar can take the user to the contact page and the form is shown.",
+    "category": "Navigation View",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click links on Navbar to go to the contact page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the contact form is displayed"
+      }
+    ]
+  }
+]

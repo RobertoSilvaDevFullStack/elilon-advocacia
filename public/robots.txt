@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
 
+# Área administrativa e fluxos transacionais
+Disallow: /admin
+Disallow: /admin/
+Disallow: /diagnostico/pagamento/
+Disallow: /diagnostico/sucesso
+
+# Sitemap
 Sitemap: https://elilonlopesadvogados.com.br/sitemap.xml
+
+# LLMs — documentação para agentes de IA (https://llmstxt.org/)
+LLMs: https://elilonlopesadvogados.com.br/llms.txt
+LLMs-full: https://elilonlopesadvogados.com.br/llms-full.txt

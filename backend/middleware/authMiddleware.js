@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
+const { getJwtSecret } = require("../config/jwtSecret");
 
-const JWT_SECRET =
-  process.env.JWT_SECRET || "your_jwt_secret_key_change_this_in_prod";
+const JWT_SECRET = getJwtSecret();
 
 const verifyToken = (req, res, next) => {
   const token = req.headers["authorization"];
@@ -29,4 +29,6 @@ const verifyToken = (req, res, next) => {
   });
 };
 
+// Suporta ambos: authMiddleware (função direta) e authMiddleware.verifyToken (propriedade)
+verifyToken.verifyToken = verifyToken;
 module.exports = verifyToken;

@@ -4,6 +4,7 @@ import { Hero, SectionTitle } from "../components/Components";
 import { SEO } from "../components/SEO";
 import { Star, Quote } from "lucide-react";
 import { ScrollReveal } from "../components/ScrollReveal";
+import { WhatsAppLink } from "../components/WhatsAppLink";
 
 export const Testimonials: React.FC = () => {
   // Load Elfsight script
@@ -172,12 +173,12 @@ export const Testimonials: React.FC = () => {
             Entre em contato conosco e descubra como podemos ajudar você ou sua
             empresa.
           </p>
-          <a
-            href="/contato"
+          <WhatsAppLink
+            ctaName="testimonials_fale_conosco"
             className="inline-block bg-accent-500 text-white px-8 py-3 rounded hover:bg-accent-600 transition-colors font-semibold uppercase tracking-wider"
           >
             Fale Conosco
-          </a>
+          </WhatsAppLink>
         </div>
       </section>
     </Layout>

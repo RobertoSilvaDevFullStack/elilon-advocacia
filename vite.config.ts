@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import Sitemap from "vite-plugin-sitemap";
 import viteCompression from "vite-plugin-compression";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const dynamicRoutes = [
   "/blog/compliance-trabalhista",
@@ -14,12 +15,20 @@ const dynamicRoutes = [
   "/sobre/depoimentos",
   "/profissionais",
   "/areas",
+  "/areas/trabalhista-bancario",
+  "/areas/trabalhista",
+  "/areas/previdenciario",
+  "/areas/tributario",
+  "/areas/imobiliario",
+  "/areas/empresarial",
+  "/areas/civel",
   "/blog",
   "/contato",
   "/privacidade",
   "/termos",
   "/bpc",
   "/isencao-ir",
+  "/diagnostico-reforma-tributaria",
 ];
 
 export default defineConfig(({ mode }) => {
@@ -41,11 +50,19 @@ export default defineConfig(({ mode }) => {
         hostname: "https://elilonlopesadvogados.com.br",
         dynamicRoutes,
       }),
-      viteCompression(),
+      // Gzip + Brotli para assets estáticos em produção
+      viteCompression({ algorithm: "gzip", ext: ".gz" }),
+      viteCompression({ algorithm: "brotliCompress", ext: ".br" }),
+      visualizer({
+        filename: "dist/stats.html",
+        gzipSize: true,
+        brotliSize: true,
+        open: false,
+      }),
     ],
     define: {
       "import.meta.env.VITE_API_URL": JSON.stringify(
-        env.VITE_API_URL || "http://localhost:5000/api",
+        env.VITE_API_URL || (isProd ? "/api" : "http://localhost:5000/api"),
       ),
     },
     resolve: {
@@ -57,14 +74,25 @@ export default defineConfig(({ mode }) => {
       minify: "terser",
       rollupOptions: {
         output: {
-          manualChunks: {
-            "react-vendor": ["react", "react-dom"],
-            "router-vendor": ["react-router-dom"],
-            "ui-vendor": ["lucide-react"],
-            "maps-vendor": ["react-simple-maps", "d3-scale"],
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("react-dom") || id.includes("/react/")) {
+                return "react-vendor";
+              }
+              if (id.includes("react-router")) return "router-vendor";
+              if (id.includes("lucide-react")) return "ui-vendor";
+              if (
+                id.includes("react-simple-maps") ||
+                id.includes("d3-")
+              ) {
+                return "maps-vendor";
+              }
+              if (id.includes("react-quill")) return "editor-vendor";
+              if (id.includes("isomorphic-dompurify")) return "sanitize-vendor";
+            }
           },
           assetFileNames: (assetInfo) => {
-            let extType = assetInfo.name.split(".").pop();
+            let extType = (assetInfo.name ?? "").split(".").pop() ?? "";
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
               return `assets/images/[name]-[hash][extname]`;
             }
@@ -81,6 +109,8 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       cssCodeSplit: true,
       cssMinify: true,
+      target: "es2020",
+      modulePreload: { polyfill: false },
     },
     optimizeDeps: {
       include: ["react", "react-dom", "react-router-dom"],

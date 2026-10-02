@@ -1,0 +1,170 @@
+# ADR-001 — Arquitetura Técnica
+
+## Objetivo
+
+Definir a arquitetura técnica do Assistente Jurídico Inteligente.
+
+---
+
+# Arquitetura Geral
+
+Cliente
+↓
+Site Institucional
+↓
+Chat Widget
+↓
+API de Atendimento
+↓
+N8N
+↓
+Hermes
+↓
+N8N
+↓
+PostgreSQL
+↓
+Kinbox
+↓
+E-mail
+
+---
+
+# Responsabilidades
+
+## Chat Widget
+
+Responsável por:
+
+* Interface do usuário
+* Exibição de mensagens
+* Upload de documentos
+* Renderização de botões
+* Gerenciamento da sessão
+
+Tecnologias:
+
+* React
+* Next.js
+* TypeScript
+
+---
+
+## API de Atendimento
+
+Responsável por:
+
+* Receber mensagens
+* Gerenciar sessões
+* Encaminhar mensagens ao N8N
+* Receber respostas do N8N
+* Gerenciar uploads
+
+Tecnologias:
+
+* Node.js
+* Express
+* TypeScript
+
+---
+
+## N8N
+
+Responsável por:
+
+* Controle do fluxo
+* Máquina de estados
+* Integração Hermes
+* Integração PostgreSQL
+* Integração Kinbox
+* Integração E-mail
+
+Importante:
+
+Toda lógica de negócio fica no N8N.
+
+---
+
+## Hermes
+
+Responsável por:
+
+* Interpretação da linguagem natural
+* Extração de informações
+* Geração de resumo
+* Classificação do caso
+
+Importante:
+
+O Hermes NÃO controla o fluxo.
+
+---
+
+## PostgreSQL
+
+Responsável por:
+
+* Persistência dos dados
+* Histórico das conversas
+* Sessões
+* Documentos
+* Atendimentos
+
+---
+
+## MinIO
+
+Responsável por:
+
+* Armazenamento dos documentos
+
+Tipos permitidos:
+
+* PDF
+* JPG
+* PNG
+* DOCX
+
+---
+
+# Infraestrutura
+
+Servidor Oracle Cloud
+
+Containers Docker:
+
+* frontend-chat-widget
+* api-atendimento
+* postgres
+* minio
+* n8n
+* hermes
+* traefik
+
+Rede Docker:
+
+juridico-network
+
+---
+
+# Segurança
+
+* HTTPS obrigatório
+* SSL via Traefik
+* Rate Limit
+* Validação de uploads
+* Sanitização de entradas
+* Logs de auditoria
+
+---
+
+# Escalabilidade
+
+Preparado para:
+
+* Múltiplos agentes
+* CRM próprio
+* WhatsApp
+* Dashboard administrativo
+* OCR
+* RAG Jurídico
